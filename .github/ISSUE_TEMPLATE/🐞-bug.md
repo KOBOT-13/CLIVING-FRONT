@@ -3,7 +3,7 @@ name: "\U0001F41E BUG"
 about: 프로젝트 진행 과정에서 발생한 버그를 보고합니다.
 title: 'Fix: '
 labels: bug
-assignees: ''
+assignees: ima9ine4
 
 ---
 
