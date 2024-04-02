@@ -14,15 +14,14 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   DateTime today = DateTime.now();
   DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
+  DateTime _selectedDay = DateTime.now();
   Map<DateTime, List<Event>> events = {};
   late final ValueNotifier<List<Event>> _selectedEvents;
 
   @override
   void initState() {
     super.initState();
-    _selectedDay = today;
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay));
   }
 
   @override
@@ -107,7 +106,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 border: Border.all(),
                                 borderRadius: BorderRadius.circular(12)),
                             child: ListTile(
-                              onTap: () => print("${value[index]}"),
+                              onTap: () {
+                                Get.to(
+                                  () => RecordScreen(
+                                      selectedDay: _selectedDay,
+                                      selectedEvent: value[index]),
+                                );
+                              },
                               leading: Container(
                                 width: 20,
                                 height: 20,
