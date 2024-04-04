@@ -68,7 +68,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 eventLoader: _getEventsForDay,
                 locale: "en_US",
                 headerStyle: const HeaderStyle(
-                    formatButtonVisible: false, titleCentered: true),
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                  leftChevronIcon:
+                      Icon(Icons.chevron_left, color: Colors.black38),
+                  rightChevronIcon:
+                      Icon(Icons.chevron_right, color: Colors.black38),
+                ),
                 availableGestures: AvailableGestures.all,
                 calendarStyle: CalendarStyle(
                     defaultTextStyle: const TextStyle(color: Colors.grey),
