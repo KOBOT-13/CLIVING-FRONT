@@ -6,11 +6,27 @@ class RecordScreen extends StatefulWidget {
   Event selectedEvent;
   RecordScreen(
       {super.key, required this.selectedDay, required this.selectedEvent});
+
   @override
   State<RecordScreen> createState() => _RecordScreenState();
 }
 
 class _RecordScreenState extends State<RecordScreen> {
+  late TextEditingController placeController;
+  bool isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    placeController = TextEditingController(text: widget.selectedEvent.place);
+  }
+
+  @override
+  void dispose() {
+    placeController.dispose(); // Dispose the controller when done
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     int year = widget.selectedDay.year;
@@ -19,8 +35,8 @@ class _RecordScreenState extends State<RecordScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 205, 205, 205),
-        // elevation: 0,
+        backgroundColor: Colors.transparent,
+        elevation: 0.0,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_rounded,
@@ -38,28 +54,72 @@ class _RecordScreenState extends State<RecordScreen> {
           ),
         ),
       ),
+      extendBodyBehindAppBar: true,
       body: Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         color: Colors.white,
-        child: Center(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Selected Day: ${widget.selectedDay.toString()}',
-                style: const TextStyle(fontSize: 20),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+              const Padding(
+                padding: EdgeInsets.only(left: 15.0),
+                child: Text(
+                  '장소',
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-              const SizedBox(height: 20),
-              Text(
-                'Selected Event: ${widget.selectedEvent.place}',
-                style: const TextStyle(fontSize: 20),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: placeController,
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.black),
+                        keyboardType: TextInputType.text,
+                        maxLines: null,
+                        focusNode: FocusNode(),
+                        readOnly: !isEditing, // 수정 모드에 따라 읽기 전용 설정
+                      ),
+                    ),
+                    IconButton(
+                      iconSize: 20,
+                      icon: isEditing
+                          ? const Icon(Icons.check)
+                          : const Icon(Icons.edit),
+                      onPressed: () {
+                        setState(() {
+                          isEditing = !isEditing; // 수정 버튼 클릭 시 수정 모드 변경
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 20),
-              Text(
-                'Event Color: ${widget.selectedEvent.color}',
-                style: const TextStyle(fontSize: 20),
-              ),
+
+              // Text(
+              //   'Selected Day: ${widget.selectedDay.toString()}',
+              //   style: const TextStyle(fontSize: 20),
+              // ),
+              // const SizedBox(height: 20),
+              // Text(
+              //   'Selected Event: ${widget.selectedEvent.place}',
+              //   style: const TextStyle(fontSize: 20),
+              // ),
+              // const SizedBox(height: 20),
+              // Text(
+              //   'Event Color: ${widget.selectedEvent.color}',
+              //   style: const TextStyle(fontSize: 20),
+              // ),
             ],
           ),
         ),
