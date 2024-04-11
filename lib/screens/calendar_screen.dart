@@ -115,8 +115,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               onTap: () {
                                 Get.to(
                                   () => RecordScreen(
-                                      selectedDay: _selectedDay,
-                                      selectedEvent: value[index]),
+                                    selectedDay: _selectedDay,
+                                    selectedEvent: value[index],
+                                  ),
                                 );
                               },
                               leading: Container(

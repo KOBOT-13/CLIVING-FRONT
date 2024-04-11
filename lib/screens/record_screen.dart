@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 class RecordScreen extends StatefulWidget {
   DateTime selectedDay;
   Event selectedEvent;
-  RecordScreen(
-      {super.key, required this.selectedDay, required this.selectedEvent});
+
+  RecordScreen({
+    super.key,
+    required this.selectedDay,
+    required this.selectedEvent,
+  });
 
   @override
   State<RecordScreen> createState() => _RecordScreenState();
@@ -32,6 +36,10 @@ class _RecordScreenState extends State<RecordScreen> {
     int year = widget.selectedDay.year;
     int month = widget.selectedDay.month;
     int day = widget.selectedDay.day;
+    int startH = widget.selectedEvent.start.hour;
+    int startM = widget.selectedEvent.start.minute;
+    int finishH = widget.selectedEvent.finish.hour;
+    int finishM = widget.selectedEvent.finish.minute;
 
     return Scaffold(
       appBar: AppBar(
@@ -105,21 +113,53 @@ class _RecordScreenState extends State<RecordScreen> {
                   ],
                 ),
               ),
-
-              // Text(
-              //   'Selected Day: ${widget.selectedDay.toString()}',
-              //   style: const TextStyle(fontSize: 20),
-              // ),
-              // const SizedBox(height: 20),
-              // Text(
-              //   'Selected Event: ${widget.selectedEvent.place}',
-              //   style: const TextStyle(fontSize: 20),
-              // ),
-              // const SizedBox(height: 20),
-              // Text(
-              //   'Event Color: ${widget.selectedEvent.color}',
-              //   style: const TextStyle(fontSize: 20),
-              // ),
+              const SizedBox(
+                height: 15,
+              ),
+              const Padding(
+                padding: EdgeInsets.only(left: 15.0),
+                child: Text(
+                  '시간',
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                child: Row(
+                  children: [
+                    Text(
+                      '${startH < 10 ? '0' : ''}$startH : ${startM < 10 ? '0' : ''}$startM',
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    const Text(
+                      ' ~ ',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    Text(
+                      '${finishH < 10 ? '0' : ''}$finishH : ${finishM < 10 ? '0' : ''}$finishM',
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                'Selected Day: ${widget.selectedDay.toString()}',
+                style: const TextStyle(fontSize: 20),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Selected Event: ${widget.selectedEvent.place}',
+                style: const TextStyle(fontSize: 20),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Event Color: ${widget.selectedEvent.color}',
+                style: const TextStyle(fontSize: 20),
+              ),
             ],
           ),
         ),
