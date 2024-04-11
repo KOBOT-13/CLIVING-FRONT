@@ -16,7 +16,7 @@ class EntryScreen extends StatelessWidget {
               'CLIVING',
               style: TextStyle(
                   color: Colors.black,
-                  fontSize: 70,
+                  fontSize: 60,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -3),
               textAlign: TextAlign.end,
