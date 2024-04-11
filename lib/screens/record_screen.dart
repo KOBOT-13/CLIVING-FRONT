@@ -40,6 +40,14 @@ class _RecordScreenState extends State<RecordScreen> {
     int startM = widget.selectedEvent.start.minute;
     int finishH = widget.selectedEvent.finish.hour;
     int finishM = widget.selectedEvent.finish.minute;
+    final Map<String, Color> colorMap = {
+      'red': Colors.red,
+      'blue': Colors.blue,
+      // 다른 색상도 추가할 수 있습니다.
+    };
+
+    final Color selectedColor =
+        colorMap[widget.selectedEvent.color] ?? Colors.transparent;
 
     return Scaffold(
       appBar: AppBar(
@@ -146,20 +154,61 @@ class _RecordScreenState extends State<RecordScreen> {
                   ],
                 ),
               ),
-              Text(
-                'Selected Day: ${widget.selectedDay.toString()}',
-                style: const TextStyle(fontSize: 20),
+              const SizedBox(
+                height: 10,
               ),
-              const SizedBox(height: 20),
-              Text(
-                'Selected Event: ${widget.selectedEvent.place}',
-                style: const TextStyle(fontSize: 20),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(15, 5, 0, 0),
+                child: Text(
+                  '볼더링',
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-              const SizedBox(height: 20),
-              Text(
-                'Event Color: ${widget.selectedEvent.color}',
-                style: const TextStyle(fontSize: 20),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(15.0, 5, 0, 0),
+                child: Container(
+                  width: 40, // 원의 너비
+                  height: 40, // 원의 높이
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey, width: 2.0),
+                    color: selectedColor,
+                  ),
+                ),
               ),
+              const SizedBox(
+                height: 10,
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(15, 5, 0, 0),
+                child: Text(
+                  '영상 보기',
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
+              // Text(
+              //   'Selected Day: ${widget.selectedDay.toString()}',
+              //   style: const TextStyle(fontSize: 20),
+              // ),
+              // const SizedBox(height: 20),
+              // Text(
+              //   'Selected Event: ${widget.selectedEvent.place}',
+              //   style: const TextStyle(fontSize: 20),
+              // ),
+              // const SizedBox(height: 20),
+              // Text(
+              //   'Event Color: ${widget.selectedEvent.color}',
+              //   style: const TextStyle(fontSize: 20),
+              // ),
             ],
           ),
         ),
