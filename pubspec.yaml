@@ -22,6 +22,7 @@ dependencies:
   table_calendar: ^3.0.9
   curved_labeled_navigation_bar: ^2.0.2
   curved_nav_bar: ^0.0.2
+  camera: ^0.10.5+9
 
 
   
