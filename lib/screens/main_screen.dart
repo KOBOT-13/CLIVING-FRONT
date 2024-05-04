@@ -6,6 +6,7 @@ import 'package:curved_nav_bar/flutter_curved_bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'camera_screen.dart';
 // ignore_for_file: prefer_const_constructors
 
 class MainScreen extends StatefulWidget {
@@ -85,12 +86,13 @@ class _MainScreenState extends State<MainScreen> {
               ),
             )
           ],
-          actionBarView: Container(
+          actionBarView:
+            Container(
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
             color: Colors.grey,
             child: Center(
-              child: Text('카메라가 구현될 화면입니다.'),
+              child: CameraScreen(),
             ),
           ),
         ));
