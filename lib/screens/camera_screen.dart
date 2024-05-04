@@ -28,6 +28,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   void setCamera(){
     if (_cameras.isNotEmpty) {
+      print("실행됨");
       _controller = CameraController(_cameras[0], ResolutionPreset.max, enableAudio: false);
       _initializeControllerFuture = _controller?.initialize().catchError((Object e) {
         if (e is CameraException) {
@@ -61,7 +62,9 @@ class _CameraScreenState extends State<CameraScreen> {
         if (snapshot.connectionState == ConnectionState.done) {
           return CameraPreview(_controller!);
         } else {
-          return Center(child: CircularProgressIndicator()); // 초기화 중 로딩 인디케이터
+          return Center(child: CircularProgressIndicator(
+            strokeWidth: 10,
+          )); // 초기화 중 로딩 인디케이터
         }
       },
     );
