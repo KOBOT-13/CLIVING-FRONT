@@ -17,84 +17,45 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  final List _pages = [
+    CalendarScreen(),
+    CameraScreen(),
+    // setting Screen
+    CalendarScreen(),
+  ];
+
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index){
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Padding(padding: EdgeInsets.zero),
-        bottomNavigationBar: CurvedNavBar(
-          actionButton: //카메라
-              CurvedActionBar(
-                  onTab: (value) {
-                    /// perform action here
-                  },
-                  activeIcon: Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: Colors.white, shape: BoxShape.circle),
-                    child: Icon(
-                      Icons.camera,
-                      size: 50,
-                      color: Colors.black,
-                    ),
-                  ),
-                  inActiveIcon: Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: Colors.white70, shape: BoxShape.circle),
-                    child: Icon(
-                      Icons.camera,
-                      size: 50,
-                      color: Colors.black,
-                    ),
-                  ),
-                  text: "카메라"),
-          activeColor: Colors.black,
-          navBarBackgroundColor: Colors.white,
-          inActiveColor: Colors.black45,
-          appBarItems: [
-            FABBottomAppBarItem(
-                activeIcon: Icon(
-                  Icons.calendar_month_outlined,
-                  color: Colors.black,
-                ),
-                inActiveIcon: Icon(
-                  Icons.calendar_month_outlined,
-                  color: Colors.black26,
-                ),
-                text: '캘린더'),
-            FABBottomAppBarItem(
-                activeIcon: Icon(
-                  Icons.settings,
-                  color: Colors.black,
-                ),
-                inActiveIcon: Icon(
-                  Icons.settings,
-                  color: Colors.black26,
-                ),
-                text: '설정'),
-          ],
-          bodyItems: [
-            CalendarScreen(),
-            Container(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              color: Colors.grey,
-              child: Center(
-                child: Text(
-                  '설정이 구현될 화면입니다.',
-                ),
-              ),
-            )
-          ],
-          actionBarView:
-            Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            color: Colors.grey,
-            child: Center(
-              child: CameraScreen(),
+        // body: Padding(padding: EdgeInsets.zero),
+        body: _pages[_selectedIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_month_outlined),
+              label: '캘린더',
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.camera),
+              label: '카메라',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: '설정',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.black,
+          onTap: _onItemTapped,
           ),
-        ));
+        );
   }
 }
