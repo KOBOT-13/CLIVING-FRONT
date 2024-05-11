@@ -45,6 +45,19 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
+  Future<void> _takePicture() async {
+    if (!_controller!.value.isInitialized) {
+      return;
+    }
+    try {
+      // 사진 촬영
+      final XFile file = await _controller!.takePicture();
+      // 사진 벡엔드에 보내는 코드
+    } catch (e) {
+      print('Error taking picture: $e');
+    }
+  }
+
   @override
   void dispose() {
     _controller?.dispose();
@@ -56,17 +69,39 @@ class _CameraScreenState extends State<CameraScreen> {
     if (_controller == null || _initializeControllerFuture == null) {
       return Container(); // 카메라가 없거나 초기화에 실패한 경우
     }
-    return FutureBuilder<void>(
-      future: _initializeControllerFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return CameraPreview(_controller!);
-        } else {
-          return Center(child: CircularProgressIndicator(
-            strokeWidth: 10,
-          )); // 초기화 중 로딩 인디케이터
-        }
-      },
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: FutureBuilder<void>(
+            future: _initializeControllerFuture, 
+            builder: (context, snapshot){
+              if(snapshot.connectionState == ConnectionState.done){
+                return CameraPreview(_controller!);
+              } else {
+                return Center(child: CircularProgressIndicator(
+                  strokeWidth: 10,
+                ));
+              }
+            },
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: GestureDetector(
+              onTap: (){
+                _takePicture();
+              },
+              child: const Icon(
+                Icons.camera_enhance,
+                size: 70,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
