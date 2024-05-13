@@ -15,6 +15,22 @@ class Event {
 
   @override
   String toString() => '$place\n$color';
+
+  // String getPlace() {
+  //   return place;
+  // }
+
+  // List<String> getColor() {
+  //   return color;
+  // }
+
+  // DateTime getStart() {
+  //   return start;
+  // }
+
+  // DateTime getFinish() {
+  //   return finish;
+  // }
 }
 
 final event = LinkedHashMap<DateTime, List<Event>>(
@@ -29,6 +45,20 @@ final _eventSource = {
         color: 'red',
         start: DateTime(2024, 4, 3, 10, 0),
         finish: DateTime(2024, 4, 3, 12, 0))
+  ],
+  DateTime(2024, 4, 19): [
+    Event(
+        place: '서울숲 클라이밍1',
+        color: 'blue',
+        start: DateTime(2024, 4, 19, 10, 0),
+        finish: DateTime(2024, 4, 19, 12, 0)),
+  ],
+  DateTime(2024, 4, 25): [
+    Event(
+        place: '건대 클라이밍',
+        color: 'blue',
+        start: DateTime(2024, 4, 25, 10, 0),
+        finish: DateTime(2024, 4, 25, 12, 0))
   ]
 };
 
