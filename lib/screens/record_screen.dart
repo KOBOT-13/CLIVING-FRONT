@@ -194,21 +194,6 @@ class _RecordScreenState extends State<RecordScreen> {
                   ),
                 ),
               ),
-
-              // Text(
-              //   'Selected Day: ${widget.selectedDay.toString()}',
-              //   style: const TextStyle(fontSize: 20),
-              // ),
-              // const SizedBox(height: 20),
-              // Text(
-              //   'Selected Event: ${widget.selectedEvent.place}',
-              //   style: const TextStyle(fontSize: 20),
-              // ),
-              // const SizedBox(height: 20),
-              // Text(
-              //   'Event Color: ${widget.selectedEvent.color}',
-              //   style: const TextStyle(fontSize: 20),
-              // ),
             ],
           ),
         ),
