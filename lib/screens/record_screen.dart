@@ -47,7 +47,7 @@ class _RecordScreenState extends State<RecordScreen> {
     };
 
     final Color selectedColor =
-        colorMap[widget.selectedEvent.color] ?? Colors.transparent;
+        colorMap[widget.selectedEvent.color[0]] ?? Colors.transparent;
 
     return Scaffold(
       appBar: AppBar(
