@@ -15,6 +15,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime today = DateTime.now();
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
+
   Map<DateTime, List<Event>> events = {};
   late final ValueNotifier<List<Event>> _selectedEvents;
 
@@ -32,17 +33,29 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   List<Event> _getEventsForDay(DateTime day) {
-    return event[day] ?? [];
+    List<Event> eventList = event[day] ?? [];
+    return eventList;
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     if (!isSameDay(_selectedDay, selectedDay)) {
-      // Call `setState()` when updating the selected day
       setState(() {
         _selectedDay = selectedDay;
         _focusedDay = focusedDay;
       });
       _selectedEvents.value = _getEventsForDay(selectedDay);
+    }
+  }
+
+  Color getColorFromString(String colorString) {
+    switch (colorString) {
+      case 'red':
+        return Colors.red;
+      case 'blue':
+        return Colors.blue;
+      // 추가적인 색상 처리
+      default:
+        return Colors.black; // 기본값 설정
     }
   }
 
@@ -60,8 +73,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 lastDay: DateTime.utc(2024, 12, 31),
                 focusedDay: _focusedDay,
                 selectedDayPredicate: (day) {
-                  // to determine which day is currently selected
-                  // true -> 'day' will be marked as selected
                   return isSameDay(_selectedDay, day);
                 },
                 onDaySelected: _onDaySelected,
@@ -81,21 +92,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     weekendTextStyle: const TextStyle(color: Colors.grey),
                     markerDecoration: BoxDecoration(
                         color: Colors.blue[200], shape: BoxShape.circle)),
+                calendarBuilders: CalendarBuilders(
+                  markerBuilder: (context, day, events) {
+                    if (events.isNotEmpty) {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: events.length,
+                        itemBuilder: (context, index) {
+                          Event event = events[index] as Event; // 현재 이벤트 가져오기
+                          List<String> colorStr =
+                              event.getColor(); // 이벤트의 color 가져오기
+                          return Container(
+                            width: 12,
+                            height: 10,
+                            margin: const EdgeInsets.only(top: 35),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: getColorFromString(colorStr[
+                                  0]), // getColorFromString 함수를 통해 컬러 설정
+                            ),
+                          );
+                        },
+                      );
+                    }
+                    return null; // 이벤트가 없는 경우 아무런 마커도 표시하지 않음
+                  },
+                ),
                 onPageChanged: (focusedDay) {
                   _focusedDay = focusedDay;
                 },
               ),
             ),
-            // Align(
-            //   alignment: Alignment.bottomRight,
-            //   child: ElevatedButton(
-            //       onPressed: () {
-            //         Get.to(
-            //           () => RecordScreen(selectedDay: focusedDay),
-            //         );
-            //       },
-            //       child: const Text('button')),
-            // ),
             Expanded(
               child: ValueListenableBuilder<List<Event>>(
                   valueListenable: _selectedEvents,
@@ -121,15 +149,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 );
                               },
                               leading: Container(
-                                width: 20,
-                                height: 20,
-                                decoration: const BoxDecoration(
+                                width: 35,
+                                height: 35,
+                                decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.red,
+                                  color:
+                                      getColorFromString(value[index].color[0]),
                                 ),
                               ),
                               title: Text(value[index].place),
-                              subtitle: Text(value[index].color),
+                              subtitle: Text(value[index].color[0]),
                             ),
                           );
                         });
