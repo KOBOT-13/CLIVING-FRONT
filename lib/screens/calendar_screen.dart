@@ -33,15 +33,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   List<Event> _getEventsForDay(DateTime day) {
-    print('day: $day');
-    print('event[day]: ${event[day]}');
     List<Event> eventList = event[day] ?? [];
     return eventList;
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     if (!isSameDay(_selectedDay, selectedDay)) {
-      // Call `setState()` when updating the selected day
       setState(() {
         _selectedDay = selectedDay;
         _focusedDay = focusedDay;
@@ -76,8 +73,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 lastDay: DateTime.utc(2024, 12, 31),
                 focusedDay: _focusedDay,
                 selectedDayPredicate: (day) {
-                  // to determine which day is currently selected
-                  // true -> 'day' will be marked as selected
                   return isSameDay(_selectedDay, day);
                 },
                 onDaySelected: _onDaySelected,
@@ -97,58 +92,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     weekendTextStyle: const TextStyle(color: Colors.grey),
                     markerDecoration: BoxDecoration(
                         color: Colors.blue[200], shape: BoxShape.circle)),
-                // calendarBuilders: CalendarBuilders(
-                //   markerBuilder: (context, day, events) {
-                //     print('events: $events');
-
-                //     print('events[0]: ${events[0]}');
-
-                //     print('events.toString(): ${events.toString()}');
-
-                //     List<String> parts = events.toString().split('\n');
-
-                //     if (events.isNotEmpty) {
-                //       print('parts: $parts');
-                //       String colorStr =
-                //           parts[1].substring(0, parts[1].length - 1);
-
-                //       print('colorStr: $colorStr');
-                //       return ListView.builder(
-                //         shrinkWrap: true,
-                //         scrollDirection: Axis.horizontal,
-                //         itemCount: events.length,
-                //         itemBuilder: (context, index) {
-                //           return Container(
-                //             width: 12,
-                //             height: 10,
-                //             margin: const EdgeInsets.only(
-                //                 top: 35), // 각 마커 사이의 간격 조정을 위해 추가
-                //             decoration: BoxDecoration(
-                //               shape: BoxShape.circle,
-                //               color: getColorFromString(colorStr),
-                //             ),
-                //           );
-                //         },
-                //       );
-                //     }
-                //     return null; // 이벤트가 없는 경우 아무런 마커도 표시하지 않습니다.
-                //   },
-                // ),
+                calendarBuilders: CalendarBuilders(
+                  markerBuilder: (context, day, events) {
+                    if (events.isNotEmpty) {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: events.length,
+                        itemBuilder: (context, index) {
+                          Event event = events[index] as Event; // 현재 이벤트 가져오기
+                          List<String> colorStr =
+                              event.getColor(); // 이벤트의 color 가져오기
+                          return Container(
+                            width: 12,
+                            height: 10,
+                            margin: const EdgeInsets.only(top: 35),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: getColorFromString(colorStr[
+                                  0]), // getColorFromString 함수를 통해 컬러 설정
+                            ),
+                          );
+                        },
+                      );
+                    }
+                    return null; // 이벤트가 없는 경우 아무런 마커도 표시하지 않음
+                  },
+                ),
                 onPageChanged: (focusedDay) {
                   _focusedDay = focusedDay;
                 },
               ),
             ),
-            // Align(
-            //   alignment: Alignment.bottomRight,
-            //   child: ElevatedButton(
-            //       onPressed: () {
-            //         Get.to(
-            //           () => RecordScreen(selectedDay: focusedDay),
-            //         );
-            //       },
-            //       child: const Text('button')),
-            // ),
             Expanded(
               child: ValueListenableBuilder<List<Event>>(
                   valueListenable: _selectedEvents,
@@ -178,11 +153,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 height: 35,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: getColorFromString(value[index].color),
+                                  color:
+                                      getColorFromString(value[index].color[0]),
                                 ),
                               ),
                               title: Text(value[index].place),
-                              subtitle: Text(value[index].color),
+                              subtitle: Text(value[index].color[0]),
                             ),
                           );
                         });
