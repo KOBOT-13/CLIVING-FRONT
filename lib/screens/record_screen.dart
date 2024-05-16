@@ -47,7 +47,8 @@ class _RecordScreenState extends State<RecordScreen> {
     };
 
     final Color selectedColor =
-        colorMap[widget.selectedEvent.color[0]] ?? Colors.transparent;
+        colorMap[widget.selectedEvent.color] ?? Colors.transparent;
+    final colorList = widget.selectedEvent.getColor();
 
     return Scaffold(
       appBar: AppBar(
@@ -170,13 +171,23 @@ class _RecordScreenState extends State<RecordScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(15.0, 5, 0, 0),
-                child: Container(
-                  width: 40, // 원의 너비
-                  height: 40, // 원의 높이
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey, width: 2.0),
-                    color: selectedColor,
+                child: Row(
+                  children: List.generate(
+                    widget.selectedEvent.color.length,
+                    (index) => Padding(
+                      padding:
+                          const EdgeInsets.only(right: 10), // 각 원 사이의 간격 조정
+                      child: Container(
+                        width: 40, // 원의 너비
+                        height: 40, // 원의 높이
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.grey, width: 2.0),
+                          color: colorMap[widget.selectedEvent.color[index]] ??
+                              Colors.transparent,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
