@@ -54,6 +54,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
       case 'blue':
         return Colors.blue;
       // 추가적인 색상 처리
+      case 'green':
+        return Colors.green;
       default:
         return Colors.black; // 기본값 설정
     }
@@ -172,44 +174,52 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(20.0),
-                            child: Row(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  width: 35,
-                                  height: 35,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: getColorFromString(
-                                        value[index].color[0]),
-                                  ),
+                                const Icon(
+                                  Icons.terrain_rounded,
+                                  size: 30,
                                 ),
-                                const SizedBox(width: 20),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Text(value[index].place,
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600)),
+                                const SizedBox(
+                                  height: 7,
+                                ),
+                                Row(
                                   children: [
-                                    Text(value[index].place,
-                                        style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w600)),
+                                    Text(formattedDate,
+                                        style: const TextStyle(fontSize: 15)),
                                     const SizedBox(
-                                      height: 5,
+                                      width: 3,
                                     ),
-                                    Row(
-                                      children: [
-                                        Text(formattedDate,
-                                            style:
-                                                const TextStyle(fontSize: 15)),
-                                        const SizedBox(
-                                          width: 3,
-                                        ),
-                                        Text(timeRange,
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                            )),
-                                        
-                                      ],
-                                    )
+                                    Text(timeRange,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                        )),
                                   ],
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Row(
+                                  children: value[index].color.map((color) {
+                                    return Container(
+                                      width: 30,
+                                      height: 30,
+                                      margin: const EdgeInsets.only(
+                                          left: 5), // 각 컬러 사이의 간격 조절
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: getColorFromString(color),
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
                               ],
                             ),
