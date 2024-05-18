@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:cross_file_image/cross_file_image.dart';
+import 'dart:ui';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -13,6 +15,7 @@ class _CameraScreenState extends State<CameraScreen> {
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
   late List<CameraDescription> _cameras;
+  XFile? file;
 
   @override
   void initState(){
@@ -29,7 +32,7 @@ class _CameraScreenState extends State<CameraScreen> {
   void setCamera(){
     if (_cameras.isNotEmpty) {
       print("실행됨");
-      _controller = CameraController(_cameras[0], ResolutionPreset.max, enableAudio: false);
+      _controller = CameraController(_cameras[0], ResolutionPreset.max, enableAudio: false, imageFormatGroup: ImageFormatGroup.yuv420);
       _initializeControllerFuture = _controller?.initialize().catchError((Object e) {
         if (e is CameraException) {
           switch (e.code) {
@@ -51,7 +54,10 @@ class _CameraScreenState extends State<CameraScreen> {
     }
     try {
       // 사진 촬영
-      final XFile file = await _controller!.takePicture();
+      final XFile newFile = await _controller!.takePicture();
+      setState(() {
+        file = newFile;
+      });
       // 사진 벡엔드에 보내는 코드
     } catch (e) {
       print('Error taking picture: $e');
@@ -94,13 +100,51 @@ class _CameraScreenState extends State<CameraScreen> {
                 _takePicture();
               },
               child: const Icon(
-                Icons.camera_enhance,
+                Icons.camera,
                 size: 70,
                 color: Colors.black,
               ),
             ),
           ),
         ),
+        if (file != null) // 조건을 검사하여 file이 null이 아닌 경우에만 Positioned 위젯을 생성
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                color: Colors.black.withOpacity(0.1),
+              )
+            )
+          ),
+        if (file != null)
+          Stack(
+            children: [
+              Positioned.fill(
+                child: Image(
+                  image: XFileImage(file!)
+                ),
+              ),
+              Container(
+                alignment: Alignment(-0.9, 0.9),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    surfaceTintColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    )
+                  ),
+                  onPressed: (){
+                    setState(() {
+                      file = null;
+                    });
+                  },
+                  child: Text("재촬영"),
+                ),
+              )
+
+            ],
+          )
       ],
     );
   }
