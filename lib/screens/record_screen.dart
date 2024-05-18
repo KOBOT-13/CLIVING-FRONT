@@ -43,6 +43,7 @@ class _RecordScreenState extends State<RecordScreen> {
     final Map<String, Color> colorMap = {
       'red': Colors.red,
       'blue': Colors.blue,
+      'green': Colors.green
       // 다른 색상도 추가할 수 있습니다.
     };
 
