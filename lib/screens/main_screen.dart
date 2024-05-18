@@ -44,7 +44,7 @@ class _MainScreenState extends State<MainScreen> {
               label: '캘린더',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.camera),
+              icon: Icon(Icons.camera_alt),
               label: '카메라',
             ),
             BottomNavigationBarItem(

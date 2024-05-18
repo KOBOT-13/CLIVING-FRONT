@@ -100,7 +100,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 _takePicture();
               },
               child: const Icon(
-                Icons.camera_enhance,
+                Icons.camera,
                 size: 70,
                 color: Colors.black,
               ),
@@ -117,11 +117,34 @@ class _CameraScreenState extends State<CameraScreen> {
             )
           ),
         if (file != null)
-          Positioned.fill(
-            child: Image(
-              image: XFileImage(file!)
-            ),
-          ),
+          Stack(
+            children: [
+              Positioned.fill(
+                child: Image(
+                  image: XFileImage(file!)
+                ),
+              ),
+              Container(
+                alignment: Alignment(-0.9, 0.9),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    surfaceTintColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    )
+                  ),
+                  onPressed: (){
+                    setState(() {
+                      file = null;
+                    });
+                  },
+                  child: Text("재촬영"),
+                ),
+              )
+
+            ],
+          )
       ],
     );
   }
