@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/entry_screen.dart';
+import 'package:get/get.dart';
+import 'screens/main_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,9 +11,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: EntryScreen(),
+      theme: ThemeData(fontFamily: 'Pretendard'),
+      home: const MainScreen(),
     );
   }
 }

@@ -26,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
 
   int _selectedIndex = 0;
 
-  void _onItemTapped(int index){
+  void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -44,18 +44,18 @@ class _MainScreenState extends State<MainScreen> {
               label: '캘린더',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.camera_alt),
+              icon: Icon(Icons.camera),
               label: '카메라',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: '설정',
+              icon: Icon(Icons.analytics_outlined),
+              label: '통계',
             ),
           ],
           currentIndex: _selectedIndex,
           selectedItemColor: Colors.black,
           onTap: _onItemTapped,
-          ),
-        );
+      ),
+    );
   }
 }
