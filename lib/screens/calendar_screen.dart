@@ -54,6 +54,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
       case 'blue':
         return Colors.blue;
       // 추가적인 색상 처리
+      case 'green':
+        return Colors.green;
       default:
         return Colors.black; // 기본값 설정
     }
@@ -126,44 +128,153 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
             Expanded(
               child: ValueListenableBuilder<List<Event>>(
-                  valueListenable: _selectedEvents,
-                  builder: (context, value, _) {
-                    return ListView.builder(
-                        itemCount: value.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                                border: Border.all(),
-                                borderRadius: BorderRadius.circular(12)),
-                            child: ListTile(
-                              onTap: () {
-                                Get.to(
-                                  () => RecordScreen(
-                                    selectedDay: _selectedDay,
-                                    selectedEvent: value[index],
-                                  ),
-                                );
-                              },
-                              leading: Container(
-                                width: 35,
-                                height: 35,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color:
-                                      getColorFromString(value[index].color[0]),
-                                ),
+                valueListenable: _selectedEvents,
+                builder: (context, value, _) {
+                  return ListView.builder(
+                    itemCount: value.length,
+                    itemBuilder: (context, index) {
+                      // DateTime 객체 생성
+                      DateTime startTime = value[index].start;
+                      DateTime finishTime = value[index].finish;
+
+                      // 포맷팅된 문자열 생성
+                      String formattedDate =
+                          '${startTime.month}월 ${startTime.day}일';
+                      String formattedStartTime =
+                          '${startTime.hour}:${startTime.minute.toString().padLeft(2, '0')}';
+                      String formattedFinishTime =
+                          '${finishTime.hour}:${finishTime.minute.toString().padLeft(2, '0')}';
+
+                      // 한 시간 이상인지 체크
+                      String timeRange;
+                      if (finishTime.difference(startTime).inHours >= 1) {
+                        timeRange =
+                            '$formattedStartTime - $formattedFinishTime';
+                      } else {
+                        timeRange = formattedStartTime;
+                      }
+
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            Get.to(
+                              () => RecordScreen(
+                                selectedDay: _selectedDay,
+                                selectedEvent: value[index],
                               ),
-                              title: Text(value[index].place),
-                              subtitle: Text(value[index].color[0]),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(
+                                  Icons.terrain_rounded,
+                                  size: 30,
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Text(value[index].place,
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600)),
+                                const SizedBox(
+                                  height: 7,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(formattedDate,
+                                        style: const TextStyle(fontSize: 15)),
+                                    const SizedBox(
+                                      width: 3,
+                                    ),
+                                    Text(timeRange,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                        )),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Row(
+                                  children: value[index].color.map((color) {
+                                    return Container(
+                                      width: 30,
+                                      height: 30,
+                                      margin: const EdgeInsets.only(
+                                          left: 5), // 각 컬러 사이의 간격 조절
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: getColorFromString(color),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
                             ),
-                          );
-                        });
-                  }),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             )
+
+            // Expanded(
+            //   child: ValueListenableBuilder<List<Event>>(
+            //       valueListenable: _selectedEvents,
+            //       builder: (context, value, _) {
+            //         return ListView.builder(
+            //             itemCount: value.length,
+            //             itemBuilder: (context, index) {
+            //               return Container(
+            //                 margin: const EdgeInsets.symmetric(
+            //                   horizontal: 12,
+            //                   vertical: 4,
+            //                 ),
+            //                 decoration: BoxDecoration(
+            //                     border: Border.all(),
+            //                     borderRadius: BorderRadius.circular(12)),
+            //                 child: ListTile(
+            //                   onTap: () {
+            //                     Get.to(
+            //                       () => RecordScreen(
+            //                         selectedDay: _selectedDay,
+            //                         selectedEvent: value[index],
+            //                       ),
+            //                     );
+            //                   },
+            //                   leading: Container(
+            //                     width: 35,
+            //                     height: 35,
+            //                     decoration: BoxDecoration(
+            //                       shape: BoxShape.circle,
+            //                       color:
+            //                           getColorFromString(value[index].color[0]),
+            //                     ),
+            //                   ),
+            //                   title: Text(value[index].place),
+            //                   subtitle: Text(value[index].start.toString()),
+
+            //                 ),
+            //               );
+            //             }
+
+            //             );
+            //       }),
+            // )
           ],
         ),
       ),

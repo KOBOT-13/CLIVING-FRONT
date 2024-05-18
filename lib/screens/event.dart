@@ -53,7 +53,7 @@ final _eventSource = {
   DateTime(2024, 4, 19): [
     Event(
         place: '서울숲 클라이밍1',
-        color: ['blue', 'red'],
+        color: ['blue', 'red', 'green'],
         start: DateTime(2024, 4, 19, 10, 0),
         finish: DateTime(2024, 4, 19, 12, 0)),
   ],
