@@ -1,9 +1,6 @@
 import 'package:cliving_front/screens/event.dart';
 import 'package:cliving_front/screens/video_player_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:get/get.dart';
-import 'package:video_player/video_player.dart';
 
 class RecordScreen extends StatefulWidget {
   DateTime selectedDay;
