@@ -27,6 +27,7 @@ dependencies:
   video_player: ^2.8.5
   flick_video_player: ^0.5.0
   wakelock: ^0.6.2
+  cross_file_image: ^1.1.0
 
 
   
