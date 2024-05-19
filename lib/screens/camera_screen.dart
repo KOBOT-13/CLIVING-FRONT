@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:cross_file_image/cross_file_image.dart';
 import 'dart:ui';
+import 'package:cliving_front/models/TestHold.dart';
+import 'package:cliving_front/models/Hold.dart';
+import 'package:http/http.dart';
+import 'dart:convert';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -12,11 +16,27 @@ class CameraScreen extends StatefulWidget {
 }
 
 class _CameraScreenState extends State<CameraScreen> {
+  Map colorMap = {
+    'orange' : Colors.orange,
+    'yellow' : Colors.yellow,
+    'green' : Colors.green,
+    'blue' : Colors.blue,
+    'navy' : Color.fromRGBO(0, 0, 55, 1),
+    'red' : Colors.red,
+    'pink' : Colors.pink,
+    'purple' : Colors.purple,
+    'grey' : Colors.grey,
+    'brown' : Colors.brown,
+    'black' : Colors.black,
+    'white' : Colors.white,
+  };
+
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
+  late Future<List<Hold>> _holdInfo;
   late List<CameraDescription> _cameras;
   XFile? file;
-
+  
   @override
   void initState(){
     super.initState();
@@ -27,6 +47,18 @@ class _CameraScreenState extends State<CameraScreen> {
     _cameras = await availableCameras();
     setCamera();
     setState(() {});
+  }
+
+  void reHolds(){
+    setState(() {
+      _holdInfo = _callAPI();
+    });
+  }
+  
+  Future<List<Hold>> _callAPI() async {
+    // API 호출 코드 작성
+    Future<List<Hold>> tmp = Future.value(jsonString);
+    return tmp;
   }
 
   void setCamera(){
@@ -98,6 +130,7 @@ class _CameraScreenState extends State<CameraScreen> {
             child: GestureDetector(
               onTap: (){
                 _takePicture();
+                reHolds();
               },
               child: const Icon(
                 Icons.camera,
@@ -141,10 +174,50 @@ class _CameraScreenState extends State<CameraScreen> {
                   },
                   child: Text("재촬영"),
                 ),
-              )
-
-            ],
-          )
+              ),
+              FutureBuilder<List<Hold>>(
+                future: _holdInfo,
+                builder: ((context, snapshot){
+                  if(snapshot.connectionState == ConnectionState.waiting){
+                    return SizedBox.shrink();
+                  }
+                  else if(snapshot.hasError){
+                    return Center(child: Text('Error'));
+                  }
+                  else{
+                    List<Hold> buttonHold = snapshot.data!;
+                    return Stack(
+                      children: [
+                        for(Hold t in buttonHold)
+                          Positioned(
+                            // top: t.y2,
+                            // left: t.x1,
+                            // bottom: t.y1,
+                            // right: t.x2,
+                            top: 50,
+                            left: 40,
+                            width: 100,
+                            height: 100,
+                            child: SizedBox(
+                              child: OutlinedButton(
+                                onPressed: (){
+                                  print("${t}버튼 실행");
+                                },
+                                child: Text(""),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: colorMap[t.color], width: 2.0),
+                                ),
+                              ),
+                            )
+                          )
+                      ],
+                    );
+                  }
+                }
+              ),
+            ),
+          ]
+        )
       ],
     );
   }
