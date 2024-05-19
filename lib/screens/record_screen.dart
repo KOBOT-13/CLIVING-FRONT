@@ -1,5 +1,9 @@
 import 'package:cliving_front/screens/event.dart';
+import 'package:cliving_front/screens/video_player_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:get/get.dart';
+import 'package:video_player/video_player.dart';
 
 class RecordScreen extends StatefulWidget {
   DateTime selectedDay;
@@ -19,6 +23,28 @@ class _RecordScreenState extends State<RecordScreen> {
   late TextEditingController placeController;
   bool isEditing = false;
 
+  List<String> videoThumbnailUrls = [
+    'assets/images/climbing.jpeg',
+    'assets/images/climbing.jpeg',
+    'assets/images/climbing.jpeg',
+    'assets/images/climbing.jpeg',
+    'assets/images/climbing.jpeg',
+    'assets/images/climbing.jpeg',
+    'assets/images/climbing.jpeg',
+    'assets/images/climbing.jpeg',
+  ];
+
+  List<String> videoUrls = [
+    'assets/videos/CallbackLogo.mp4',
+    'assets/videos/CallbackLogo.mp4',
+    'assets/videos/CallbackLogo.mp4',
+    'assets/videos/CallbackLogo.mp4',
+    'assets/videos/CallbackLogo.mp4',
+    'assets/videos/CallbackLogo.mp4',
+    'assets/videos/CallbackLogo.mp4',
+    'assets/videos/CallbackLogo.mp4',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -27,7 +53,7 @@ class _RecordScreenState extends State<RecordScreen> {
 
   @override
   void dispose() {
-    placeController.dispose(); // Dispose the controller when done
+    placeController.dispose();
     super.dispose();
   }
 
@@ -43,8 +69,7 @@ class _RecordScreenState extends State<RecordScreen> {
     final Map<String, Color> colorMap = {
       'red': Colors.red,
       'blue': Colors.blue,
-      'green': Colors.green
-      // 다른 색상도 추가할 수 있습니다.
+      'green': Colors.green,
     };
 
     final Color selectedColor =
@@ -106,7 +131,7 @@ class _RecordScreenState extends State<RecordScreen> {
                         keyboardType: TextInputType.text,
                         maxLines: null,
                         focusNode: FocusNode(),
-                        readOnly: !isEditing, // 수정 모드에 따라 읽기 전용 설정
+                        readOnly: !isEditing,
                       ),
                     ),
                     IconButton(
@@ -116,7 +141,7 @@ class _RecordScreenState extends State<RecordScreen> {
                           : const Icon(Icons.edit),
                       onPressed: () {
                         setState(() {
-                          isEditing = !isEditing; // 수정 버튼 클릭 시 수정 모드 변경
+                          isEditing = !isEditing;
                         });
                       },
                     ),
@@ -183,7 +208,7 @@ class _RecordScreenState extends State<RecordScreen> {
                         height: 40, // 원의 높이
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey, width: 2.0),
+                          border: Border.all(color: Colors.grey, width: 1.0),
                           color: colorMap[widget.selectedEvent.color[index]] ??
                               Colors.transparent,
                         ),
@@ -204,6 +229,34 @@ class _RecordScreenState extends State<RecordScreen> {
                     fontSize: 22,
                     fontWeight: FontWeight.w500,
                   ),
+                ),
+              ),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(10),
+                  shrinkWrap: true,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3, // 한 행에 보여질 동영상 수
+                    crossAxisSpacing: 10, // 동영상 간 가로 간격
+                    mainAxisSpacing: 10, // 동영상 간 세로 간격
+                  ),
+                  itemCount: videoThumbnailUrls.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => VideoPlayerScreen(
+                                  videoUrl: videoUrls[index])),
+                        );
+                      },
+                      child: Image.asset(
+                        videoThumbnailUrls[index],
+                        fit: BoxFit.cover,
+                      ),
+                    );
+                  },
                 ),
               ),
             ],

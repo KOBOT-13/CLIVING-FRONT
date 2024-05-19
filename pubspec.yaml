@@ -24,6 +24,9 @@ dependencies:
   curved_nav_bar: ^0.0.2
   camera: ^0.10.5+9
   image_gallery_saver: ^2.0.3
+  video_player: ^2.8.5
+  flick_video_player: ^0.5.0
+  wakelock: ^0.6.2
   cross_file_image: ^1.1.0
 
 
@@ -43,8 +46,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - assets/images/
+    - assets/videos/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -70,23 +74,23 @@ flutter:
   fonts:
     - family: Pretendard
       fonts:
-        - asset: assets/font/Pretendard-Thin.ttf
+        - asset: assets/fonts/Pretendard-Thin.ttf
           weight: 100
-        - asset: assets/font/Pretendard-ExtraLight.ttf
+        - asset: assets/fonts/Pretendard-ExtraLight.ttf
           weight: 200
-        - asset: assets/font/Pretendard-Light.ttf
+        - asset: assets/fonts/Pretendard-Light.ttf
           weight: 300
-        - asset: assets/font/Pretendard-Regular.ttf
+        - asset: assets/fonts/Pretendard-Regular.ttf
           weight: 400
-        - asset: assets/font/Pretendard-Medium.ttf
+        - asset: assets/fonts/Pretendard-Medium.ttf
           weight: 500
-        - asset: assets/font/Pretendard-SemiBold.ttf
+        - asset: assets/fonts/Pretendard-SemiBold.ttf
           weight: 600
-        - asset: assets/font/Pretendard-Bold.ttf
+        - asset: assets/fonts/Pretendard-Bold.ttf
           weight: 700
-        - asset: assets/font/Pretendard-ExtraBold.ttf
+        - asset: assets/fonts/Pretendard-ExtraBold.ttf
           weight: 800
-        - asset: assets/font/Pretendard-Black.ttf
+        - asset: assets/fonts/Pretendard-Black.ttf
           weight: 900
 
 
