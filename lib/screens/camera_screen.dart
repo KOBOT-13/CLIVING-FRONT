@@ -7,6 +7,7 @@ import 'package:cliving_front/models/TestHold.dart';
 import 'package:cliving_front/models/Hold.dart';
 import 'package:http/http.dart';
 import 'dart:convert';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -36,6 +37,7 @@ class _CameraScreenState extends State<CameraScreen> {
   late Future<List<Hold>> _holdInfo;
   late List<CameraDescription> _cameras;
   XFile? file;
+  bool _buttonCheck = false;
   
   @override
   void initState(){
@@ -175,6 +177,33 @@ class _CameraScreenState extends State<CameraScreen> {
                   child: Text("재촬영"),
                 ),
               ),
+              Container(
+                alignment: Alignment(0.9, 0.9),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    surfaceTintColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    )
+                  ),
+                  onPressed: (){
+                    setState(() {
+                      if(_buttonCheck){
+                        print("영상 촬영 시작");
+                      }
+                      else{
+                        Fluttertoast.showToast(
+                          msg: "홀드를 선택해주세요.",
+                          gravity: ToastGravity.BOTTOM,
+                          backgroundColor: Color.fromRGBO(0, 0, 0, 0.8),
+                        );
+                      }
+                    });
+                  },
+                  child: Text("확정"),
+                ),
+              ),
               FutureBuilder<List<Hold>>(
                 future: _holdInfo,
                 builder: ((context, snapshot){
@@ -190,27 +219,50 @@ class _CameraScreenState extends State<CameraScreen> {
                       children: [
                         for(Hold t in buttonHold)
                           Positioned(
-                            // top: t.y2,
-                            // left: t.x1,
-                            // bottom: t.y1,
-                            // right: t.x2,
-                            top: 50,
-                            left: 40,
-                            width: 100,
-                            height: 100,
+                            top: t.y2,
+                            left: t.x1,
+                            bottom: t.y1,
+                            right: t.x2,
                             child: SizedBox(
                               child: OutlinedButton(
                                 onPressed: (){
-                                  print("${t}버튼 실행");
+                                  setState(() {
+                                    buttonHold.forEach((element) { 
+                                    if(!element.check){
+                                      print("실행됨");
+                                      print(element.check);
+                                      element.check = true;
+                                    }
+                                    });
+                                    t.check = false;
+                                    _buttonCheck = true;
+                                  });
                                 },
                                 child: Text(""),
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(color: colorMap[t.color], width: 2.0),
-                                ),
+                                style: ButtonStyle(
+                                  side: MaterialStateProperty.resolveWith<BorderSide>(
+                                    (states){
+                                      return BorderSide(
+                                        color: colorMap[t.color],
+                                        width: 2.0,
+                                      );
+                                    }
+                                  ),
+                                  backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                    (states) {
+                                      if(t.check){
+                                        return Colors.transparent;
+                                      }
+                                      else{
+                                        return Color.fromRGBO(0, 0, 0, 0.494);
+                                      }
+                                    }
+                                  )
+                                )
                               ),
-                            )
-                          )
-                      ],
+                            ),
+                          ),
+                      ]
                     );
                   }
                 }

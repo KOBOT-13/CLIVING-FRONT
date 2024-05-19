@@ -6,6 +6,7 @@ class Hold{
   final double y1;
   final double y2;
   final int frameId;
+  bool check;
 
   Hold({
     required this.color,
@@ -15,6 +16,7 @@ class Hold{
     required this.y1,
     required this.y2,
     required this.frameId,
+    this.check = true,
   });
 
   factory Hold.fromJson(Map<String, dynamic> json){
