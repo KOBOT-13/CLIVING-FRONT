@@ -55,24 +55,24 @@ class PieChartWidgetState extends State<PieChartWidget> {
       const shadows = [Shadow(color: Colors.black, blurRadius: 2)];
       switch (dataType) {
         case 1:
-          return _getSectionData(
-              i, fontSize, radius, shadows, [40, 30, 20, 10]);
+          return _getSectionData(i, fontSize, radius, shadows, [40, 30, 20, 10],
+              [Colors.red, Colors.blue, Colors.green, Colors.orange]);
         case 2:
-          return _getSectionData(
-              i, fontSize, radius, shadows, [50, 25, 15, 10]);
+          return _getSectionData(i, fontSize, radius, shadows, [50, 25, 15, 10],
+              [Colors.red, Colors.blue, Colors.green, Colors.orange]);
         default:
-          return _getSectionData(
-              i, fontSize, radius, shadows, [25, 25, 25, 25]);
+          return _getSectionData(i, fontSize, radius, shadows, [25, 25, 25, 25],
+              [Colors.red, Colors.blue, Colors.green, Colors.orange]);
       }
     });
   }
 
   PieChartSectionData _getSectionData(int i, double fontSize, double radius,
-      List<Shadow> shadows, List<double> values) {
+      List<Shadow> shadows, List<double> values, List<Color> colors) {
     switch (i) {
       case 0:
         return PieChartSectionData(
-          color: AppColors.contentColorBlue,
+          color: colors[0],
           value: values[0],
           title: '',
           radius: radius,
@@ -85,7 +85,7 @@ class PieChartWidgetState extends State<PieChartWidget> {
         );
       case 1:
         return PieChartSectionData(
-          color: AppColors.contentColorYellow,
+          color: colors[1],
           value: values[1],
           title: '',
           radius: radius,
@@ -98,7 +98,7 @@ class PieChartWidgetState extends State<PieChartWidget> {
         );
       case 2:
         return PieChartSectionData(
-          color: AppColors.contentColorPurple,
+          color: colors[2],
           value: values[2],
           title: '',
           radius: radius,
@@ -111,7 +111,7 @@ class PieChartWidgetState extends State<PieChartWidget> {
         );
       case 3:
         return PieChartSectionData(
-          color: AppColors.contentColorGreen,
+          color: colors[3],
           value: values[3],
           title: '',
           radius: radius,
@@ -151,92 +151,3 @@ class AppColors {
   static const Color contentColorRed = Color(0xFFE80054);
   static const Color contentColorCyan = Color(0xFF50E4FF);
 }
-
-
-
-// List<PieChartSectionData> generatePieChartData(int dataType) {
-//   // Generate different data based on dataType
-//   switch (dataType) {
-//     case 1:
-//       return [
-//         PieChartSectionData(
-//           color: AppColors.contentColorBlue,
-//           value: 40,
-//           title: '40%',
-//           radius: 80,
-//         ),
-//         PieChartSectionData(
-//           color: AppColors.contentColorYellow,
-//           value: 30,
-//           title: '30%',
-//           radius: 70,
-//         ),
-//         PieChartSectionData(
-//           color: AppColors.contentColorPink,
-//           value: 20,
-//           title: '20%',
-//           radius: 60,
-//         ),
-//         PieChartSectionData(
-//           color: AppColors.contentColorGreen,
-//           value: 10,
-//           title: '10%',
-//           radius: 50,
-//         ),
-//       ];
-//     case 2:
-//       return [
-//         PieChartSectionData(
-//           color: AppColors.contentColorOrange,
-//           value: 50,
-//           title: '50%',
-//           radius: 90,
-//         ),
-//         PieChartSectionData(
-//           color: AppColors.contentColorPurple,
-//           value: 25,
-//           title: '25%',
-//           radius: 80,
-//         ),
-//         PieChartSectionData(
-//           color: AppColors.contentColorRed,
-//           value: 15,
-//           title: '15%',
-//           radius: 70,
-//         ),
-//         PieChartSectionData(
-//           color: AppColors.contentColorCyan,
-//           value: 10,
-//           title: '10%',
-//           radius: 60,
-//         ),
-//       ];
-//     default:
-//       return [
-//         PieChartSectionData(
-//           color: AppColors.contentColorBlue,
-//           value: 25,
-//           title: '25%',
-//           radius: 80,
-//         ),
-//         PieChartSectionData(
-//           color: AppColors.contentColorYellow,
-//           value: 25,
-//           title: '25%',
-//           radius: 70,
-//         ),
-//         PieChartSectionData(
-//           color: AppColors.contentColorPink,
-//           value: 25,
-//           title: '25%',
-//           radius: 60,
-//         ),
-//         PieChartSectionData(
-//           color: AppColors.contentColorGreen,
-//           value: 25,
-//           title: '25%',
-//           radius: 50,
-//         ),
-//       ];
-//   }
-// }
