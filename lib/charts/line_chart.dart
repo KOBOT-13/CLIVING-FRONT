@@ -12,8 +12,8 @@ class LineChartWidget extends StatelessWidget {
 
 LineChartData mainData() {
   List<Color> gradientColors = [
-    Colors.grey,
-    Colors.blue,
+    Colors.orange,
+    Colors.pink,
   ];
 
   return LineChartData(
