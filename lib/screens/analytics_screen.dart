@@ -1,6 +1,7 @@
 import 'package:cliving_front/charts/line_chart.dart';
 import 'package:cliving_front/charts/pie_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -18,20 +19,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       padding: const EdgeInsets.all(8.0),
       child: LineChart(mainData()),
     )),
-    //PieChartSectionData()
-    // const SizedBox(
-    //   height: 100,
-    //   width: 100,
-    //   child: Column(children: [
-    //     Center(
-    //       child: Text(
-    //         '이번달 클라이밍 시간',
-    //         style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-    //       ),
-    //     ),
-    //     Text('12:33'),
-    //   ]),
-    // ),
     const SizedBox(
       height: 100,
       width: 100,
@@ -54,7 +41,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         ),
       ),
     ),
-
     const PieChartWidget(dataType: 1),
     const PieChartWidget(dataType: 2),
     const SizedBox(
@@ -79,24 +65,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         ),
       ),
     ),
-    // const SizedBox(
-    //   height: 100,
-    //   width: 100,
-    //   //color: Colors.blue,
-    //   child: Center(),
-    // ),
-    // Container(
-    //   height: 100,
-    //   width: 100,
-    //   color: Colors.blue,
-    //   child: const Center(child: Text('4')),
-    // ),
-    // Container(
-    //   height: 100,
-    //   width: 100,
-    //   color: Colors.blue,
-    //   child: const Center(child: Text('5')),
-    // ),
   ];
 
   @override
@@ -110,6 +78,34 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
         child: Column(
           children: [
+            const SizedBox(
+              height: 10,
+            ),
+            const Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.ideographic,
+              children: [
+                Text(
+                  '혜진', // 여기에 원하는 이름을 넣어주세요.
+                  style: TextStyle(
+                    fontSize: 40, // 이름을 크게 표시할 폰트 크기입니다.
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  '님의 클라이밍은요', // 나머지 부분은 여기에 작성하세요.
+                  style: TextStyle(
+                    fontSize: 25, // 나머지 부분의 폰트 크기입니다.
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 5,
+            ),
             Expanded(
               child: StaggeredGrid.count(
                 crossAxisCount: 4,
