@@ -1,4 +1,4 @@
-import 'package:cliving_front/screens/analytics-screen.dart';
+import 'package:cliving_front/screens/analytics_screen.dart';
 import 'package:cliving_front/screens/calendar_screen.dart';
 
 import 'package:flutter/material.dart';
