@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:cross_file_image/cross_file_image.dart';
 import 'dart:ui';
+import 'package:cliving_front/models/TestHold.dart';
+import 'package:cliving_front/models/Hold.dart';
+import 'package:http/http.dart';
+import 'dart:convert';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -12,11 +17,28 @@ class CameraScreen extends StatefulWidget {
 }
 
 class _CameraScreenState extends State<CameraScreen> {
+  Map colorMap = {
+    'orange' : Colors.orange,
+    'yellow' : Colors.yellow,
+    'green' : Colors.green,
+    'blue' : Colors.blue,
+    'navy' : Color.fromRGBO(0, 0, 55, 1),
+    'red' : Colors.red,
+    'pink' : Colors.pink,
+    'purple' : Colors.purple,
+    'grey' : Colors.grey,
+    'brown' : Colors.brown,
+    'black' : Colors.black,
+    'white' : Colors.white,
+  };
+
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
+  late Future<List<Hold>> _holdInfo;
   late List<CameraDescription> _cameras;
   XFile? file;
-
+  bool _buttonCheck = false;
+  
   @override
   void initState(){
     super.initState();
@@ -27,6 +49,18 @@ class _CameraScreenState extends State<CameraScreen> {
     _cameras = await availableCameras();
     setCamera();
     setState(() {});
+  }
+
+  void reHolds(){
+    setState(() {
+      _holdInfo = _callAPI();
+    });
+  }
+  
+  Future<List<Hold>> _callAPI() async {
+    // API 호출 코드 작성
+    Future<List<Hold>> tmp = Future.value(jsonString);
+    return tmp;
   }
 
   void setCamera(){
@@ -98,6 +132,7 @@ class _CameraScreenState extends State<CameraScreen> {
             child: GestureDetector(
               onTap: (){
                 _takePicture();
+                reHolds();
               },
               child: const Icon(
                 Icons.camera,
@@ -141,10 +176,100 @@ class _CameraScreenState extends State<CameraScreen> {
                   },
                   child: Text("재촬영"),
                 ),
-              )
-
-            ],
-          )
+              ),
+              Container(
+                alignment: Alignment(0.9, 0.9),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    surfaceTintColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    )
+                  ),
+                  onPressed: (){
+                    setState(() {
+                      if(_buttonCheck){
+                        print("영상 촬영 시작");
+                      }
+                      else{
+                        Fluttertoast.showToast(
+                          msg: "홀드를 선택해주세요.",
+                          gravity: ToastGravity.BOTTOM,
+                          backgroundColor: Color.fromRGBO(0, 0, 0, 0.8),
+                        );
+                      }
+                    });
+                  },
+                  child: Text("확정"),
+                ),
+              ),
+              FutureBuilder<List<Hold>>(
+                future: _holdInfo,
+                builder: ((context, snapshot){
+                  if(snapshot.connectionState == ConnectionState.waiting){
+                    return SizedBox.shrink();
+                  }
+                  else if(snapshot.hasError){
+                    return Center(child: Text('Error'));
+                  }
+                  else{
+                    List<Hold> buttonHold = snapshot.data!;
+                    return Stack(
+                      children: [
+                        for(Hold t in buttonHold)
+                          Positioned(
+                            top: t.y2,
+                            left: t.x1,
+                            bottom: t.y1,
+                            right: t.x2,
+                            child: SizedBox(
+                              child: OutlinedButton(
+                                onPressed: (){
+                                  setState(() {
+                                    buttonHold.forEach((element) { 
+                                    if(!element.check){
+                                      print("실행됨");
+                                      print(element.check);
+                                      element.check = true;
+                                    }
+                                    });
+                                    t.check = false;
+                                    _buttonCheck = true;
+                                  });
+                                },
+                                child: Text(""),
+                                style: ButtonStyle(
+                                  side: MaterialStateProperty.resolveWith<BorderSide>(
+                                    (states){
+                                      return BorderSide(
+                                        color: colorMap[t.color],
+                                        width: 2.0,
+                                      );
+                                    }
+                                  ),
+                                  backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                    (states) {
+                                      if(t.check){
+                                        return Colors.transparent;
+                                      }
+                                      else{
+                                        return Color.fromRGBO(0, 0, 0, 0.494);
+                                      }
+                                    }
+                                  )
+                                )
+                              ),
+                            ),
+                          ),
+                      ]
+                    );
+                  }
+                }
+              ),
+            ),
+          ]
+        )
       ],
     );
   }
