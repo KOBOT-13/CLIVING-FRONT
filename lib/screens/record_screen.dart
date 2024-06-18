@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cliving_front/screens/event.dart';
+import 'package:cliving_front/models/page.dart';
 import 'package:cliving_front/screens/video_player_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -24,7 +25,7 @@ class _RecordScreenState extends State<RecordScreen> {
   late Future<Map<String, dynamic>> futurePage;
   late TextEditingController placeController;
   bool isEditing = false;
-  int pageId = 1;
+  String pageId = '240616';
 
   List<String> videoThumbnailUrls = [
     'assets/images/climbing.jpeg',
@@ -140,8 +141,8 @@ class _RecordScreenState extends State<RecordScreen> {
                     TextEditingController(text: climbingCenterName);
                 List<String> boulderingClearColor =
                     List<String>.from(pageData['bouldering_clear_color']);
-                String startTime = pageData['start_time'];
-                String endTime = pageData['end_time'];
+                String startTime = pageData['today_start_time'];
+                String endTime = pageData['today_end_time'];
                 DateTime startDateTime =
                     DateTime.parse('2024-04-19 $startTime');
                 DateTime endDateTime = DateTime.parse('2024-04-19 $endTime');

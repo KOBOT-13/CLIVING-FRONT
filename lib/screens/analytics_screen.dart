@@ -43,7 +43,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     if (response.statusCode == 200) {
       Map<String, dynamic> readMonthlyTime =
           json.decode(utf8.decode(response.bodyBytes));
-      print(readMonthlyTime);
       return readMonthlyTime['total_climbing_time_hhmm'];
     } else {
       throw Exception('Failed to read Monthly Time.');
