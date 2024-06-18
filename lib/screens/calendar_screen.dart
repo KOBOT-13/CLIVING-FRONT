@@ -64,16 +64,39 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Color getColorFromString(String colorString) {
-    switch (colorString) {
-      case 'red':
-        return Colors.red;
-      case 'blue':
-        return Colors.blue;
+    switch (colorString.toLowerCase()) {
+      case 'orange':
+        return Colors.orange;
+      case 'yellow':
+        return Colors.yellow;
       case 'green':
         return Colors.green;
-      default:
+      case 'blue':
+        return Colors.blue;
+      case 'navy':
+        return const Color.fromRGBO(0, 0, 55, 1);
+      case 'red':
+        return Colors.red;
+      case 'pink':
+        return Colors.pink;
+      case 'purple':
+        return Colors.purple;
+      case 'grey':
+        return Colors.grey;
+      case 'brown':
+        return Colors.brown;
+      case 'black':
         return Colors.black;
+      case 'white':
+        return Colors.white;
+      default:
+        return Colors.black; // 기본 값으로 'black'을 반환
     }
+  }
+
+  void _refreshCalendarScreen() async {
+    await _fetchAndSetEvents();
+    setState(() {});
   }
 
   @override
@@ -136,7 +159,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
                 onPageChanged: (focusedDay) {
                   _focusedDay = focusedDay;
-                  _fetchAndSetEvents(); // 페이지가 변경될 때마다 데이터를 다시 가져옴
+                  _refreshCalendarScreen(); // 페이지가 변경될 때마다 데이터를 다시 가져옴
                 },
               ),
             ),
@@ -175,13 +198,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: InkWell(
-                          onTap: () {
-                            Get.to(
+                          onTap: () async {
+                            dynamic result = await Get.to(
                               () => RecordScreen(
                                 selectedDay: _selectedDay,
                                 selectedEvent: value[index],
                               ),
                             );
+                            _refreshCalendarScreen();
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(20.0),
