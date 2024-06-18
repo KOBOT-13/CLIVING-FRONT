@@ -24,8 +24,10 @@ class RecordScreen extends StatefulWidget {
 class _RecordScreenState extends State<RecordScreen> {
   late Future<Map<String, dynamic>> futurePage;
   late TextEditingController placeController;
+  late DateTime _selectedDay;
   bool isEditing = false;
-  String pageId = '240616';
+
+  String pageId = '';
 
   List<String> videoThumbnailUrls = [
     'assets/images/climbing.jpeg',
@@ -52,6 +54,8 @@ class _RecordScreenState extends State<RecordScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedDay = widget.selectedDay;
+    pageId = _getPageId(_selectedDay);
     futurePage = _getPage();
   }
 
@@ -59,6 +63,14 @@ class _RecordScreenState extends State<RecordScreen> {
   void dispose() {
     placeController.dispose();
     super.dispose();
+  }
+
+  String _getPageId(DateTime date) {
+    final String year =
+        (date.year % 100).toString().padLeft(2, '0'); // 연도 두 자릿수
+    final String month = date.month.toString().padLeft(2, '0'); // 월 두 자릿수
+    final String day = date.day.toString().padLeft(2, '0'); // 일 두 자릿수
+    return '$year$month$day';
   }
 
   Future<Map<String, dynamic>> _getPage() async {
@@ -79,6 +91,38 @@ class _RecordScreenState extends State<RecordScreen> {
       return readPage;
     } else {
       throw Exception('Failed to read page.');
+    }
+  }
+
+  Future<void> _updatePlace(String newPlace) async {
+    String apiAddress = dotenv.env['API_ADDRESS']!;
+    final url = Uri.parse('$apiAddress/v1/page/$pageId/');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'climbing_center_name': newPlace,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // Success message or further handling if needed
+        print('Place updated successfully');
+        setState(() {
+          futurePage = _getPage();
+          placeController.text = newPlace;
+          isEditing = false;
+        });
+      } else {
+        throw Exception('Failed to update place');
+      }
+    } catch (e) {
+      print('Error updating place: $e');
+      // Handle error as needed
     }
   }
 
@@ -197,6 +241,9 @@ class _RecordScreenState extends State<RecordScreen> {
                                     : const Icon(Icons.edit),
                                 onPressed: () {
                                   setState(() {
+                                    if (isEditing) {
+                                      _updatePlace(placeController.text);
+                                    }
                                     isEditing = !isEditing;
                                   });
                                 },
