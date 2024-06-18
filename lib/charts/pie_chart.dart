@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PieChartWidget extends StatefulWidget {
   final int dataType;
@@ -12,118 +15,148 @@ class PieChartWidget extends StatefulWidget {
 
 class PieChartWidgetState extends State<PieChartWidget> {
   int touchedIndex = -1;
+  late Future<List<dynamic>> colorData;
+
+  @override
+  void initState() {
+    super.initState();
+    colorData = _getColorData(widget.dataType);
+  }
+
+  Future<List<dynamic>> _getColorData(int dataType) {
+    if (dataType == 1) {
+      return _getMonthlyColor();
+    } else {
+      return _getAnnualColor();
+    }
+  }
+
+  Future<List<dynamic>> _getMonthlyColor() async {
+    String apiAddress = dotenv.get("API_ADDRESS");
+    final url = Uri.parse('$apiAddress/v1/statistics/monthly/color-tries/');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> readMonthlyColor =
+          json.decode(utf8.decode(response.bodyBytes));
+      return readMonthlyColor;
+    } else {
+      throw Exception('Failed to read Monthly Color.');
+    }
+  }
+
+  Future<List<dynamic>> _getAnnualColor() async {
+    String apiAddress = dotenv.get("API_ADDRESS");
+    final url = Uri.parse('$apiAddress/v1/statistics/annual/color-tries/');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> readAnnualColor =
+          json.decode(utf8.decode(response.bodyBytes));
+      return readAnnualColor;
+    } else {
+      throw Exception('Failed to read Annual Color.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
         Expanded(
-          child: PieChart(
-            PieChartData(
-              pieTouchData: PieTouchData(
-                touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                  setState(() {
-                    if (!event.isInterestedForInteractions ||
-                        pieTouchResponse == null ||
-                        pieTouchResponse.touchedSection == null) {
-                      touchedIndex = -1;
-                      return;
-                    }
-                    touchedIndex =
-                        pieTouchResponse.touchedSection!.touchedSectionIndex;
-                  });
-                },
-              ),
-              startDegreeOffset: 180,
-              borderData: FlBorderData(
-                show: false,
-              ),
-              sectionsSpace: 2,
-              centerSpaceRadius: 0,
-              sections: generatePieChartData(widget.dataType),
-            ),
+          child: FutureBuilder<List<dynamic>>(
+            future: colorData,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return const Center(child: Text('Error loading data'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No data available'));
+              } else {
+                return PieChart(
+                  PieChartData(
+                    pieTouchData: PieTouchData(
+                      touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                        setState(() {
+                          if (!event.isInterestedForInteractions ||
+                              pieTouchResponse == null ||
+                              pieTouchResponse.touchedSection == null) {
+                            touchedIndex = -1;
+                            return;
+                          }
+                          touchedIndex = pieTouchResponse
+                              .touchedSection!.touchedSectionIndex;
+                        });
+                      },
+                    ),
+                    startDegreeOffset: 180,
+                    borderData: FlBorderData(
+                      show: false,
+                    ),
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 0,
+                    sections: generatePieChartData(snapshot.data!),
+                  ),
+                );
+              }
+            },
           ),
         ),
       ],
     );
   }
 
-  List<PieChartSectionData> generatePieChartData(int dataType) {
-    return List.generate(4, (i) {
+  List<PieChartSectionData> generatePieChartData(List<dynamic> data) {
+    List<PieChartSectionData> sections = [];
+    for (int i = 0; i < data.length; i++) {
       final isTouched = i == touchedIndex;
       final fontSize = isTouched ? 25.0 : 16.0;
       final radius = isTouched ? 80.0 : 70.0;
       const shadows = [Shadow(color: Colors.black, blurRadius: 2)];
-      switch (dataType) {
-        case 1:
-          return _getSectionData(i, fontSize, radius, shadows, [40, 30, 20, 10],
-              [Colors.red, Colors.blue, Colors.green, Colors.orange]);
-        case 2:
-          return _getSectionData(i, fontSize, radius, shadows, [50, 25, 15, 10],
-              [Colors.red, Colors.blue, Colors.green, Colors.orange]);
-        default:
-          return _getSectionData(i, fontSize, radius, shadows, [25, 25, 25, 25],
-              [Colors.red, Colors.blue, Colors.green, Colors.orange]);
-      }
-    });
+      sections.add(
+        PieChartSectionData(
+          color: _getColorFromName(data[i]['color']),
+          value: data[i]['tries'].toDouble(),
+          title: data[i]['tries'].toString(),
+          radius: radius,
+          titleStyle: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+            color: AppColors.mainTextColor1,
+            shadows: shadows,
+          ),
+        ),
+      );
+    }
+    return sections;
   }
 
-  PieChartSectionData _getSectionData(int i, double fontSize, double radius,
-      List<Shadow> shadows, List<double> values, List<Color> colors) {
-    switch (i) {
-      case 0:
-        return PieChartSectionData(
-          color: colors[0],
-          value: values[0],
-          title: '',
-          radius: radius,
-          titleStyle: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
-            color: AppColors.mainTextColor1,
-            shadows: shadows,
-          ),
-        );
-      case 1:
-        return PieChartSectionData(
-          color: colors[1],
-          value: values[1],
-          title: '',
-          radius: radius,
-          titleStyle: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
-            color: AppColors.mainTextColor1,
-            shadows: shadows,
-          ),
-        );
-      case 2:
-        return PieChartSectionData(
-          color: colors[2],
-          value: values[2],
-          title: '',
-          radius: radius,
-          titleStyle: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
-            color: AppColors.mainTextColor1,
-            shadows: shadows,
-          ),
-        );
-      case 3:
-        return PieChartSectionData(
-          color: colors[3],
-          value: values[3],
-          title: '',
-          radius: radius,
-          titleStyle: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
-            color: AppColors.mainTextColor1,
-            shadows: shadows,
-          ),
-        );
+  Color _getColorFromName(String colorName) {
+    switch (colorName) {
+      case 'red':
+        return Colors.red;
+      case 'blue':
+        return Colors.blue;
+      case 'green':
+        return Colors.green;
+      case 'orange':
+        return Colors.orange;
+      // Add more colors as needed
       default:
-        throw Error();
+        return Colors.grey;
     }
   }
 }
