@@ -40,7 +40,6 @@ class _LineChartWidgetState extends State<LineChartWidget> {
             json.decode(utf8.decode(response.bodyBytes));
         double totalClimbingTime =
             readMonthlyTime['total_climbing_time'] / 3600; // change sec to hour
-        print(totalClimbingTime);
         spots.add(FlSpot((month - 1).toDouble(), totalClimbingTime));
       } else {
         throw Exception('Failed to read Monthly Time.');
