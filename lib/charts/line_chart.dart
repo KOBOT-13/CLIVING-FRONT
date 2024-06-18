@@ -76,9 +76,23 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     ];
 
     return LineChartData(
-      lineTouchData: const LineTouchData(
-        enabled: true,
-      ),
+      lineTouchData: LineTouchData(
+          enabled: true,
+          touchTooltipData: LineTouchTooltipData(
+              getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+            return touchedBarSpots.map((barSpot) {
+              final flSpot = barSpot;
+              final double hours = flSpot.y;
+              final int totalMinutes = (hours * 60).toInt();
+              final int hrs = totalMinutes ~/ 60;
+              final int mins = totalMinutes % 60;
+
+              return LineTooltipItem(
+                '${hrs > 0 ? '$hrs시간 ' : ''}$mins분',
+                const TextStyle(color: Colors.white),
+              );
+            }).toList();
+          })),
       gridData: FlGridData(
         show: true,
         drawVerticalLine: true,
