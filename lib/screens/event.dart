@@ -23,24 +23,8 @@ class Event {
     return 'Event(place: $place, color: $color, start: $start, finish: $finish)';
   }
 
-  String getPlace() {
-    return place;
-  }
-
   List<String> getColor() {
     return color;
-  }
-
-  int getColorLength() {
-    return color.length;
-  }
-
-  DateTime getStart() {
-    return start;
-  }
-
-  DateTime getFinish() {
-    return finish;
   }
 
   factory Event.fromJson(Map<String, dynamic> json) {
