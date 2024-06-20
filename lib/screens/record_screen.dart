@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:cliving_front/screens/event.dart';
-import 'package:cliving_front/models/page.dart';
 import 'package:cliving_front/screens/video_player_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -87,7 +86,6 @@ class _RecordScreenState extends State<RecordScreen> {
     if (response.statusCode == 200) {
       Map<String, dynamic> readPage =
           json.decode(utf8.decode(response.bodyBytes));
-      print(readPage);
       return readPage;
     } else {
       throw Exception('Failed to read page.');
