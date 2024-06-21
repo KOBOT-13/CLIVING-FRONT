@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class EntryScreen extends StatefulWidget {
   const EntryScreen({super.key});
@@ -33,10 +34,10 @@ class _EntryScreenState extends State<EntryScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Image.asset(
-              'assets/images/entry.png', // 이미지 경로를 'assets/your_image.png'로 교체
-              width: 280, // 이미지 너비
-              height: 280, // 이미지 높이
-            ),
+              'assets/images/entry.png',
+              width: 330,
+              height: 330,
+            )
           ],
         ),
       ),
