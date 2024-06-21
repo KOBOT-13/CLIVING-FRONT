@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:table_calendar/table_calendar.dart';
-import 'dart:collection';
 import 'package:http/http.dart' as http;
 
 class Event {
@@ -23,24 +21,8 @@ class Event {
     return 'Event(place: $place, color: $color, start: $start, finish: $finish)';
   }
 
-  String getPlace() {
-    return place;
-  }
-
   List<String> getColor() {
     return color;
-  }
-
-  int getColorLength() {
-    return color.length;
-  }
-
-  DateTime getStart() {
-    return start;
-  }
-
-  DateTime getFinish() {
-    return finish;
   }
 
   factory Event.fromJson(Map<String, dynamic> json) {

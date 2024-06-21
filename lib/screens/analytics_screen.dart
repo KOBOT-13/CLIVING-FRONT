@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
 
 class AnalyticsScreen extends StatefulWidget {
@@ -19,14 +18,12 @@ class AnalyticsScreen extends StatefulWidget {
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
   late Future<String> annualTime;
   late Future<String> monthlyTime;
-  late Future<String> specificMonthlyTime;
 
   @override
   void initState() {
     super.initState();
     annualTime = _getAnnualTime();
     monthlyTime = _getMonthlyTime();
-    specificMonthlyTime = _getSpecificMonthlyTime();
   }
 
   Future<String> _getMonthlyTime() async {
@@ -52,29 +49,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Future<String> _getAnnualTime() async {
     String apiAddress = dotenv.get("API_ADDRESS");
     final url = Uri.parse('$apiAddress/v1/statistics/annual/climbing-time/');
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      Map<String, dynamic> readAnnualTime =
-          json.decode(utf8.decode(response.bodyBytes));
-      return readAnnualTime['total_climbing_time_hhmm'];
-    } else {
-      throw Exception('Failed to read Annual Time.');
-    }
-  }
-
-  Future<String> _getSpecificMonthlyTime() async {
-    String apiAddress = dotenv.get("API_ADDRESS");
-    int year = 2024;
-    int month = 3;
-    final url =
-        Uri.parse('$apiAddress/v1/statistics/climbing-time/$year/$month');
 
     final response = await http.get(
       url,

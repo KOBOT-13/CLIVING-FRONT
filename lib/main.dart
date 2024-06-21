@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
-import 'screens/main_screen.dart';
+import 'screens/entry_screen.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
@@ -15,8 +15,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'Pretendard'),
-      home: const MainScreen(),
+      theme: ThemeData(
+          fontFamily: 'Pretendard', scaffoldBackgroundColor: Colors.white),
+      home: const EntryScreen(),
     );
   }
 }

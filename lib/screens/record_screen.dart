@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:cliving_front/screens/event.dart';
-import 'package:cliving_front/models/page.dart';
 import 'package:cliving_front/screens/video_player_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -23,33 +22,13 @@ class RecordScreen extends StatefulWidget {
 
 class _RecordScreenState extends State<RecordScreen> {
   late Future<Map<String, dynamic>> futurePage;
+  late Future<List<String>> videoUrls;
+  late Future<List<String>> thumbnailUrls;
   late TextEditingController placeController;
   late DateTime _selectedDay;
   bool isEditing = false;
 
   String pageId = '';
-
-  List<String> videoThumbnailUrls = [
-    'assets/images/climbing.jpeg',
-    'assets/images/climbing.jpeg',
-    'assets/images/climbing.jpeg',
-    'assets/images/climbing.jpeg',
-    'assets/images/climbing.jpeg',
-    'assets/images/climbing.jpeg',
-    'assets/images/climbing.jpeg',
-    'assets/images/climbing.jpeg',
-  ];
-
-  List<String> videoUrls = [
-    'assets/videos/CallbackLogo.mp4',
-    'assets/videos/CallbackLogo.mp4',
-    'assets/videos/CallbackLogo.mp4',
-    'assets/videos/CallbackLogo.mp4',
-    'assets/videos/CallbackLogo.mp4',
-    'assets/videos/CallbackLogo.mp4',
-    'assets/videos/CallbackLogo.mp4',
-    'assets/videos/CallbackLogo.mp4',
-  ];
 
   @override
   void initState() {
@@ -57,6 +36,8 @@ class _RecordScreenState extends State<RecordScreen> {
     _selectedDay = widget.selectedDay;
     pageId = _getPageId(_selectedDay);
     futurePage = _getPage();
+    thumbnailUrls = getThumbnailUrls();
+    videoUrls = getVideoUrls();
   }
 
   @override
@@ -87,7 +68,6 @@ class _RecordScreenState extends State<RecordScreen> {
     if (response.statusCode == 200) {
       Map<String, dynamic> readPage =
           json.decode(utf8.decode(response.bodyBytes));
-      print(readPage);
       return readPage;
     } else {
       throw Exception('Failed to read page.');
@@ -123,6 +103,64 @@ class _RecordScreenState extends State<RecordScreen> {
     } catch (e) {
       print('Error updating place: $e');
       // Handle error as needed
+    }
+  }
+
+  Future<List<String>> getVideoUrls() async {
+    String apiAddress = dotenv.env['API_ADDRESS']!;
+    final url = Uri.parse('$apiAddress/v1/videoclips/by_page/paths/$pageId/');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> readVideoUrls =
+          json.decode(utf8.decode(response.bodyBytes));
+      print(readVideoUrls);
+      return readVideoUrls
+          .map((video) => '$apiAddress/$video')
+          .toList()
+          .cast<String>();
+    } else {
+      throw Exception('Failed to load video');
+    }
+  }
+
+  Future<List<String>> getThumbnailUrls() async {
+    String apiAddress = dotenv.env['API_ADDRESS']!;
+    final url =
+        Uri.parse('$apiAddress/v1/videoclips/by_page/thumbnails/$pageId/');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> readThumbnailUrls =
+          json.decode(utf8.decode(response.bodyBytes));
+      return readThumbnailUrls
+          .map((thumbnail) => '$apiAddress/$thumbnail')
+          .toList()
+          .cast<String>();
+    } else {
+      throw Exception('Failed to load thumbnails');
+    }
+  }
+
+  Future<int> getThumbnailLength() async {
+    try {
+      List<String> thumbnails = await getThumbnailUrls();
+      return thumbnails.length;
+    } catch (e) {
+      print('Error counting thumbnails: $e');
+      return 0;
     }
   }
 
@@ -337,31 +375,53 @@ class _RecordScreenState extends State<RecordScreen> {
                           ),
                         ),
                         Expanded(
-                          child: GridView.builder(
-                            padding: const EdgeInsets.all(10),
-                            shrinkWrap: true,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3, // 한 행에 보여질 동영상 수
-                              crossAxisSpacing: 10, // 동영상 간 가로 간격
-                              mainAxisSpacing: 10, // 동영상 간 세로 간격
-                            ),
-                            itemCount: videoThumbnailUrls.length,
-                            itemBuilder: (context, index) {
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => VideoPlayerScreen(
-                                            videoUrl: videoUrls[index])),
-                                  );
-                                },
-                                child: Image.asset(
-                                  videoThumbnailUrls[index],
-                                  fit: BoxFit.cover,
-                                ),
-                              );
+                          child: FutureBuilder<List<List<String>>>(
+                            future: Future.wait([thumbnailUrls, videoUrls]),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              } else if (snapshot.hasError) {
+                                return const Center(
+                                    child: Text('Failed to load videos'));
+                              } else if (!snapshot.hasData) {
+                                return const Center(
+                                    child: Text('No videos available'));
+                              } else {
+                                List<String> thumbnails = snapshot.data![0];
+                                List<String> videos = snapshot.data![1];
+
+                                return GridView.builder(
+                                  padding: const EdgeInsets.all(10),
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3, // 한 행에 보여질 동영상 수
+                                    crossAxisSpacing: 10, // 동영상 간 가로 간격
+                                    mainAxisSpacing: 10, // 동영상 간 세로 간격
+                                  ),
+                                  itemCount: thumbnails.length,
+                                  itemBuilder: (context, index) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                VideoPlayerScreen(
+                                              videoUrl: videos[index],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Image.network(
+                                        thumbnails[index],
+                                        fit: BoxFit.cover,
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
                             },
                           ),
                         ),
