@@ -25,6 +25,8 @@ class _RecordScreenState extends State<RecordScreen> {
   late Future<Map<String, dynamic>> futurePage;
   late Future<List<String>> videoUrls;
   late Future<List<String>> thumbnailUrls;
+  late Future<List<String>> colorsList;
+  late Future<List<String>> typesList;
   late TextEditingController placeController;
   late DateTime _selectedDay;
   bool isEditing = false;
@@ -39,6 +41,8 @@ class _RecordScreenState extends State<RecordScreen> {
     futurePage = _getPage();
     thumbnailUrls = getThumbnailUrls();
     videoUrls = getVideoUrls();
+    colorsList = getColorsList();
+    typesList = getTypesList();
   }
 
   @override
@@ -121,7 +125,7 @@ class _RecordScreenState extends State<RecordScreen> {
     if (response.statusCode == 200) {
       List<dynamic> readVideoUrls =
           json.decode(utf8.decode(response.bodyBytes));
-      print(readVideoUrls);
+      print('readVideoUrls: $readVideoUrls');
       return readVideoUrls
           .map((video) => '$apiAddress/$video')
           .toList()
@@ -146,12 +150,57 @@ class _RecordScreenState extends State<RecordScreen> {
     if (response.statusCode == 200) {
       List<dynamic> readThumbnailUrls =
           json.decode(utf8.decode(response.bodyBytes));
+      print('readThumbnailUrls: $readThumbnailUrls');
       return readThumbnailUrls
           .map((thumbnail) => '$apiAddress/$thumbnail')
           .toList()
           .cast<String>();
     } else {
       throw Exception('Failed to load thumbnails');
+    }
+  }
+
+  Future<List<String>> getColorsList() async {
+    String apiAddress = dotenv.env['API_ADDRESS']!;
+    final url = Uri.parse('$apiAddress/v1/videoclips/by_page/colors/$pageId/');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> readColorsList =
+          json.decode(utf8.decode(response.bodyBytes));
+      print('readColorsList: $readColorsList');
+      return readColorsList.toList().cast<String>();
+    } else {
+      throw Exception('Failed to load colors');
+    }
+  }
+
+  Future<List<String>> getTypesList() async {
+    String apiAddress = dotenv.env['API_ADDRESS']!;
+    final url = Uri.parse('$apiAddress/v1/videoclips/by_page/types/$pageId/');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> readTypesList =
+          json.decode(utf8.decode(response.bodyBytes));
+      print('readTypesList: $readTypesList');
+      return readTypesList.map((type) => type.toString()).toList();
+
+      //readTypesList.toList().cast<String>();
+    } else {
+      throw Exception('Failed to load types');
     }
   }
 
@@ -185,6 +234,13 @@ class _RecordScreenState extends State<RecordScreen> {
       'black': Colors.black,
       'white': Colors.white,
     };
+
+    String getTitle(String type) {
+      if (type == '1') {
+        return '성공';
+      }
+      return '';
+    }
 
     return Scaffold(
         appBar: AppBar(
@@ -377,7 +433,12 @@ class _RecordScreenState extends State<RecordScreen> {
                         ),
                         Expanded(
                           child: FutureBuilder<List<List<String>>>(
-                            future: Future.wait([thumbnailUrls, videoUrls]),
+                            future: Future.wait([
+                              thumbnailUrls,
+                              videoUrls,
+                              colorsList,
+                              typesList
+                            ]),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
@@ -392,6 +453,8 @@ class _RecordScreenState extends State<RecordScreen> {
                               } else {
                                 List<String> thumbnails = snapshot.data![0];
                                 List<String> videos = snapshot.data![1];
+                                List<String> colors = snapshot.data![2];
+                                List<String> types = snapshot.data![3];
 
                                 return GridView.builder(
                                   padding: const EdgeInsets.all(10),
@@ -416,10 +479,11 @@ class _RecordScreenState extends State<RecordScreen> {
                                         );
                                       },
                                       child: Ribbon(
-                                        nearLength: 15,
-                                        farLength: 40,
-                                        title: '',
-                                        color: Colors.blue,
+                                        nearLength: 13,
+                                        farLength: 48,
+                                        title: getTitle(types[index]),
+                                        color: colorMap[colors[index]] ??
+                                            Colors.transparent,
                                         child: Image.network(
                                           thumbnails[index],
                                           fit: BoxFit.cover,
