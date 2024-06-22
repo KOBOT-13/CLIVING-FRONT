@@ -482,6 +482,9 @@ class _RecordScreenState extends State<RecordScreen> {
                                         nearLength: 13,
                                         farLength: 48,
                                         title: getTitle(types[index]),
+                                        titleStyle: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold),
                                         color: colorMap[colors[index]] ??
                                             Colors.transparent,
                                         child: Image.network(
