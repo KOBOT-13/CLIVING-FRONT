@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cliving_front/screens/event.dart';
 import 'package:cliving_front/screens/video_player_screen.dart';
+import 'package:ribbon_widget/ribbon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -414,9 +415,15 @@ class _RecordScreenState extends State<RecordScreen> {
                                           ),
                                         );
                                       },
-                                      child: Image.network(
-                                        thumbnails[index],
-                                        fit: BoxFit.cover,
+                                      child: Ribbon(
+                                        nearLength: 15,
+                                        farLength: 40,
+                                        title: '',
+                                        color: Colors.blue,
+                                        child: Image.network(
+                                          thumbnails[index],
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
                                     );
                                   },
