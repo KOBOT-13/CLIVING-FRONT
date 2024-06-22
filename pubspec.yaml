@@ -32,6 +32,7 @@ dependencies:
   fl_chart: ^0.68.0
   fluttertoast: ^8.2.5
   flutter_dotenv: ^5.1.0
+  ribbon_widget: ^1.0.5
 
 
   
