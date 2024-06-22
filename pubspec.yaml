@@ -29,7 +29,7 @@ dependencies:
   wakelock: ^0.6.2
   cross_file_image: ^1.1.0
   fluttertoast: ^8.2.5
-
+  flutter_dotenv: ^5.1.0
 
   
 dev_dependencies:
@@ -50,6 +50,7 @@ flutter:
   assets:
     - assets/images/
     - assets/videos/
+    - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
