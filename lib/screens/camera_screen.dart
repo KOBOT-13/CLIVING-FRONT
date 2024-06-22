@@ -39,8 +39,9 @@ class _CameraScreenState extends State<CameraScreen> {
   bool _buttonCheck = false;
   bool _recordingCheck = false;
   Future<Map<int, List<dynamic>>>? imageHoldInfos;
-  String apiAddress = dotenv.get("API_ADDRESS");
-  
+  int? key;
+  int? first_image_id;
+
   @override
   void initState(){
     super.initState();
@@ -58,7 +59,7 @@ class _CameraScreenState extends State<CameraScreen> {
     // await Future.delayed(Duration(seconds: 1));
     Map<int, List<dynamic>> tmp = {};
     for(var d in data){
-      tmp[d['object_index']] = [d['box'], d['confidence'], true];
+      tmp[d['index_number']] = [[d['x1'],d['y1'],d['x2'],d['y2']], true];
     }
     return tmp;
   }
@@ -94,6 +95,8 @@ class _CameraScreenState extends State<CameraScreen> {
       });
       // 사진 벡엔드에 보내는 코드
       try{
+        String apiAddress = dotenv.get("API_ADDRESS");
+        print(apiAddress);
         final request = http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/upload/image/"));
         request.files.add(await http.MultipartFile.fromPath('image', file!.path));
         var response = await request.send();
@@ -101,8 +104,9 @@ class _CameraScreenState extends State<CameraScreen> {
         var responseBody = await response.stream.bytesToString();
         var jsonResponse = jsonDecode(responseBody);
         setState(() {
-          imageHoldInfos = fetchData(jsonResponse["bbox"]);
+          imageHoldInfos = fetchData(jsonResponse["holds"]);
         });
+        first_image_id = jsonResponse["holds"][0]["first_image"];
       } catch (e) {
         print('Unexpected error: $e');
       }
@@ -118,6 +122,7 @@ class _CameraScreenState extends State<CameraScreen> {
     });
     // 영상 저장 API 실행
     try{
+      String apiAddress = dotenv.get("API_ADDRESS");
       final request = http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/video/"));
       request.files.add(await http.MultipartFile.fromPath('videofile', file.path));
       request.fields['video_color'] = "orange";
@@ -127,7 +132,21 @@ class _CameraScreenState extends State<CameraScreen> {
     } catch(e){
       print(e);
     }
+  }
 
+  Future<void> fetchTop() async{
+    String apiAddress = dotenv.get("API_ADDRESS");
+    final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/$key/');
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'is_top' : true,
+      })
+    );
+    print(response.statusCode);
   }
 
   @override
@@ -237,6 +256,7 @@ class _CameraScreenState extends State<CameraScreen> {
                               _controller!.startVideoRecording();
                               _recordingCheck = true;
                               file = null;
+                              fetchTop();
                             }
                           }
                           else{
@@ -270,22 +290,22 @@ class _CameraScreenState extends State<CameraScreen> {
                               return Stack(
                                 children: [
                                   for(var t in buttonHold.entries)
-                                    if(t.value[1] > 0.6)
                                     Positioned(
-                                      top: t.value[0][0][0] / 2376 * constraints.maxWidth,
-                                      left: t.value[0][0][1] / 4224 * constraints.maxHeight,
+                                      top: t.value[0][0] / 2376 * constraints.maxWidth,
+                                      left: t.value[0][1] / 4224 * constraints.maxHeight,
                                       child: SizedBox(
-                                        width: (t.value[0][0][2] / 2376 * constraints.maxWidth) - (t.value[0][0][0] / 2376 * constraints.maxWidth),
-                                        height: (t.value[0][0][3] / 4224 * constraints.maxHeight) - (t.value[0][0][1] / 4224 * constraints.maxHeight),
+                                        width: (t.value[0][2] / 2376 * constraints.maxWidth) - (t.value[0][0] / 2376 * constraints.maxWidth),
+                                        height: (t.value[0][3] / 4224 * constraints.maxHeight) - (t.value[0][1] / 4224 * constraints.maxHeight),
                                         child: OutlinedButton(
                                           onPressed: (){
                                             setState(() {
                                               buttonHold.entries.forEach((element) {
-                                                if(!element.value[2]){
-                                                  element.value[2] = true;
+                                                if(!element.value[1]){
+                                                  element.value[1] = true;
                                                 }
-                                                t.value[2] = false;
+                                                t.value[1] = false;
                                                 _buttonCheck = true;
+                                                key = t.key;
                                               });
                                             });
                                           },
@@ -301,7 +321,7 @@ class _CameraScreenState extends State<CameraScreen> {
                                             ),
                                             backgroundColor: MaterialStateProperty.resolveWith<Color>(
                                               (states) {
-                                                if(t.value[2]){
+                                                if(t.value[1]){
                                                   return Colors.transparent;
                                                 }
                                                 else{
