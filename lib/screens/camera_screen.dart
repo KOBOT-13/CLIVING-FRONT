@@ -45,6 +45,8 @@ class _CameraScreenState extends State<CameraScreen> {
   int? first_image_id;
   String? dateFormat;
   String selectedColor = "";
+  List<String> selectedColorList = [];
+
   @override
   void initState() {
     super.initState();
@@ -57,18 +59,21 @@ class _CameraScreenState extends State<CameraScreen> {
     setCamera();
     setState(() {});
   }
-  
+
   Future<Map<int, List<dynamic>>> fetchData(var data) async {
     // 비동기 작업 시뮬레이션 (예: 네트워크 요청)
     // await Future.delayed(Duration(seconds: 1));
     Map<int, List<dynamic>> tmp = {};
-    for(var d in data){
-      tmp[d['index_number']] = [[d['x1'],d['y1'],d['x2'],d['y2']], true];
+    for (var d in data) {
+      tmp[d['index_number']] = [
+        [d['x1'], d['y1'], d['x2'], d['y2']],
+        true
+      ];
     }
     return tmp;
   }
 
-  void setCamera(){
+  void setCamera() {
     if (_cameras.isNotEmpty) {
       print("실행됨");
       _controller = CameraController(_cameras[0], ResolutionPreset.max,
@@ -100,11 +105,13 @@ class _CameraScreenState extends State<CameraScreen> {
         file = newFile;
       });
       // 사진 벡엔드에 보내는 코드
-      try{
+      try {
         String apiAddress = dotenv.get("API_ADDRESS");
         print(apiAddress);
-        final request = http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/upload/image/"));
-        request.files.add(await http.MultipartFile.fromPath('image', file!.path));
+        final request = http.MultipartRequest(
+            'POST', Uri.parse("$apiAddress/v1/upload/image/"));
+        request.files
+            .add(await http.MultipartFile.fromPath('image', file!.path));
         var response = await request.send();
         print(response.statusCode);
         var responseBody = await response.stream.bytesToString();
@@ -177,7 +184,15 @@ class _CameraScreenState extends State<CameraScreen> {
                 TextButton(
                   child: const Text('선택 완료'),
                   onPressed: () {
+                    selectedColorList.add(selectedColor);
                     print(selectedColor);
+                    if (!_recordingCheck) {
+                      createPage();
+                      _controller!.startVideoRecording();
+                      _recordingCheck = true;
+                      file = null;
+                      fetchTop();
+                    }
                     Navigator.of(context).pop(selectedColor);
                   },
                 ),
@@ -195,12 +210,22 @@ class _CameraScreenState extends State<CameraScreen> {
     });
   }
 
-  Future<void> createPage() async{
+  Future<void> createPage() async {
     var d = DateTime.now();
     dateFormat = DateFormat("yyMMdd").format(d).toString();
-    
+
     String apiAddress = dotenv.get("API_ADDRESS");
     final url = Uri.parse('$apiAddress/v1/page/');
+    final response = await http.post(url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'date': dateFormat,
+          'climbing_center_name': "클라이밍장 이름을 입력해주세요.",
+          'bouldering_clear_color': selectedColorList,
+        }));
+    print(response.statusCode);
     try{
       final response = await http.post(
         url,
@@ -224,31 +249,31 @@ class _CameraScreenState extends State<CameraScreen> {
       video = file;
     });
     // 영상 저장 API 실행
-    try{
+    try {
       String apiAddress = dotenv.get("API_ADDRESS");
-      final request = http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/video/"));
-      request.files.add(await http.MultipartFile.fromPath('videofile', file.path));
-      request.fields['video_color'] = "orange";
+      final request =
+          http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/video/"));
+      request.files
+          .add(await http.MultipartFile.fromPath('videofile', file.path));
+      request.fields['video_color'] = selectedColor;
       request.fields['page_id'] = dateFormat!;
       var response = await request.send();
       print(response.statusCode);
-    } catch(e){
+    } catch (e) {
       print(e);
     }
   }
 
-  Future<void> fetchTop() async{
+  Future<void> fetchTop() async {
     String apiAddress = dotenv.get("API_ADDRESS");
     final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/$key/');
-    final response = await http.put(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'is_top' : true,
-      })
-    );
+    final response = await http.put(url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'is_top': true,
+        }));
     print(response.statusCode);
   }
 
@@ -286,11 +311,10 @@ class _CameraScreenState extends State<CameraScreen> {
           child: Padding(
             padding: const EdgeInsets.all(15.0),
             child: GestureDetector(
-              onTap: (){
-                if(!_recordingCheck){
+              onTap: () {
+                if (!_recordingCheck) {
                   _takePicture();
-                }
-                else{
+                } else {
                   stopRecording();
                   _recordingCheck = false;
                 }
@@ -315,17 +339,14 @@ class _CameraScreenState extends State<CameraScreen> {
             child: SizedBox(
               width: 393,
               height: 524,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Image(
-                      image: XFileImage(file!)
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment(-0.9, 0.9),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
+              child: Stack(children: [
+                Positioned.fill(
+                  child: Image(image: XFileImage(file!)),
+                ),
+                Container(
+                  alignment: const Alignment(-0.9, 0.9),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         surfaceTintColor: Colors.black,
                         shape: RoundedRectangleBorder(
@@ -455,8 +476,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     }
                   ),
                 ),
-              ]
-            ),
+              ]),
             ),
           )
       ],
