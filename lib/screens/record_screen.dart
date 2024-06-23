@@ -95,7 +95,6 @@ class _RecordScreenState extends State<RecordScreen> {
       );
 
       if (response.statusCode == 200) {
-        // Success message or further handling if needed
         print('Place updated successfully');
         setState(() {
           futurePage = _getPage();
@@ -285,6 +284,11 @@ class _RecordScreenState extends State<RecordScreen> {
                 DateTime startDateTime =
                     DateTime.parse('2024-04-19 $startTime');
                 DateTime endDateTime = DateTime.parse('2024-04-19 $endTime');
+                List<int> colorSuccessCounter =
+                    List<int>.from(pageData['color_success_counter']);
+                List<int> colorFailCounter =
+                    List<int>.from(pageData['color_fail_counter']);
+
                 int startH = startDateTime.hour;
                 int startM = startDateTime.minute;
                 int startS = startDateTime.second;
@@ -401,17 +405,34 @@ class _RecordScreenState extends State<RecordScreen> {
                               (index) => Padding(
                                 padding: const EdgeInsets.only(
                                     right: 10), // 각 원 사이의 간격 조정
-                                child: Container(
-                                  width: 40, // 원의 너비
-                                  height: 40, // 원의 높이
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        color: Colors.grey, width: 1.0),
-                                    color:
-                                        colorMap[boulderingClearColor[index]] ??
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Container(
+                                      width: 40, // 원의 너비
+                                      height: 40, // 원의 높이
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: Colors.grey, width: 1.0),
+                                        color: colorMap[
+                                                boulderingClearColor[index]] ??
                                             Colors.transparent,
-                                  ),
+                                      ),
+                                    ),
+                                    Text(
+                                      colorFailCounter.length > index
+                                          ? (colorFailCounter[index] +
+                                                  colorSuccessCounter[index])
+                                              .toString()
+                                          : '',
+                                      style: const TextStyle(
+                                        color: Colors
+                                            .white, // 숫자 색상 (필요에 따라 변경 가능)
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -437,7 +458,7 @@ class _RecordScreenState extends State<RecordScreen> {
                               thumbnailUrls,
                               videoUrls,
                               colorsList,
-                              typesList
+                              typesList,
                             ]),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
