@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:cross_file_image/cross_file_image.dart';
+import 'package:flutter/widgets.dart';
 import 'dart:ui';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
@@ -71,7 +72,7 @@ class _CameraScreenState extends State<CameraScreen> {
     if (_cameras.isNotEmpty) {
       print("실행됨");
       _controller = CameraController(_cameras[0], ResolutionPreset.max,
-          enableAudio: false, imageFormatGroup: ImageFormatGroup.yuv420);
+          enableAudio: true, imageFormatGroup: ImageFormatGroup.yuv420);
       _initializeControllerFuture =
           _controller?.initialize().catchError((Object e) {
         if (e is CameraException) {
@@ -200,17 +201,21 @@ class _CameraScreenState extends State<CameraScreen> {
     
     String apiAddress = dotenv.get("API_ADDRESS");
     final url = Uri.parse('$apiAddress/v1/page/');
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'date': dateFormat,
-        'climbing_center_name' : "클라이밍장 이름을 입력해주세요.",
-      })
-    );
-    print(response.statusCode);
+    try{
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'date': dateFormat,
+          'climbing_center_name' : "클라이밍장 이름을 입력해주세요.",
+        })
+      );
+      print(response.statusCode);
+    } catch(e){
+      print(e);
+    }
   }
 
   Future<void> stopRecording() async {
@@ -256,16 +261,12 @@ class _CameraScreenState extends State<CameraScreen> {
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
-    print(screenSize.height);
-    print(screenSize.width);
     if (_controller == null || _initializeControllerFuture == null) {
       return Container(); // 카메라가 없거나 초기화에 실패한 경우
     }
     return Stack(
       children: [
-        Positioned(
-          width: screenSize.width,
-          height: screenSize.height-300,
+        Center(
           child: FutureBuilder<void>(
             future: _initializeControllerFuture,
             builder: (context, snapshot) {
@@ -312,8 +313,8 @@ class _CameraScreenState extends State<CameraScreen> {
         if (file != null)
           Center(
             child: SizedBox(
-              width: screenSize.width,
-              height: screenSize.height - 153,
+              width: 393,
+              height: 524,
               child: Stack(
                 children: [
                   Positioned.fill(
@@ -329,7 +330,10 @@ class _CameraScreenState extends State<CameraScreen> {
                         surfaceTintColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                        )
+                        ),
+                        textStyle: TextStyle(
+                          color: Colors.white,
+                        ),
                       ),
                       onPressed: (){
                         setState(() {
@@ -348,7 +352,10 @@ class _CameraScreenState extends State<CameraScreen> {
                         surfaceTintColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                        )
+                        ),
+                          textStyle: TextStyle(
+                          color: Colors.white,
+                        ),
                       ),
                       onPressed: (){
                         setState(() {
@@ -413,6 +420,11 @@ class _CameraScreenState extends State<CameraScreen> {
                                           },
                                           child: Text(""),
                                           style: ButtonStyle(
+                                            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                                              RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.zero, // 각진 모서리
+                                              ),
+                                            ),
                                             side: WidgetStateProperty.resolveWith<BorderSide>(
                                               (states){
                                                 return BorderSide(
