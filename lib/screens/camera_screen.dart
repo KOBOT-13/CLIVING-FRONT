@@ -239,7 +239,7 @@ class _CameraScreenState extends State<CameraScreen> {
           http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/video/"));
       request.files
           .add(await http.MultipartFile.fromPath('videofile', file.path));
-      request.fields['video_color'] = "orange";
+      request.fields['video_color'] = selectedColor;
       request.fields['page_id'] = dateFormat!;
       var response = await request.send();
       print(response.statusCode);
