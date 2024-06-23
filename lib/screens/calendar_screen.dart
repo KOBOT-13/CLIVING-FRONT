@@ -1,8 +1,8 @@
-import 'package:cliving_front/screens/event.dart';
-import 'package:cliving_front/screens/record_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:cliving_front/screens/event.dart';
+import 'package:cliving_front/screens/record_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -23,18 +23,34 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void initState() {
     super.initState();
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay));
+    _fetchAndSetEvents();
+  }
+
+  Future<void> _fetchAndSetEvents() async {
+    try {
+      int currentYear = _selectedDay.year % 100;
+      int currentMonth = _selectedDay.month;
+
+      Map<DateTime, List<Event>> fetchedEvents =
+          await fetchEvents(currentYear, currentMonth);
+      setState(() {
+        events = fetchedEvents;
+        _selectedEvents.value = _getEventsForDay(_selectedDay);
+      });
+    } catch (error) {
+      print('Failed to fetch events: $error');
+    }
   }
 
   @override
   void dispose() {
-    //StatefulWidget이 제거될 때 호출되어 리소스를 해제함
-    _selectedEvents.dispose(); //ValueNotifier 해제
+    _selectedEvents.dispose();
     super.dispose();
   }
 
   List<Event> _getEventsForDay(DateTime day) {
-    List<Event> eventList = event[day] ?? [];
-    return eventList;
+    DateTime dayOnly = DateTime(day.year, day.month, day.day);
+    return events[dayOnly] ?? [];
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -48,17 +64,39 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Color getColorFromString(String colorString) {
-    switch (colorString) {
-      case 'red':
-        return Colors.red;
-      case 'blue':
-        return Colors.blue;
-      // 추가적인 색상 처리
+    switch (colorString.toLowerCase()) {
+      case 'orange':
+        return Colors.orange;
+      case 'yellow':
+        return Colors.yellow;
       case 'green':
         return Colors.green;
+      case 'blue':
+        return Colors.blue;
+      case 'navy':
+        return const Color.fromRGBO(0, 0, 55, 1);
+      case 'red':
+        return Colors.red;
+      case 'pink':
+        return Colors.pink;
+      case 'purple':
+        return Colors.purple;
+      case 'grey':
+        return Colors.grey;
+      case 'brown':
+        return Colors.brown;
+      case 'black':
+        return Colors.black;
+      case 'white':
+        return Colors.white;
       default:
-        return Colors.black; // 기본값 설정
+        return Colors.black; // 기본 값으로 'black'을 반환
     }
+  }
+
+  void _refreshCalendarScreen() async {
+    await _fetchAndSetEvents();
+    setState(() {});
   }
 
   @override
@@ -102,27 +140,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         scrollDirection: Axis.horizontal,
                         itemCount: events.length,
                         itemBuilder: (context, index) {
-                          Event event = events[index] as Event; // 현재 이벤트 가져오기
-                          List<String> colorStr =
-                              event.getColor(); // 이벤트의 color 가져오기
+                          Event event = events[index] as Event;
+                          List<String> colorStr = event.getColor();
                           return Container(
                             width: 12,
                             height: 10,
                             margin: const EdgeInsets.only(top: 35),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: getColorFromString(colorStr[
-                                  0]), // getColorFromString 함수를 통해 컬러 설정
+                              color: getColorFromString(colorStr[0]),
                             ),
                           );
                         },
                       );
                     }
-                    return null; // 이벤트가 없는 경우 아무런 마커도 표시하지 않음
+                    return null;
                   },
                 ),
                 onPageChanged: (focusedDay) {
                   _focusedDay = focusedDay;
+                  _refreshCalendarScreen(); // 페이지가 변경될 때마다 데이터를 다시 가져옴
                 },
               ),
             ),
@@ -133,11 +170,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   return ListView.builder(
                     itemCount: value.length,
                     itemBuilder: (context, index) {
-                      // DateTime 객체 생성
                       DateTime startTime = value[index].start;
                       DateTime finishTime = value[index].finish;
 
-                      // 포맷팅된 문자열 생성
                       String formattedDate =
                           '${startTime.month}월 ${startTime.day}일';
                       String formattedStartTime =
@@ -145,7 +180,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       String formattedFinishTime =
                           '${finishTime.hour}:${finishTime.minute.toString().padLeft(2, '0')}';
 
-                      // 한 시간 이상인지 체크
                       String timeRange;
                       if (finishTime.difference(startTime).inHours >= 1) {
                         timeRange =
@@ -164,13 +198,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: InkWell(
-                          onTap: () {
-                            Get.to(
+                          onTap: () async {
+                            dynamic result = await Get.to(
                               () => RecordScreen(
                                 selectedDay: _selectedDay,
                                 selectedEvent: value[index],
                               ),
                             );
+                            _refreshCalendarScreen();
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(20.0),
@@ -212,8 +247,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     return Container(
                                       width: 30,
                                       height: 30,
-                                      margin: const EdgeInsets.only(
-                                          left: 5), // 각 컬러 사이의 간격 조절
+                                      margin: const EdgeInsets.only(left: 5),
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         color: getColorFromString(color),
@@ -230,51 +264,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   );
                 },
               ),
-            )
-
-            // Expanded(
-            //   child: ValueListenableBuilder<List<Event>>(
-            //       valueListenable: _selectedEvents,
-            //       builder: (context, value, _) {
-            //         return ListView.builder(
-            //             itemCount: value.length,
-            //             itemBuilder: (context, index) {
-            //               return Container(
-            //                 margin: const EdgeInsets.symmetric(
-            //                   horizontal: 12,
-            //                   vertical: 4,
-            //                 ),
-            //                 decoration: BoxDecoration(
-            //                     border: Border.all(),
-            //                     borderRadius: BorderRadius.circular(12)),
-            //                 child: ListTile(
-            //                   onTap: () {
-            //                     Get.to(
-            //                       () => RecordScreen(
-            //                         selectedDay: _selectedDay,
-            //                         selectedEvent: value[index],
-            //                       ),
-            //                     );
-            //                   },
-            //                   leading: Container(
-            //                     width: 35,
-            //                     height: 35,
-            //                     decoration: BoxDecoration(
-            //                       shape: BoxShape.circle,
-            //                       color:
-            //                           getColorFromString(value[index].color[0]),
-            //                     ),
-            //                   ),
-            //                   title: Text(value[index].place),
-            //                   subtitle: Text(value[index].start.toString()),
-
-            //                 ),
-            //               );
-            //             }
-
-            //             );
-            //       }),
-            // )
+            ),
           ],
         ),
       ),

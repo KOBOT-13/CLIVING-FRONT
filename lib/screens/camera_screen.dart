@@ -18,18 +18,18 @@ class CameraScreen extends StatefulWidget {
 
 class _CameraScreenState extends State<CameraScreen> {
   Map colorMap = {
-    'orange' : Colors.orange,
-    'yellow' : Colors.yellow,
-    'green' : Colors.green,
-    'blue' : Colors.blue,
-    'navy' : Color.fromRGBO(0, 0, 55, 1),
-    'red' : Colors.red,
-    'pink' : Colors.pink,
-    'purple' : Colors.purple,
-    'grey' : Colors.grey,
-    'brown' : Colors.brown,
-    'black' : Colors.black,
-    'white' : Colors.white,
+    'orange': Colors.orange,
+    'yellow': Colors.yellow,
+    'green': Colors.green,
+    'blue': Colors.blue,
+    'navy': const Color.fromRGBO(0, 0, 55, 1),
+    'red': Colors.red,
+    'pink': Colors.pink,
+    'purple': Colors.purple,
+    'grey': Colors.grey,
+    'brown': Colors.brown,
+    'black': Colors.black,
+    'white': Colors.white,
   };
 
   CameraController? _controller;
@@ -43,12 +43,13 @@ class _CameraScreenState extends State<CameraScreen> {
   int? key;
   int? first_image_id;
   String? dateFormat;
-
+  String selectedColor = "";
   @override
-  void initState(){
+  void initState() {
     super.initState();
     findCameras();
   }
+
   Future<void> findCameras() async {
     WidgetsFlutterBinding.ensureInitialized();
     _cameras = await availableCameras();
@@ -69,8 +70,10 @@ class _CameraScreenState extends State<CameraScreen> {
   void setCamera(){
     if (_cameras.isNotEmpty) {
       print("실행됨");
-      _controller = CameraController(_cameras[0], ResolutionPreset.max, enableAudio: false, imageFormatGroup: ImageFormatGroup.yuv420);
-      _initializeControllerFuture = _controller?.initialize().catchError((Object e) {
+      _controller = CameraController(_cameras[0], ResolutionPreset.max,
+          enableAudio: false, imageFormatGroup: ImageFormatGroup.yuv420);
+      _initializeControllerFuture =
+          _controller?.initialize().catchError((Object e) {
         if (e is CameraException) {
           switch (e.code) {
             case 'CameraAccessDenied':
@@ -115,6 +118,80 @@ class _CameraScreenState extends State<CameraScreen> {
     } catch (e) {
       print('Error taking picture: $e');
     }
+  }
+
+  void _showColorModal(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Center(child: Text('홀드 색상을 선택하세요')),
+              titleTextStyle: const TextStyle(
+                fontSize: 20,
+                color: Colors.black,
+              ),
+              content: SingleChildScrollView(
+                child: Center(
+                  child: Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: colorMap.keys.map((colorKey) {
+                      return InkWell(
+                        onTap: () {
+                          setState(() {
+                            selectedColor = colorKey;
+                          });
+                        },
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                              width: 50.0,
+                              height: 50.0,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: colorMap[colorKey],
+                                border:
+                                    Border.all(width: 1.5, color: Colors.grey),
+                              ),
+                            ),
+                            if (selectedColor == colorKey)
+                              Icon(
+                                Icons.check,
+                                color: (selectedColor == 'white')
+                                    ? Colors.black
+                                    : Colors.white,
+                                size: 30.0,
+                              ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('선택 완료'),
+                  onPressed: () {
+                    print(selectedColor);
+                    Navigator.of(context).pop(selectedColor);
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).then((selected) {
+      if (selected != null) {
+        setState(() {
+          selectedColor = selected;
+        });
+      }
+    });
   }
 
   Future<void> createPage() async{
@@ -190,12 +267,13 @@ class _CameraScreenState extends State<CameraScreen> {
           width: screenSize.width,
           height: screenSize.height-300,
           child: FutureBuilder<void>(
-            future: _initializeControllerFuture, 
-            builder: (context, snapshot){
-              if(snapshot.connectionState == ConnectionState.done){
+            future: _initializeControllerFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
                 return CameraPreview(_controller!);
               } else {
-                return Center(child: CircularProgressIndicator(
+                return const Center(
+                    child: CircularProgressIndicator(
                   strokeWidth: 10,
                 ));
               }
@@ -226,13 +304,11 @@ class _CameraScreenState extends State<CameraScreen> {
         ),
         if (file != null) // 조건을 검사하여 file이 null이 아닌 경우에만 Positioned 위젯을 생성
           Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                color: Colors.black.withOpacity(0.1),
-              )
-            )
-          ),
+              child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    color: Colors.black.withOpacity(0.1),
+                  ))),
         if (file != null)
           Center(
             child: SizedBox(
