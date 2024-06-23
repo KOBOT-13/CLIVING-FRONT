@@ -44,6 +44,8 @@ class _CameraScreenState extends State<CameraScreen> {
   int? first_image_id;
   String? dateFormat;
   String selectedColor = "";
+  List<String> selectedColorList = [];
+
   @override
   void initState() {
     super.initState();
@@ -56,18 +58,21 @@ class _CameraScreenState extends State<CameraScreen> {
     setCamera();
     setState(() {});
   }
-  
+
   Future<Map<int, List<dynamic>>> fetchData(var data) async {
     // 비동기 작업 시뮬레이션 (예: 네트워크 요청)
     // await Future.delayed(Duration(seconds: 1));
     Map<int, List<dynamic>> tmp = {};
-    for(var d in data){
-      tmp[d['index_number']] = [[d['x1'],d['y1'],d['x2'],d['y2']], true];
+    for (var d in data) {
+      tmp[d['index_number']] = [
+        [d['x1'], d['y1'], d['x2'], d['y2']],
+        true
+      ];
     }
     return tmp;
   }
 
-  void setCamera(){
+  void setCamera() {
     if (_cameras.isNotEmpty) {
       print("실행됨");
       _controller = CameraController(_cameras[0], ResolutionPreset.max,
@@ -99,11 +104,13 @@ class _CameraScreenState extends State<CameraScreen> {
         file = newFile;
       });
       // 사진 벡엔드에 보내는 코드
-      try{
+      try {
         String apiAddress = dotenv.get("API_ADDRESS");
         print(apiAddress);
-        final request = http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/upload/image/"));
-        request.files.add(await http.MultipartFile.fromPath('image', file!.path));
+        final request = http.MultipartRequest(
+            'POST', Uri.parse("$apiAddress/v1/upload/image/"));
+        request.files
+            .add(await http.MultipartFile.fromPath('image', file!.path));
         var response = await request.send();
         print(response.statusCode);
         var responseBody = await response.stream.bytesToString();
@@ -176,7 +183,15 @@ class _CameraScreenState extends State<CameraScreen> {
                 TextButton(
                   child: const Text('선택 완료'),
                   onPressed: () {
+                    selectedColorList.add(selectedColor);
                     print(selectedColor);
+                    if (!_recordingCheck) {
+                      createPage();
+                      _controller!.startVideoRecording();
+                      _recordingCheck = true;
+                      file = null;
+                      fetchTop();
+                    }
                     Navigator.of(context).pop(selectedColor);
                   },
                 ),
@@ -194,22 +209,21 @@ class _CameraScreenState extends State<CameraScreen> {
     });
   }
 
-  Future<void> createPage() async{
+  Future<void> createPage() async {
     var d = DateTime.now();
     dateFormat = DateFormat("yyMMdd").format(d).toString();
-    
+
     String apiAddress = dotenv.get("API_ADDRESS");
     final url = Uri.parse('$apiAddress/v1/page/');
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'date': dateFormat,
-        'climbing_center_name' : "클라이밍장 이름을 입력해주세요.",
-      })
-    );
+    final response = await http.post(url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'date': dateFormat,
+          'climbing_center_name': "클라이밍장 이름을 입력해주세요.",
+          'bouldering_clear_color': selectedColorList,
+        }));
     print(response.statusCode);
   }
 
@@ -219,31 +233,31 @@ class _CameraScreenState extends State<CameraScreen> {
       video = file;
     });
     // 영상 저장 API 실행
-    try{
+    try {
       String apiAddress = dotenv.get("API_ADDRESS");
-      final request = http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/video/"));
-      request.files.add(await http.MultipartFile.fromPath('videofile', file.path));
+      final request =
+          http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/video/"));
+      request.files
+          .add(await http.MultipartFile.fromPath('videofile', file.path));
       request.fields['video_color'] = "orange";
       request.fields['page_id'] = dateFormat!;
       var response = await request.send();
       print(response.statusCode);
-    } catch(e){
+    } catch (e) {
       print(e);
     }
   }
 
-  Future<void> fetchTop() async{
+  Future<void> fetchTop() async {
     String apiAddress = dotenv.get("API_ADDRESS");
     final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/$key/');
-    final response = await http.put(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'is_top' : true,
-      })
-    );
+    final response = await http.put(url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'is_top': true,
+        }));
     print(response.statusCode);
   }
 
@@ -265,7 +279,7 @@ class _CameraScreenState extends State<CameraScreen> {
       children: [
         Positioned(
           width: screenSize.width,
-          height: screenSize.height-300,
+          height: screenSize.height - 300,
           child: FutureBuilder<void>(
             future: _initializeControllerFuture,
             builder: (context, snapshot) {
@@ -285,11 +299,10 @@ class _CameraScreenState extends State<CameraScreen> {
           child: Padding(
             padding: const EdgeInsets.all(15.0),
             child: GestureDetector(
-              onTap: (){
-                if(!_recordingCheck){
+              onTap: () {
+                if (!_recordingCheck) {
                   _takePicture();
-                }
-                else{
+                } else {
                   stopRecording();
                   _recordingCheck = false;
                 }
@@ -314,137 +327,144 @@ class _CameraScreenState extends State<CameraScreen> {
             child: SizedBox(
               width: screenSize.width,
               height: screenSize.height - 153,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Image(
-                      image: XFileImage(file!)
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment(-0.9, 0.9),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
+              child: Stack(children: [
+                Positioned.fill(
+                  child: Image(image: XFileImage(file!)),
+                ),
+                Container(
+                  alignment: const Alignment(-0.9, 0.9),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         surfaceTintColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                        )
-                      ),
-                      onPressed: (){
-                        setState(() {
-                          file = null;
-                          imageHoldInfos = null;
-                        });
-                      },
-                      child: Text("재촬영"),
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment(0.9, 0.9),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        surfaceTintColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        )
-                      ),
-                      onPressed: (){
-                        setState(() {
-                          if(_buttonCheck){
-                            if(!_recordingCheck){
-                              createPage();
-                              _controller!.startVideoRecording();
-                              _recordingCheck = true;
-                              file = null;
-                              fetchTop();
-                            }
-                          }
-                          else{
-                            Fluttertoast.showToast(
-                              msg: "홀드를 선택해주세요.",
-                              gravity: ToastGravity.BOTTOM,
-                              backgroundColor: Color.fromRGBO(0, 0, 0, 0.8),
-                            );
-                          }
-                        });
-                      },
-                      child: Text("확정"),
-                    ),
-                  ),
-                  FutureBuilder<Map<int, List<dynamic>>>(
-                    future: imageHoldInfos,
-                    builder: ((context, snapshot){
-                      if(imageHoldInfos == null){
-                        return Container();
-                      }
-                      if(snapshot.connectionState == ConnectionState.waiting){
-                        return SizedBox.shrink();
-                      }
-                      else if(snapshot.hasError){
-                        return Center(child: Text('Error'));
-                      }
-                      else{
-                        Map<int, List<dynamic>> buttonHold = snapshot.data!;
-                        return LayoutBuilder(
-                            builder: (context, constraints) {
-                              return Stack(
-                                children: [
-                                  for(var t in buttonHold.entries)
-                                    Positioned(
-                                      top: t.value[0][0] / 3024 * constraints.maxWidth,
-                                      left: t.value[0][1] / 4032 * constraints.maxHeight,
-                                      child: SizedBox(
-                                        width: (t.value[0][2] / 3024 * constraints.maxWidth) - (t.value[0][0] / 3024 * constraints.maxWidth),
-                                        height: (t.value[0][3] / 4032 * constraints.maxHeight) - (t.value[0][1] / 4032 * constraints.maxHeight),
-                                        child: OutlinedButton(
-                                          onPressed: (){
-                                            setState(() {
-                                              buttonHold.entries.forEach((element) {
-                                                if(!element.value[1]){
-                                                  element.value[1] = true;
-                                                }
-                                                t.value[1] = false;
-                                                _buttonCheck = true;
-                                                key = t.key;
-                                              });
-                                            });
-                                          },
-                                          child: Text(""),
-                                          style: ButtonStyle(
-                                            side: WidgetStateProperty.resolveWith<BorderSide>(
-                                              (states){
-                                                return BorderSide(
-                                                  color: colorMap["orange"],
-                                                  width: 2.0,
-                                                );
-                                              }
-                                            ),
-                                            backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                                              (states) {
-                                                if(t.value[1]){
-                                                  return Colors.transparent;
-                                                }
-                                                else{
-                                                  return Color.fromRGBO(0, 0, 0, 0.494);
-                                                }
-                                              }
-                                            )
-                                          )
-                                        ),
-                                      ),
-                                    ),
-                                ]
-                              );     
-                            },
-                          );
-                      }
-                    }
+                        )),
+                    onPressed: () {
+                      setState(() {
+                        file = null;
+                        imageHoldInfos = null;
+                      });
+                    },
+                    child: const Text("재촬영"),
                   ),
                 ),
-              ]
-            ),
+                Container(
+                  alignment: const Alignment(0.9, 0.9),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        surfaceTintColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        )),
+                    onPressed: () {
+                      setState(() {
+                        if (_buttonCheck) {
+                          // _showColorModal(context);
+                          if (!_recordingCheck) {
+                            _showColorModal(context);
+                          }
+                        } else {
+                          Fluttertoast.showToast(
+                            msg: "홀드를 선택해주세요.",
+                            gravity: ToastGravity.BOTTOM,
+                            backgroundColor: const Color.fromRGBO(0, 0, 0, 0.8),
+                          );
+                        }
+                      });
+                    },
+                    child: const Text("확정"),
+                  ),
+                ),
+                FutureBuilder<Map<int, List<dynamic>>>(
+                  future: imageHoldInfos,
+                  builder: ((context, snapshot) {
+                    if (imageHoldInfos == null) {
+                      return Container();
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox.shrink();
+                    } else if (snapshot.hasError) {
+                      // return const Center(child: Text('Error'));
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('Error occurred'),
+                            Text('Error: ${snapshot.error}'),
+                            Text('StackTrace: ${snapshot.stackTrace}'),
+                          ],
+                        ),
+                      );
+                    } else if (!snapshot.hasData || snapshot.data == null) {
+                      return const Center(
+                          child: Text('No Data')); // 데이터가 없거나 null일 때 표시
+                    } else {
+                      Map<int, List<dynamic>> buttonHold = snapshot.data!;
+                      return LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Stack(children: [
+                            for (var t in buttonHold.entries)
+                              Positioned(
+                                top:
+                                    t.value[0][0] / 3024 * constraints.maxWidth,
+                                left: t.value[0][1] /
+                                    4032 *
+                                    constraints.maxHeight,
+                                child: SizedBox(
+                                  width: (t.value[0][2] /
+                                          3024 *
+                                          constraints.maxWidth) -
+                                      (t.value[0][0] /
+                                          3024 *
+                                          constraints.maxWidth),
+                                  height: (t.value[0][3] /
+                                          4032 *
+                                          constraints.maxHeight) -
+                                      (t.value[0][1] /
+                                          4032 *
+                                          constraints.maxHeight),
+                                  child: OutlinedButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          for (var element
+                                              in buttonHold.entries) {
+                                            if (!element.value[1]) {
+                                              element.value[1] = true;
+                                            }
+                                            t.value[1] = false;
+                                            _buttonCheck = true;
+                                            key = t.key;
+                                          }
+                                        });
+                                      },
+                                      style: ButtonStyle(side:
+                                          WidgetStateProperty.resolveWith<
+                                              BorderSide>((states) {
+                                        return BorderSide(
+                                          color: colorMap["orange"],
+                                          width: 2.0,
+                                        );
+                                      }), backgroundColor: WidgetStateProperty
+                                          .resolveWith<Color>((states) {
+                                        if (t.value[1]) {
+                                          return Colors.transparent;
+                                        } else {
+                                          return const Color.fromRGBO(
+                                              0, 0, 0, 0.494);
+                                        }
+                                      })),
+                                      child: const Text("")),
+                                ),
+                              ),
+                          ]);
+                        },
+                      );
+                    }
+                  }),
+                ),
+              ]),
             ),
           )
       ],
