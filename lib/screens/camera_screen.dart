@@ -7,6 +7,7 @@ import 'dart:ui';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -41,6 +42,7 @@ class _CameraScreenState extends State<CameraScreen> {
   Future<Map<int, List<dynamic>>>? imageHoldInfos;
   int? key;
   int? first_image_id;
+  String? dateFormat;
 
   @override
   void initState(){
@@ -115,6 +117,25 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
+  Future<void> createPage() async{
+    var d = DateTime.now();
+    dateFormat = DateFormat("yyMMdd").format(d).toString();
+    
+    String apiAddress = dotenv.get("API_ADDRESS");
+    final url = Uri.parse('$apiAddress/v1/page/');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'date': dateFormat,
+        'climbing_center_name' : "클라이밍장 이름을 입력해주세요.",
+      })
+    );
+    print(response.statusCode);
+  }
+
   Future<void> stopRecording() async {
     XFile? file = await _controller!.stopVideoRecording();
     setState(() {
@@ -126,7 +147,7 @@ class _CameraScreenState extends State<CameraScreen> {
       final request = http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/video/"));
       request.files.add(await http.MultipartFile.fromPath('videofile', file.path));
       request.fields['video_color'] = "orange";
-      request.fields['page_id'] = "240622";
+      request.fields['page_id'] = dateFormat!;
       var response = await request.send();
       print(response.statusCode);
     } catch(e){
@@ -158,12 +179,16 @@ class _CameraScreenState extends State<CameraScreen> {
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
+    print(screenSize.height);
+    print(screenSize.width);
     if (_controller == null || _initializeControllerFuture == null) {
       return Container(); // 카메라가 없거나 초기화에 실패한 경우
     }
     return Stack(
       children: [
-        Positioned.fill(
+        Positioned(
+          width: screenSize.width,
+          height: screenSize.height-300,
           child: FutureBuilder<void>(
             future: _initializeControllerFuture, 
             builder: (context, snapshot){
@@ -253,6 +278,7 @@ class _CameraScreenState extends State<CameraScreen> {
                         setState(() {
                           if(_buttonCheck){
                             if(!_recordingCheck){
+                              createPage();
                               _controller!.startVideoRecording();
                               _recordingCheck = true;
                               file = null;
@@ -291,11 +317,11 @@ class _CameraScreenState extends State<CameraScreen> {
                                 children: [
                                   for(var t in buttonHold.entries)
                                     Positioned(
-                                      top: t.value[0][0] / 2376 * constraints.maxWidth,
-                                      left: t.value[0][1] / 4224 * constraints.maxHeight,
+                                      top: t.value[0][0] / 3024 * constraints.maxWidth,
+                                      left: t.value[0][1] / 4032 * constraints.maxHeight,
                                       child: SizedBox(
-                                        width: (t.value[0][2] / 2376 * constraints.maxWidth) - (t.value[0][0] / 2376 * constraints.maxWidth),
-                                        height: (t.value[0][3] / 4224 * constraints.maxHeight) - (t.value[0][1] / 4224 * constraints.maxHeight),
+                                        width: (t.value[0][2] / 3024 * constraints.maxWidth) - (t.value[0][0] / 3024 * constraints.maxWidth),
+                                        height: (t.value[0][3] / 4032 * constraints.maxHeight) - (t.value[0][1] / 4032 * constraints.maxHeight),
                                         child: OutlinedButton(
                                           onPressed: (){
                                             setState(() {
@@ -311,7 +337,7 @@ class _CameraScreenState extends State<CameraScreen> {
                                           },
                                           child: Text(""),
                                           style: ButtonStyle(
-                                            side: MaterialStateProperty.resolveWith<BorderSide>(
+                                            side: WidgetStateProperty.resolveWith<BorderSide>(
                                               (states){
                                                 return BorderSide(
                                                   color: colorMap["orange"],
@@ -319,7 +345,7 @@ class _CameraScreenState extends State<CameraScreen> {
                                                 );
                                               }
                                             ),
-                                            backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                            backgroundColor: WidgetStateProperty.resolveWith<Color>(
                                               (states) {
                                                 if(t.value[1]){
                                                   return Colors.transparent;
