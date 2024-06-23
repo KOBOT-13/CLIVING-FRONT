@@ -1,13 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:cross_file_image/cross_file_image.dart';
 import 'dart:ui';
-import 'package:cliving_front/models/TestHold.dart';
-import 'package:cliving_front/models/Hold.dart';
-import 'package:http/http.dart';
-import 'dart:convert';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -34,12 +34,16 @@ class _CameraScreenState extends State<CameraScreen> {
 
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
-  late Future<List<Hold>> _holdInfo;
   late List<CameraDescription> _cameras;
   XFile? file;
+  XFile? video;
   bool _buttonCheck = false;
-  String selectedColor = '';
-
+  bool _recordingCheck = false;
+  Future<Map<int, List<dynamic>>>? imageHoldInfos;
+  int? key;
+  int? first_image_id;
+  String? dateFormat;
+  String selectedColor = "";
   @override
   void initState() {
     super.initState();
@@ -52,20 +56,18 @@ class _CameraScreenState extends State<CameraScreen> {
     setCamera();
     setState(() {});
   }
-
-  void reHolds() {
-    setState(() {
-      _holdInfo = _callAPI();
-    });
-  }
-
-  Future<List<Hold>> _callAPI() async {
-    // API 호출 코드 작성
-    Future<List<Hold>> tmp = Future.value(jsonString);
+  
+  Future<Map<int, List<dynamic>>> fetchData(var data) async {
+    // 비동기 작업 시뮬레이션 (예: 네트워크 요청)
+    // await Future.delayed(Duration(seconds: 1));
+    Map<int, List<dynamic>> tmp = {};
+    for(var d in data){
+      tmp[d['index_number']] = [[d['x1'],d['y1'],d['x2'],d['y2']], true];
+    }
     return tmp;
   }
 
-  void setCamera() {
+  void setCamera(){
     if (_cameras.isNotEmpty) {
       print("실행됨");
       _controller = CameraController(_cameras[0], ResolutionPreset.max,
@@ -97,6 +99,22 @@ class _CameraScreenState extends State<CameraScreen> {
         file = newFile;
       });
       // 사진 벡엔드에 보내는 코드
+      try{
+        String apiAddress = dotenv.get("API_ADDRESS");
+        print(apiAddress);
+        final request = http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/upload/image/"));
+        request.files.add(await http.MultipartFile.fromPath('image', file!.path));
+        var response = await request.send();
+        print(response.statusCode);
+        var responseBody = await response.stream.bytesToString();
+        var jsonResponse = jsonDecode(responseBody);
+        setState(() {
+          imageHoldInfos = fetchData(jsonResponse["holds"]);
+        });
+        first_image_id = jsonResponse["holds"][0]["first_image"];
+      } catch (e) {
+        print('Unexpected error: $e');
+      }
     } catch (e) {
       print('Error taking picture: $e');
     }
@@ -176,6 +194,59 @@ class _CameraScreenState extends State<CameraScreen> {
     });
   }
 
+  Future<void> createPage() async{
+    var d = DateTime.now();
+    dateFormat = DateFormat("yyMMdd").format(d).toString();
+    
+    String apiAddress = dotenv.get("API_ADDRESS");
+    final url = Uri.parse('$apiAddress/v1/page/');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'date': dateFormat,
+        'climbing_center_name' : "클라이밍장 이름을 입력해주세요.",
+      })
+    );
+    print(response.statusCode);
+  }
+
+  Future<void> stopRecording() async {
+    XFile? file = await _controller!.stopVideoRecording();
+    setState(() {
+      video = file;
+    });
+    // 영상 저장 API 실행
+    try{
+      String apiAddress = dotenv.get("API_ADDRESS");
+      final request = http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/video/"));
+      request.files.add(await http.MultipartFile.fromPath('videofile', file.path));
+      request.fields['video_color'] = "orange";
+      request.fields['page_id'] = dateFormat!;
+      var response = await request.send();
+      print(response.statusCode);
+    } catch(e){
+      print(e);
+    }
+  }
+
+  Future<void> fetchTop() async{
+    String apiAddress = dotenv.get("API_ADDRESS");
+    final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/$key/');
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'is_top' : true,
+      })
+    );
+    print(response.statusCode);
+  }
+
   @override
   void dispose() {
     _controller?.dispose();
@@ -184,12 +255,17 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Size screenSize = MediaQuery.of(context).size;
+    print(screenSize.height);
+    print(screenSize.width);
     if (_controller == null || _initializeControllerFuture == null) {
       return Container(); // 카메라가 없거나 초기화에 실패한 경우
     }
     return Stack(
       children: [
-        Positioned.fill(
+        Positioned(
+          width: screenSize.width,
+          height: screenSize.height-300,
           child: FutureBuilder<void>(
             future: _initializeControllerFuture,
             builder: (context, snapshot) {
@@ -209,9 +285,14 @@ class _CameraScreenState extends State<CameraScreen> {
           child: Padding(
             padding: const EdgeInsets.all(15.0),
             child: GestureDetector(
-              onTap: () {
-                _takePicture();
-                reHolds();
+              onTap: (){
+                if(!_recordingCheck){
+                  _takePicture();
+                }
+                else{
+                  stopRecording();
+                  _recordingCheck = false;
+                }
               },
               child: const Icon(
                 Icons.camera,
@@ -229,107 +310,143 @@ class _CameraScreenState extends State<CameraScreen> {
                     color: Colors.black.withOpacity(0.1),
                   ))),
         if (file != null)
-          Stack(children: [
-            Positioned.fill(
-              child: Image(image: XFileImage(file!)),
-            ),
-            Container(
-              alignment: const Alignment(-0.9, 0.9),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    surfaceTintColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    )),
-                onPressed: () {
-                  setState(() {
-                    file = null;
-                  });
-                },
-                child: const Text("재촬영"),
-              ),
-            ),
-            Container(
-              alignment: const Alignment(0.9, 0.9),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    surfaceTintColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    )),
-                onPressed: () {
-                  setState(() {
-                    if (_buttonCheck) {
-                      print("영상 촬영 시작");
-                    } else {
-                      Fluttertoast.showToast(
-                        msg: "홀드를 선택해주세요.",
-                        gravity: ToastGravity.BOTTOM,
-                        backgroundColor: const Color.fromRGBO(0, 0, 0, 0.8),
-                      );
-                    }
-                  });
-                },
-                child: const Text("확정"),
-              ),
-            ),
-            FutureBuilder<List<Hold>>(
-              future: _holdInfo,
-              builder: ((context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox.shrink();
-                } else if (snapshot.hasError) {
-                  return const Center(child: Text('Error'));
-                } else {
-                  List<Hold> buttonHold = snapshot.data!;
-                  return Stack(children: [
-                    for (Hold t in buttonHold)
-                      Positioned(
-                        top: t.y2,
-                        left: t.x1,
-                        bottom: t.y1,
-                        right: t.x2,
-                        child: SizedBox(
-                          child: OutlinedButton(
-                              onPressed: () {
-                                setState(() {
-                                  for (var element in buttonHold) {
-                                    if (!element.check) {
-                                      print("실행됨");
-                                      print(element.check);
-                                      element.check = true;
-                                    }
-                                  }
-                                  t.check = false;
-                                  _buttonCheck = true;
-                                });
-                              },
-                              style: ButtonStyle(side:
-                                  WidgetStateProperty.resolveWith<BorderSide>(
-                                      (states) {
-                                return BorderSide(
-                                  color: colorMap[t.color],
-                                  width: 2.0,
-                                );
-                              }), backgroundColor:
-                                  WidgetStateProperty.resolveWith<Color>(
-                                      (states) {
-                                if (t.check) {
-                                  return Colors.transparent;
-                                } else {
-                                  return const Color.fromRGBO(0, 0, 0, 0.494);
-                                }
-                              })),
-                              child: const Text("")),
-                        ),
+          Center(
+            child: SizedBox(
+              width: screenSize.width,
+              height: screenSize.height - 153,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Image(
+                      image: XFileImage(file!)
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment(-0.9, 0.9),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        surfaceTintColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        )
                       ),
-                  ]);
-                }
-              }),
+                      onPressed: (){
+                        setState(() {
+                          file = null;
+                          imageHoldInfos = null;
+                        });
+                      },
+                      child: Text("재촬영"),
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment(0.9, 0.9),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        surfaceTintColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        )
+                      ),
+                      onPressed: (){
+                        setState(() {
+                          if(_buttonCheck){
+                            if(!_recordingCheck){
+                              createPage();
+                              _controller!.startVideoRecording();
+                              _recordingCheck = true;
+                              file = null;
+                              fetchTop();
+                            }
+                          }
+                          else{
+                            Fluttertoast.showToast(
+                              msg: "홀드를 선택해주세요.",
+                              gravity: ToastGravity.BOTTOM,
+                              backgroundColor: Color.fromRGBO(0, 0, 0, 0.8),
+                            );
+                          }
+                        });
+                      },
+                      child: Text("확정"),
+                    ),
+                  ),
+                  FutureBuilder<Map<int, List<dynamic>>>(
+                    future: imageHoldInfos,
+                    builder: ((context, snapshot){
+                      if(imageHoldInfos == null){
+                        return Container();
+                      }
+                      if(snapshot.connectionState == ConnectionState.waiting){
+                        return SizedBox.shrink();
+                      }
+                      else if(snapshot.hasError){
+                        return Center(child: Text('Error'));
+                      }
+                      else{
+                        Map<int, List<dynamic>> buttonHold = snapshot.data!;
+                        return LayoutBuilder(
+                            builder: (context, constraints) {
+                              return Stack(
+                                children: [
+                                  for(var t in buttonHold.entries)
+                                    Positioned(
+                                      top: t.value[0][0] / 3024 * constraints.maxWidth,
+                                      left: t.value[0][1] / 4032 * constraints.maxHeight,
+                                      child: SizedBox(
+                                        width: (t.value[0][2] / 3024 * constraints.maxWidth) - (t.value[0][0] / 3024 * constraints.maxWidth),
+                                        height: (t.value[0][3] / 4032 * constraints.maxHeight) - (t.value[0][1] / 4032 * constraints.maxHeight),
+                                        child: OutlinedButton(
+                                          onPressed: (){
+                                            setState(() {
+                                              buttonHold.entries.forEach((element) {
+                                                if(!element.value[1]){
+                                                  element.value[1] = true;
+                                                }
+                                                t.value[1] = false;
+                                                _buttonCheck = true;
+                                                key = t.key;
+                                              });
+                                            });
+                                          },
+                                          child: Text(""),
+                                          style: ButtonStyle(
+                                            side: WidgetStateProperty.resolveWith<BorderSide>(
+                                              (states){
+                                                return BorderSide(
+                                                  color: colorMap["orange"],
+                                                  width: 2.0,
+                                                );
+                                              }
+                                            ),
+                                            backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                                              (states) {
+                                                if(t.value[1]){
+                                                  return Colors.transparent;
+                                                }
+                                                else{
+                                                  return Color.fromRGBO(0, 0, 0, 0.494);
+                                                }
+                                              }
+                                            )
+                                          )
+                                        ),
+                                      ),
+                                    ),
+                                ]
+                              );     
+                            },
+                          );
+                      }
+                    }
+                  ),
+                ),
+              ]
             ),
-          ])
+            ),
+          )
       ],
     );
   }
