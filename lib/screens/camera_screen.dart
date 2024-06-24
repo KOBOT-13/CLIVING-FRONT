@@ -182,7 +182,7 @@ class _CameraScreenState extends State<CameraScreen> {
               ),
               actions: <Widget>[
                 TextButton(
-                  child: const Text('선택 완료'),
+                  child: const Text('영상 촬영 시작'),
                   onPressed: () {
                     selectedColorList.add(selectedColor);
                     print(selectedColor);
