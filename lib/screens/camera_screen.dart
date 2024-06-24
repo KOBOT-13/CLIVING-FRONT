@@ -319,11 +319,12 @@ class _CameraScreenState extends State<CameraScreen> {
                   _recordingCheck = false;
                 }
               },
-              child: const Icon(
-                Icons.camera,
-                size: 70,
-                color: Colors.black,
-              ),
+              child: Icon(
+                  (_recordingCheck)
+                      ? Icons.radio_button_checked_rounded
+                      : Icons.camera,
+                  size: 70,
+                  color: (_recordingCheck) ? Colors.red : Colors.black),
             ),
           ),
         ),
