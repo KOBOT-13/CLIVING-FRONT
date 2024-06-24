@@ -337,8 +337,8 @@ class _CameraScreenState extends State<CameraScreen> {
         if (file != null)
           Center(
             child: SizedBox(
-              width: 393,
-              height: 524,
+              width: 393.0,
+              height: 524.0,
               child: Stack(children: [
                 Positioned.fill(
                   child: Image(image: XFileImage(file!)),
@@ -417,15 +417,20 @@ class _CameraScreenState extends State<CameraScreen> {
                         Map<int, List<dynamic>> buttonHold = snapshot.data!;
                         return LayoutBuilder(
                             builder: (context, constraints) {
+                              print(constraints.maxHeight);
+                              print(constraints.maxWidth);
+                              for(var t in buttonHold.entries){
+                                print(t.value);
+                              }
                               return Stack(
                                 children: [
                                   for(var t in buttonHold.entries)
                                     Positioned(
-                                      top: t.value[0][0] / 3024 * constraints.maxWidth,
-                                      left: t.value[0][1] / 4032 * constraints.maxHeight,
+                                      top:  (t.value[0][0]) / 3024.0 * constraints.maxWidth,
+                                      right: (t.value[0][1]) / 4032.0 * constraints.maxHeight,
                                       child: SizedBox(
-                                        width: (t.value[0][2] / 3024 * constraints.maxWidth) - (t.value[0][0] / 3024 * constraints.maxWidth),
-                                        height: (t.value[0][3] / 4032 * constraints.maxHeight) - (t.value[0][1] / 4032 * constraints.maxHeight),
+                                        width:  (t.value[0][3] / 4032.0 * constraints.maxHeight) - (t.value[0][1] / 4032.0 * constraints.maxHeight),
+                                        height:(t.value[0][2] / 3024.0 * constraints.maxWidth) - (t.value[0][0] / 3024.0 * constraints.maxWidth),
                                         child: OutlinedButton(
                                           onPressed: (){
                                             setState(() {
