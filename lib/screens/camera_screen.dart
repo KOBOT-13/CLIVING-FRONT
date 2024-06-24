@@ -182,7 +182,7 @@ class _CameraScreenState extends State<CameraScreen> {
               ),
               actions: <Widget>[
                 TextButton(
-                  child: const Text('선택 완료'),
+                  child: const Text('영상 촬영 시작'),
                   onPressed: () {
                     selectedColorList.add(selectedColor);
                     print(selectedColor);
@@ -319,11 +319,12 @@ class _CameraScreenState extends State<CameraScreen> {
                   _recordingCheck = false;
                 }
               },
-              child: const Icon(
-                Icons.camera,
-                size: 70,
-                color: Colors.black,
-              ),
+              child: Icon(
+                  (_recordingCheck)
+                      ? Icons.radio_button_checked_rounded
+                      : Icons.camera,
+                  size: 70,
+                  color: (_recordingCheck) ? Colors.red : Colors.black),
             ),
           ),
         ),
@@ -378,28 +379,24 @@ class _CameraScreenState extends State<CameraScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      onPressed: (){
-                        setState(() {
-                          if(_buttonCheck){
-                            if(!_recordingCheck){
-                              createPage();
-                              _controller!.startVideoRecording();
-                              _recordingCheck = true;
-                              file = null;
-                              fetchTop();
-                            }
-                          }
-                          else{
-                            Fluttertoast.showToast(
-                              msg: "홀드를 선택해주세요.",
-                              gravity: ToastGravity.BOTTOM,
-                              backgroundColor: Color.fromRGBO(0, 0, 0, 0.8),
-                            );
-                          }
-                        });
-                      },
-                      child: Text("확정"),
                     ),
+                    onPressed: () {
+                      setState(() {
+                        if (_buttonCheck) {
+                          if (!_recordingCheck) {
+                            _showColorModal(context);
+                            
+                          }
+                        } else {
+                          Fluttertoast.showToast(
+                            msg: "홀드를 선택해주세요.",
+                            gravity: ToastGravity.BOTTOM,
+                            backgroundColor: const Color.fromRGBO(0, 0, 0, 0.8),
+                          );
+                        }
+                      });
+                    },
+                    child: const Text("확정"),
                   ),
                   FutureBuilder<Map<int, List<dynamic>>>(
                     future: imageHoldInfos,
