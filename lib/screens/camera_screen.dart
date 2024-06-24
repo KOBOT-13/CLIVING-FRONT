@@ -378,28 +378,24 @@ class _CameraScreenState extends State<CameraScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      onPressed: (){
-                        setState(() {
-                          if(_buttonCheck){
-                            if(!_recordingCheck){
-                              createPage();
-                              _controller!.startVideoRecording();
-                              _recordingCheck = true;
-                              file = null;
-                              fetchTop();
-                            }
-                          }
-                          else{
-                            Fluttertoast.showToast(
-                              msg: "홀드를 선택해주세요.",
-                              gravity: ToastGravity.BOTTOM,
-                              backgroundColor: Color.fromRGBO(0, 0, 0, 0.8),
-                            );
-                          }
-                        });
-                      },
-                      child: Text("확정"),
                     ),
+                    onPressed: () {
+                      setState(() {
+                        if (_buttonCheck) {
+                          if (!_recordingCheck) {
+                            _showColorModal(context);
+                            
+                          }
+                        } else {
+                          Fluttertoast.showToast(
+                            msg: "홀드를 선택해주세요.",
+                            gravity: ToastGravity.BOTTOM,
+                            backgroundColor: const Color.fromRGBO(0, 0, 0, 0.8),
+                          );
+                        }
+                      });
+                    },
+                    child: const Text("확정"),
                   ),
                   FutureBuilder<Map<int, List<dynamic>>>(
                     future: imageHoldInfos,
