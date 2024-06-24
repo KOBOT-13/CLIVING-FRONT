@@ -33,6 +33,7 @@ dependencies:
   fluttertoast: ^8.2.5
   flutter_dotenv: ^5.1.0
   ribbon_widget: ^1.0.5
+  url_launcher: ^6.3.0
 
 
   
