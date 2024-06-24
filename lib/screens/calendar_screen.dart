@@ -176,9 +176,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       String formattedDate =
                           '${startTime.month}월 ${startTime.day}일';
                       String formattedStartTime =
-                          '${startTime.hour}:${startTime.minute.toString().padLeft(2, '0')}';
+                          '${startTime.hour}시 ${startTime.minute.toString().padLeft(2, '0')}분';
                       String formattedFinishTime =
-                          '${finishTime.hour}:${finishTime.minute.toString().padLeft(2, '0')}';
+                          '${finishTime.hour}시 ${finishTime.minute.toString().padLeft(2, '0')}분';
 
                       String timeRange;
                       if (finishTime.difference(startTime).inHours >= 1) {

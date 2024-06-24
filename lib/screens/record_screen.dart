@@ -1,11 +1,14 @@
 import 'dart:convert';
 
 import 'package:cliving_front/screens/event.dart';
-import 'package:cliving_front/screens/video_player_screen.dart';
+// import 'package:cliving_front/screens/video_player_screen.dart';
+// import 'package:cliving_front/screens/test_video_screen.dart';
+import 'package:flutter/services.dart';
 import 'package:ribbon_widget/ribbon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 class RecordScreen extends StatefulWidget {
   DateTime selectedDay;
@@ -210,6 +213,24 @@ class _RecordScreenState extends State<RecordScreen> {
     } catch (e) {
       print('Error counting thumbnails: $e');
       return 0;
+    }
+  }
+
+  Future<void> _launchURL(String nowUrl) async {
+    final Uri url = Uri.parse(nowUrl);
+    try {
+      if (!await launchUrl(
+        url,
+        mode: LaunchMode.inAppWebView,
+      )) {
+        throw Exception('Could not launch $url');
+      }
+    } on PlatformException catch (e) {
+      // 에러 로그 출력
+      print('PlatformException: ${e.message}');
+    } catch (e) {
+      // 일반 예외 처리
+      print('Exception: $e');
     }
   }
 
@@ -489,15 +510,8 @@ class _RecordScreenState extends State<RecordScreen> {
                                   itemBuilder: (context, index) {
                                     return GestureDetector(
                                       onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                VideoPlayerScreen(
-                                              videoUrl: videos[index],
-                                            ),
-                                          ),
-                                        );
+                                        String nowUrl = videos[index];
+                                        _launchURL(nowUrl);
                                       },
                                       child: Ribbon(
                                         nearLength: 13,
