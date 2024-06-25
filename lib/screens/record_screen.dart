@@ -309,6 +309,8 @@ class _RecordScreenState extends State<RecordScreen> {
                     List<int>.from(pageData['color_success_counter']);
                 List<int> colorFailCounter =
                     List<int>.from(pageData['color_fail_counter']);
+                List<int> colorTotalCounter =
+                    List<int>.from(pageData['bouldering_clear_color_counter']);
 
                 int startH = startDateTime.hour;
                 int startM = startDateTime.minute;
@@ -442,9 +444,8 @@ class _RecordScreenState extends State<RecordScreen> {
                                       ),
                                     ),
                                     Text(
-                                      colorFailCounter.length > index
-                                          ? (colorFailCounter[index] +
-                                                  colorSuccessCounter[index])
+                                      colorTotalCounter.length > index
+                                          ? (colorTotalCounter[index])
                                               .toString()
                                           : '',
                                       style: const TextStyle(
