@@ -146,17 +146,32 @@ class PieChartWidgetState extends State<PieChartWidget> {
 
   Color _getColorFromName(String colorName) {
     switch (colorName) {
-      case 'red':
-        return Colors.red;
-      case 'blue':
-        return Colors.blue;
-      case 'green':
-        return Colors.green;
       case 'orange':
         return Colors.orange;
-      // Add more colors as needed
-      default:
+      case 'yellow':
+        return Colors.yellow;
+      case 'green':
+        return Colors.green;
+      case 'blue':
+        return Colors.blue;
+      case 'navy':
+        return const Color.fromRGBO(0, 0, 55, 1);
+      case 'red':
+        return Colors.red;
+      case 'pink':
+        return const Color.fromARGB(255, 253, 125, 168);
+      case 'purple':
+        return Colors.purple;
+      case 'grey':
         return Colors.grey;
+      case 'brown':
+        return Colors.brown;
+      case 'black':
+        return Colors.black;
+      case 'white':
+        return Colors.white;
+      default:
+        return Colors.black; // 기본 값으로 'black'을 반환
     }
   }
 }
