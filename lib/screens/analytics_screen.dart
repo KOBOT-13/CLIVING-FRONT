@@ -85,7 +85,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               textBaseline: TextBaseline.ideographic,
               children: [
                 Text(
-                  '혜진', // 여기에 원하는 이름을 넣어주세요.
+                  '코봇 ', // 여기에 원하는 이름을 넣어주세요.
                   style: TextStyle(
                     fontSize: 40, // 이름을 크게 표시할 폰트 크기입니다.
                     color: Colors.black,
