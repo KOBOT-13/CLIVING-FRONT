@@ -379,7 +379,6 @@ class _CameraScreenState extends State<CameraScreen> {
                           color: Colors.white,
                         ),
                       ),
-                    ),
                     onPressed: () {
                       setState(() {
                         if (_buttonCheck) {
@@ -397,6 +396,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       });
                     },
                     child: const Text("확정"),
+                    ),
                   ),
                   FutureBuilder<Map<int, List<dynamic>>>(
                     future: imageHoldInfos,
