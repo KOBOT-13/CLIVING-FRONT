@@ -213,19 +213,19 @@ class _CameraScreenState extends State<CameraScreen> {
   Future<void> createPage() async {
     var d = DateTime.now();
     dateFormat = DateFormat("yyMMdd").format(d).toString();
-
+    print(dateFormat);
     String apiAddress = dotenv.get("API_ADDRESS");
     final url = Uri.parse('$apiAddress/v1/page/');
-    final response = await http.post(url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'date': dateFormat,
-          'climbing_center_name': "클라이밍장 이름을 입력해주세요.",
-          'bouldering_clear_color': selectedColorList,
-        }));
-    print(response.statusCode);
+    // final response = await http.post(url,
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: json.encode({
+    //       'date': dateFormat,
+    //       'climbing_center_name': "클라이밍장 이름을 입력해주세요.",
+    //       'bouldering_clear_color': selectedColorList,
+    //     }));
+    // print(response.statusCode);
     try{
       final response = await http.post(
         url,
@@ -235,6 +235,10 @@ class _CameraScreenState extends State<CameraScreen> {
         body: json.encode({
           'date': dateFormat,
           'climbing_center_name' : "클라이밍장 이름을 입력해주세요.",
+          'bouldering_clear_color': selectedColorList,
+          'bouldering_clear_color_counter' : [],
+          'color_success_counter' : [],
+          'color_fail_counter' : [],
         })
       );
       print(response.statusCode);
@@ -258,8 +262,42 @@ class _CameraScreenState extends State<CameraScreen> {
       request.fields['video_color'] = selectedColor;
       request.fields['page_id'] = dateFormat!;
       var response = await request.send();
+      createCheckpoint();
       print(response.statusCode);
     } catch (e) {
+      print(e); 
+    }
+  }
+
+  Future<void> createCheckpoint() async {
+    String apiAddress = dotenv.get("API_ADDRESS");
+    final url = Uri.parse('$apiAddress/v1/video/240626-01/create_checkpoint/');
+    try{
+      final response = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        );
+      print(response.statusCode);
+      createClips();
+    } catch(e){
+      print(e);
+    }
+  }
+
+  Future<void> createClips() async {
+    String apiAddress = dotenv.get("API_ADDRESS");
+    final url = Uri.parse('$apiAddress/v1/video/240626-01/create_clip/');
+    try{
+      final response = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        );
+      print(response.statusCode);
+    } catch(e){
       print(e);
     }
   }
@@ -423,11 +461,11 @@ class _CameraScreenState extends State<CameraScreen> {
                                 children: [
                                   for(var t in buttonHold.entries)
                                     Positioned(
-                                      top:  (t.value[0][0]) / 3024.0 * constraints.maxWidth,
-                                      right: (t.value[0][1]) / 4032.0 * constraints.maxHeight,
+                                      top:  (t.value[0][1]) / 4032.0 * constraints.maxHeight,
+                                      right: (t.value[0][0]) / 3024.0 * constraints.maxWidth,
                                       child: SizedBox(
-                                        width:  (t.value[0][3] / 4032.0 * constraints.maxHeight) - (t.value[0][1] / 4032.0 * constraints.maxHeight),
-                                        height:(t.value[0][2] / 3024.0 * constraints.maxWidth) - (t.value[0][0] / 3024.0 * constraints.maxWidth),
+                                        width: (t.value[0][2] / 3024.0 * constraints.maxWidth) - (t.value[0][0] / 3024.0 * constraints.maxWidth),
+                                        height: (t.value[0][3] / 4032.0 * constraints.maxHeight) - (t.value[0][1] / 4032.0 * constraints.maxHeight),
                                         child: OutlinedButton(
                                           onPressed: (){
                                             setState(() {
