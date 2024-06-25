@@ -25,7 +25,7 @@ class _CameraScreenState extends State<CameraScreen> {
     'blue': Colors.blue,
     'navy': const Color.fromRGBO(0, 0, 55, 1),
     'red': Colors.red,
-    'pink': Colors.pink,
+    'pink': Color.fromARGB(255, 253, 125, 168),
     'purple': Colors.purple,
     'grey': Colors.grey,
     'brown': Colors.brown,

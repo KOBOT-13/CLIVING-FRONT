@@ -70,8 +70,8 @@ class _LineChartWidgetState extends State<LineChartWidget> {
 
   LineChartData mainData(List<FlSpot> spots) {
     List<Color> gradientColors = [
-      Colors.orange,
-      Colors.pink,
+      const Color.fromARGB(255, 255, 162, 22),
+      const Color.fromARGB(255, 245, 66, 125)
     ];
 
     return LineChartData(

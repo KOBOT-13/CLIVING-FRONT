@@ -78,7 +78,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       case 'red':
         return Colors.red;
       case 'pink':
-        return Colors.pink;
+        return Color.fromARGB(255, 253, 125, 168);
       case 'purple':
         return Colors.purple;
       case 'grey':

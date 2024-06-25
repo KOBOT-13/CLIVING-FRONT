@@ -247,7 +247,7 @@ class _RecordScreenState extends State<RecordScreen> {
       'blue': Colors.blue,
       'navy': const Color.fromRGBO(0, 0, 55, 1),
       'red': Colors.red,
-      'pink': Colors.pink,
+      'pink': const Color.fromARGB(255, 253, 125, 168),
       'purple': Colors.purple,
       'grey': Colors.grey,
       'brown': Colors.brown,
