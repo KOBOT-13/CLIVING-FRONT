@@ -309,6 +309,7 @@ class _CameraScreenState extends State<CameraScreen> {
     XFile? file = await _controller!.stopVideoRecording();
     setState(() {
       video = file;
+      _recordingCheck = false;
     });
     // 영상 저장 API 실행
     try {
