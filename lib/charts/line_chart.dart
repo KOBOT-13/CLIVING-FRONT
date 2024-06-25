@@ -70,14 +70,18 @@ class _LineChartWidgetState extends State<LineChartWidget> {
 
   LineChartData mainData(List<FlSpot> spots) {
     List<Color> gradientColors = [
-      Colors.orange,
-      Colors.pink,
+      const Color.fromARGB(255, 255, 162, 22),
+      const Color.fromARGB(255, 245, 66, 125)
     ];
 
     return LineChartData(
       lineTouchData: LineTouchData(
           enabled: true,
           touchTooltipData: LineTouchTooltipData(
+              fitInsideHorizontally: true,
+              fitInsideVertically: true,
+              tooltipPadding: const EdgeInsets.all(5),
+              tooltipMargin: 3,
               getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
             return touchedBarSpots.map((barSpot) {
               final flSpot = barSpot;
@@ -137,7 +141,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
       minX: 0,
       maxX: 11,
       minY: 0,
-      maxY: spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b) + 1,
+      maxY: spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b) + 3,
       lineBarsData: [
         LineChartBarData(
           spots: spots,

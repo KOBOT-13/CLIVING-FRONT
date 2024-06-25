@@ -28,14 +28,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Future<void> _fetchAndSetEvents() async {
     try {
-      int currentYear = _selectedDay.year % 100;
-      int currentMonth = _selectedDay.month;
+      int currentYear = _focusedDay.year % 100;
 
-      Map<DateTime, List<Event>> fetchedEvents =
-          await fetchEvents(currentYear, currentMonth);
+      Map<DateTime, List<Event>> fetchedEvents = await fetchEvents(currentYear);
       setState(() {
         events = fetchedEvents;
-        _selectedEvents.value = _getEventsForDay(_selectedDay);
+        _selectedEvents.value = _getEventsForDay(_focusedDay);
       });
     } catch (error) {
       print('Failed to fetch events: $error');
@@ -78,7 +76,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       case 'red':
         return Colors.red;
       case 'pink':
-        return Colors.pink;
+        return const Color.fromARGB(255, 253, 125, 168);
       case 'purple':
         return Colors.purple;
       case 'grey':
@@ -158,8 +156,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   },
                 ),
                 onPageChanged: (focusedDay) {
+                  // 페이지가 변경될 때마다 focusedDay가 해당 달의 1일로 바뀜
                   _focusedDay = focusedDay;
-                  _refreshCalendarScreen(); // 페이지가 변경될 때마다 데이터를 다시 가져옴
                 },
               ),
             ),

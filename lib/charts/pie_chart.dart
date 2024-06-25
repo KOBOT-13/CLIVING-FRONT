@@ -71,6 +71,18 @@ class PieChartWidgetState extends State<PieChartWidget> {
     }
   }
 
+  List<PieChartSectionData> generateEmptyChartData() {
+    // 데이터가 없을 경우 빈 원형 그래프 섹션 생성
+    return [
+      PieChartSectionData(
+        color: Colors.grey[300],
+        value: 1,
+        title: '',
+        radius: 70,
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -84,7 +96,15 @@ class PieChartWidgetState extends State<PieChartWidget> {
               } else if (snapshot.hasError) {
                 return const Center(child: Text('Error loading data'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No data available'));
+                // 데이터가 없을 경우
+                return Center(
+                  child: PieChart(
+                    PieChartData(
+                      sections: generateEmptyChartData(),
+                      centerSpaceRadius: 0,
+                    ),
+                  ),
+                );
               } else {
                 return PieChart(
                   PieChartData(
@@ -146,17 +166,32 @@ class PieChartWidgetState extends State<PieChartWidget> {
 
   Color _getColorFromName(String colorName) {
     switch (colorName) {
-      case 'red':
-        return Colors.red;
-      case 'blue':
-        return Colors.blue;
-      case 'green':
-        return Colors.green;
       case 'orange':
         return Colors.orange;
-      // Add more colors as needed
-      default:
+      case 'yellow':
+        return Colors.yellow;
+      case 'green':
+        return Colors.green;
+      case 'blue':
+        return Colors.blue;
+      case 'navy':
+        return const Color.fromRGBO(0, 0, 55, 1);
+      case 'red':
+        return Colors.red;
+      case 'pink':
+        return const Color.fromARGB(255, 253, 125, 168);
+      case 'purple':
+        return Colors.purple;
+      case 'grey':
         return Colors.grey;
+      case 'brown':
+        return Colors.brown;
+      case 'black':
+        return Colors.black;
+      case 'white':
+        return Colors.white;
+      default:
+        return Colors.black; // 기본 값으로 'black'을 반환
     }
   }
 }

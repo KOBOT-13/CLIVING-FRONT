@@ -35,9 +35,9 @@ class Event {
   }
 }
 
-Future<Map<DateTime, List<Event>>> fetchEvents(int year, int month) async {
+Future<Map<DateTime, List<Event>>> fetchEvents(int year) async {
   String apiAddress = dotenv.get("API_ADDRESS");
-  final url = Uri.parse('$apiAddress/v1/pages/$year/$month');
+  final url = Uri.parse('$apiAddress/v1/pages/$year');
 
   final response = await http.get(
     url,

@@ -247,7 +247,7 @@ class _RecordScreenState extends State<RecordScreen> {
       'blue': Colors.blue,
       'navy': const Color.fromRGBO(0, 0, 55, 1),
       'red': Colors.red,
-      'pink': Colors.pink,
+      'pink': const Color.fromARGB(255, 253, 125, 168),
       'purple': Colors.purple,
       'grey': Colors.grey,
       'brown': Colors.brown,
@@ -390,7 +390,7 @@ class _RecordScreenState extends State<RecordScreen> {
                           child: Row(
                             children: [
                               Text(
-                                '${startH < 10 ? '0' : ''}$startH : ${startM < 10 ? '0' : ''}$startM : ${startS < 10 ? '0' : ''}$startS',
+                                '${startH < 10 ? '0' : ''}$startH시 ${startM < 10 ? '0' : ''}$startM분 ',
                                 style: const TextStyle(fontSize: 20),
                               ),
                               const Text(
@@ -398,7 +398,7 @@ class _RecordScreenState extends State<RecordScreen> {
                                 style: TextStyle(fontSize: 20),
                               ),
                               Text(
-                                '${finishH < 10 ? '0' : ''}$finishH : ${finishM < 10 ? '0' : ''}$finishM : ${startS < 10 ? '0' : ''}$finishS',
+                                '${finishH < 10 ? '0' : ''}$finishH시 ${finishM < 10 ? '0' : ''}$finishM분',
                                 style: const TextStyle(fontSize: 20),
                               ),
                             ],
