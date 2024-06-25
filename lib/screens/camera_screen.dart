@@ -213,7 +213,7 @@ class _CameraScreenState extends State<CameraScreen> {
     // 오늘 날짜에 생성된 페이지가 있는지 확인
     var d = DateTime.now();
     dateFormat = DateFormat("yyMMdd").format(d).toString();
-
+    print(dateFormat);
     String apiAddress = dotenv.get("API_ADDRESS");
     final url = Uri.parse('$apiAddress/v1/page/$dateFormat/');
     final response = await http.get(
@@ -492,11 +492,11 @@ class _CameraScreenState extends State<CameraScreen> {
                                 children: [
                                   for(var t in buttonHold.entries)
                                     Positioned(
-                                      top:  (t.value[0][0]) / 3024.0 * constraints.maxWidth,
-                                      right: (t.value[0][1]) / 4032.0 * constraints.maxHeight,
+                                      top:  (t.value[0][1]) / 4032.0 * constraints.maxHeight,
+                                      right: (t.value[0][0]) / 3024.0 * constraints.maxWidth,
                                       child: SizedBox(
-                                        width:  (t.value[0][3] / 4032.0 * constraints.maxHeight) - (t.value[0][1] / 4032.0 * constraints.maxHeight),
-                                        height:(t.value[0][2] / 3024.0 * constraints.maxWidth) - (t.value[0][0] / 3024.0 * constraints.maxWidth),
+                                        width: (t.value[0][2] / 3024.0 * constraints.maxWidth) - (t.value[0][0] / 3024.0 * constraints.maxWidth),
+                                        height: (t.value[0][3] / 4032.0 * constraints.maxHeight) - (t.value[0][1] / 4032.0 * constraints.maxHeight),
                                         child: OutlinedButton(
                                           onPressed: (){
                                             setState(() {
