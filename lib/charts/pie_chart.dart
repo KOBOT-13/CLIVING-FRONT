@@ -71,6 +71,18 @@ class PieChartWidgetState extends State<PieChartWidget> {
     }
   }
 
+  List<PieChartSectionData> generateEmptyChartData() {
+    // 데이터가 없을 경우 빈 원형 그래프 섹션 생성
+    return [
+      PieChartSectionData(
+        color: Colors.grey[300],
+        value: 1,
+        title: '',
+        radius: 70,
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -84,7 +96,15 @@ class PieChartWidgetState extends State<PieChartWidget> {
               } else if (snapshot.hasError) {
                 return const Center(child: Text('Error loading data'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No data available'));
+                // 데이터가 없을 경우
+                return Center(
+                  child: PieChart(
+                    PieChartData(
+                      sections: generateEmptyChartData(),
+                      centerSpaceRadius: 0,
+                    ),
+                  ),
+                );
               } else {
                 return PieChart(
                   PieChartData(
