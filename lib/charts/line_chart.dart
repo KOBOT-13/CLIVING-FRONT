@@ -78,6 +78,10 @@ class _LineChartWidgetState extends State<LineChartWidget> {
       lineTouchData: LineTouchData(
           enabled: true,
           touchTooltipData: LineTouchTooltipData(
+              fitInsideHorizontally: true,
+              fitInsideVertically: true,
+              tooltipPadding: const EdgeInsets.all(5),
+              tooltipMargin: 3,
               getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
             return touchedBarSpots.map((barSpot) {
               final flSpot = barSpot;
@@ -137,7 +141,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
       minX: 0,
       maxX: 11,
       minY: 0,
-      maxY: spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b) + 1,
+      maxY: spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b) + 3,
       lineBarsData: [
         LineChartBarData(
           spots: spots,
