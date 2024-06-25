@@ -154,7 +154,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                     snapshot.data ?? 'N/A',
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
-                                        fontSize: 35,
+                                        fontSize: 30,
                                         fontWeight: FontWeight.w700),
                                   ),
                                 ],
@@ -208,7 +208,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                     snapshot.data ?? 'N/A',
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
-                                        fontSize: 35,
+                                        fontSize: 30,
                                         fontWeight: FontWeight.w700),
                                   ),
                                 ],
