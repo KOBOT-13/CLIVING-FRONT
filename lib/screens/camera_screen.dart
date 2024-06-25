@@ -185,9 +185,8 @@ class _CameraScreenState extends State<CameraScreen> {
                   child: const Text('영상 촬영 시작'),
                   onPressed: () {
                     selectedColorList.add(selectedColor);
-                    print(selectedColor);
                     if (!_recordingCheck) {
-                      createPage();
+                      checkPage(); // 오늘 날짜에 생성된 Page가 있는지 확인 후 create
                       _controller!.startVideoRecording();
                       _recordingCheck = true;
                       file = null;
@@ -210,10 +209,37 @@ class _CameraScreenState extends State<CameraScreen> {
     });
   }
 
-  Future<void> createPage() async {
+  Future<void> checkPage() async {
+    // 오늘 날짜에 생성된 페이지가 있는지 확인
     var d = DateTime.now();
     dateFormat = DateFormat("yyMMdd").format(d).toString();
 
+    String apiAddress = dotenv.get("API_ADDRESS");
+    final url = Uri.parse('$apiAddress/v1/page/$dateFormat/');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode == 404) {
+      //404 not found, 페이지가 존재하지 않을 경우
+      createPage();
+    } else if (response.statusCode == 200) {
+      // 페이지가 존재하는 경우
+      // var responseData = json.decode(response.body);
+      // List<Color> existedPageColor = responseData['bouldering_clear_color'];
+      // patchPage(existedPageColor);
+    } else {
+      throw Exception('fail to check page');
+    }
+    print(response.statusCode);
+  }
+
+  Future<void> createPage() async {
+    var d = DateTime.now();
+    dateFormat = DateFormat("yyMMdd").format(d).toString();
+    print('create page 호출됨');
     String apiAddress = dotenv.get("API_ADDRESS");
     final url = Uri.parse('$apiAddress/v1/page/');
     final response = await http.post(url,
@@ -223,27 +249,63 @@ class _CameraScreenState extends State<CameraScreen> {
         body: json.encode({
           'date': dateFormat,
           'climbing_center_name': "클라이밍장 이름을 입력해주세요.",
-          'bouldering_clear_color': selectedColorList,
+          // 'bouldering_clear_color': selectedColorList,
         }));
     print(response.statusCode);
-    try{
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'date': dateFormat,
-          'climbing_center_name' : "클라이밍장 이름을 입력해주세요.",
-        })
-      );
-      print(response.statusCode);
-    } catch(e){
-      print(e);
-    }
   }
 
-  Future<void> stopRecording() async {
+  // Future<void> patchPage(List<Color> existedColorList) async {
+  //   var d = DateTime.now();
+  //   dateFormat = DateFormat("yyMMdd").format(d).toString();
+  //   List<Color> updateColorList = existedColorList;
+  //   print('patch page 호출됨');
+  //   print('selectedColor : $selectedColor');
+  //   print('selectedColorList : $selectedColorList');
+  //   updateColorList.add(colorMap[selectedColor]);
+  //   print('updateColorList : $updateColorList');
+  //   String apiAddress = dotenv.get("API_ADDRESS");
+  //   final url = Uri.parse('$apiAddress/v1/page/$dateFormat/');
+  //   final response = await http.patch(url,
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: json.encode({
+  //         'bouldering_clear_color': updateColorList,
+  //       }));
+  //   print(response.statusCode);
+  // }
+
+  Future<void> createClip(String videoIdArg) async {
+    print('=== create clip start ====');
+    String apiAddress = dotenv.get("API_ADDRESS");
+    String videoId = videoIdArg;
+    final url = Uri.parse('$apiAddress/v1/video/$videoId/create_clip/');
+    print('!!!print videoId');
+    print(videoId.toString());
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+    print(response.statusCode);
+  }
+
+  Future<void> createCheckpoint(String videoIdArg) async {
+    print('=== create checkpoint start ====');
+    String apiAddress = dotenv.get("API_ADDRESS");
+    String videoId = videoIdArg;
+    final url = Uri.parse('$apiAddress/v1/video/$videoId/create_checkpoint/');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+    print(response.statusCode);
+  }
+
+  Future<String> stopRecording() async {
     XFile? file = await _controller!.stopVideoRecording();
     setState(() {
       video = file;
@@ -257,10 +319,17 @@ class _CameraScreenState extends State<CameraScreen> {
           .add(await http.MultipartFile.fromPath('videofile', file.path));
       request.fields['video_color'] = selectedColor;
       request.fields['page_id'] = dateFormat!;
-      var response = await request.send();
-      print(response.statusCode);
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+      var responseData = json.decode(response.body);
+      print('Parsed Response: $responseData');
+      String videoId = responseData['custom_id'];
+      return videoId;
     } catch (e) {
-      print(e);
+      print('Error: $e');
+      return 'Error: $e';
     }
   }
 
@@ -311,11 +380,13 @@ class _CameraScreenState extends State<CameraScreen> {
           child: Padding(
             padding: const EdgeInsets.all(15.0),
             child: GestureDetector(
-              onTap: () {
+              onTap: () async {
                 if (!_recordingCheck) {
                   _takePicture();
                 } else {
-                  stopRecording();
+                  String videoId = await stopRecording();
+                  await createCheckpoint(videoId);
+                  await createClip(videoId);
                   _recordingCheck = false;
                 }
               },
@@ -384,7 +455,6 @@ class _CameraScreenState extends State<CameraScreen> {
                         if (_buttonCheck) {
                           if (!_recordingCheck) {
                             _showColorModal(context);
-                            
                           }
                         } else {
                           Fluttertoast.showToast(
@@ -396,7 +466,6 @@ class _CameraScreenState extends State<CameraScreen> {
                       });
                     },
                     child: const Text("확정"),
-                    ),
                   ),
                   FutureBuilder<Map<int, List<dynamic>>>(
                     future: imageHoldInfos,
