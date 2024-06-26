@@ -1,5 +1,8 @@
-# CLIVING FRONT
+<div align=center>
+    <img src="assets/images/entry.png" alt="App Logo" width="500"/>
+</div>
 
+# CLIVING FRONT
 *Climbing Clip Archive Service* **CLIVING**의 Front-End 레포지토리입니다.
 
 ## 요구사항
