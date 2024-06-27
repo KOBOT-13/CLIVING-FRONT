@@ -1,8 +1,5 @@
 import 'dart:convert';
-
 import 'package:cliving_front/screens/event.dart';
-// import 'package:cliving_front/screens/video_player_screen.dart';
-// import 'package:cliving_front/screens/test_video_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:ribbon_widget/ribbon_widget.dart';
 import 'package:flutter/material.dart';
@@ -98,7 +95,6 @@ class _RecordScreenState extends State<RecordScreen> {
       );
 
       if (response.statusCode == 200) {
-        print('Place updated successfully');
         setState(() {
           futurePage = _getPage();
           placeController.text = newPlace;
@@ -127,7 +123,6 @@ class _RecordScreenState extends State<RecordScreen> {
     if (response.statusCode == 200) {
       List<dynamic> readVideoUrls =
           json.decode(utf8.decode(response.bodyBytes));
-      print('readVideoUrls: $readVideoUrls');
       return readVideoUrls
           .map((video) => '$apiAddress/$video')
           .toList()
@@ -152,7 +147,6 @@ class _RecordScreenState extends State<RecordScreen> {
     if (response.statusCode == 200) {
       List<dynamic> readThumbnailUrls =
           json.decode(utf8.decode(response.bodyBytes));
-      print('readThumbnailUrls: $readThumbnailUrls');
       return readThumbnailUrls
           .map((thumbnail) => '$apiAddress/$thumbnail')
           .toList()
@@ -176,7 +170,6 @@ class _RecordScreenState extends State<RecordScreen> {
     if (response.statusCode == 200) {
       List<dynamic> readColorsList =
           json.decode(utf8.decode(response.bodyBytes));
-      print('readColorsList: $readColorsList');
       return readColorsList.toList().cast<String>();
     } else {
       throw Exception('Failed to load colors');
@@ -197,7 +190,6 @@ class _RecordScreenState extends State<RecordScreen> {
     if (response.statusCode == 200) {
       List<dynamic> readTypesList =
           json.decode(utf8.decode(response.bodyBytes));
-      print('readTypesList: $readTypesList');
       return readTypesList.map((type) => type.toString()).toList();
 
       //readTypesList.toList().cast<String>();

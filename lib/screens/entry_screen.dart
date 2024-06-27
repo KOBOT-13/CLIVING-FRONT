@@ -1,9 +1,7 @@
 import 'package:cliving_front/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-
 import 'package:get/get.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class EntryScreen extends StatefulWidget {
   const EntryScreen({super.key});

@@ -16,7 +16,6 @@ class Event {
   });
 
   @override
-  // String toString() => '';
   String toString() {
     return 'Event(place: $place, color: $color, start: $start, finish: $finish)';
   }
