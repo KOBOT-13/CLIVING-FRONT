@@ -42,7 +42,7 @@ API_ADDRESS=http://{SERVER_IP_ADDRESS}
 ~~~
 -  SERVER_IP_ADDRESS
     + IOS LOCAL IP : 127.0.0.1:8000
-    + ADNROID LOCAL IP : 10.0.2.2:8000
+    + ANDROID LOCAL IP : 10.0.2.2:8000
     
 ### 4. Emulator Launch and Flutter run
 - 에뮬레이터 확인
