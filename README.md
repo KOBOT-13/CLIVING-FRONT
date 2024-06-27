@@ -1,5 +1,5 @@
 <div align=center>
-    <img src="assets/images/entry.png" alt="App Logo" width="500"/>
+    <img src="assets/images/Logo.png" alt="App Logo" width="300"/>
 </div>
 
 # CLIVING FRONT
@@ -28,21 +28,25 @@
 
 ## 설치 및 실행 방법
 ### 1. Git Clone
-    git clone https://github.com/KOBOT-13/cliving-front.git
-    cd cliving-front
+~~~ bash
+git clone https://github.com/KOBOT-13/cliving-front.git
+cd cliving-front
+~~~
 ### 2. Flutter package install
     flutter pub get
 ### 3. Create .env
-    vi .env
-    API_ADDRESS=http://{SERVER_IP_ADDRESS}
-    :wq
+~~~ bash
+vi .env
+API_ADDRESS=http://{SERVER_IP_ADDRESS}
+:wq
+~~~
 -  SERVER_IP_ADDRESS
     + IOS LOCAL IP : 127.0.0.1:8000
     + ADNROID LOCAL IP : 10.0.2.2:8000
     
 ### 4. Emulator Launch and Flutter run
 - 에뮬레이터 확인
-```
+``` bash
 flutter emulator
 ```
 - 에뮬레이터 실행
