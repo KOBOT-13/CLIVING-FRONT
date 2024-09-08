@@ -18,15 +18,15 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           children: <Widget>[
             Container(
-              margin: EdgeInsets.only(top: deviceHeight/6),
+              margin: EdgeInsets.only(top: deviceHeight/5),
               child: Image.asset(
                 'assets/images/entry.png',
-                width: 330,
-                height: 330,
+                width: 250,
+                height: 250,
               ),
             ),
             const Padding(
-              padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+              padding: EdgeInsets.fromLTRB(20, 40, 20, 0),
               child: TextField(
                 decoration: InputDecoration(
                   hintText: '아이디',
