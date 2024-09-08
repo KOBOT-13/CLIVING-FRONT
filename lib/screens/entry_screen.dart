@@ -1,7 +1,7 @@
-import 'package:cliving_front/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:get/get.dart';
+import 'package:cliving_front/screens/login_screen.dart';
 
 class EntryScreen extends StatefulWidget {
   const EntryScreen({super.key});
@@ -18,7 +18,7 @@ class _EntryScreenState extends State<EntryScreen> {
     // 일정 시간 후에 MainScreen으로 이동
     Timer(const Duration(seconds: 2), () {
       // 화면 전환
-      Get.off(() => const MainScreen(), transition: Transition.cupertino);
+      Get.off(() => const LoginScreen(), transition: Transition.cupertino);
     });
   }
 
