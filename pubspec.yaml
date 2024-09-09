@@ -34,6 +34,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
   ribbon_widget: ^1.0.5
   url_launcher: ^6.3.0
+  camera_avfoundation: ^0.9.17+3
 
 
   
