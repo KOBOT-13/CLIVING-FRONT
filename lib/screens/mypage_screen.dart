@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cliving_front/charts/pie_chart.dart';
+import 'package:cliving_front/screens/setting_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -223,7 +224,13 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           top: 5,
                           right: 5,
                           child: IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SettingScreen()));
+                            },
                             icon: const Icon(Icons.settings_sharp),
                             iconSize: 23,
                             color: Colors.grey[600],
