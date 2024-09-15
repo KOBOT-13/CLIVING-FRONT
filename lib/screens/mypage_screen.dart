@@ -107,18 +107,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
     });
   }
 
-  void _changeYearly() {
-    setState(() {
-      _isYearly = true;
-    });
-  }
-
-  void _changeMonthly() {
-    setState(() {
-      _isYearly = false;
-    });
-  }
-
   Future<String> _getMonthlyTime() async {
     String apiAddress = dotenv.get("API_ADDRESS");
     final url = Uri.parse('$apiAddress/v1/statistics/monthly/climbing-time/');
