@@ -23,6 +23,18 @@ class PieChartWidgetState extends State<PieChartWidget> {
     colorData = _getColorData(widget.dataType);
   }
 
+  // dataType이 변경될 때마다 다시 API 요청
+  @override
+  void didUpdateWidget(covariant PieChartWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.dataType != widget.dataType) {
+      setState(() {
+        colorData =
+            _getColorData(widget.dataType); // 변경된 dataType에 맞는 데이터 다시 가져오기
+      });
+    }
+  }
+
   Future<List<dynamic>> _getColorData(int dataType) {
     if (dataType == 1) {
       return _getMonthlyColor();
@@ -32,6 +44,7 @@ class PieChartWidgetState extends State<PieChartWidget> {
   }
 
   Future<List<dynamic>> _getMonthlyColor() async {
+    print('api실행');
     String apiAddress = dotenv.get("API_ADDRESS");
     final url = Uri.parse('$apiAddress/v1/statistics/monthly/color-tries/');
 
