@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
+import 'dart:async';
 
 class NumberFormatter extends TextInputFormatter {
   @override
@@ -49,6 +50,35 @@ class _JoinScreenState extends State<JoinScreen> {
   late String password2;
 
   bool isIdValid = true;
+  bool openAuthCode = false;
+  int remainingTime = 10; // 타이머 시간(초)
+  Timer? timer; // 타이머 객체
+
+  @override
+  void dispose() {
+    timer?.cancel(); // 페이지 종료 시 타이머 취소
+    super.dispose();
+  }
+
+  // 타이머 시작 함수
+  void startTimer() {
+    setState(() {
+      openAuthCode = true;
+      remainingTime = 10; // 3분으로 초기화
+    });
+
+    // 타이머 설정: 1초마다 실행
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (remainingTime > 0) {
+          remainingTime--; // 남은 시간 감소
+        } else {
+          openAuthCode = false; // 시간이 끝나면 필드 숨김
+          timer.cancel(); // 타이머 종료
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +115,6 @@ class _JoinScreenState extends State<JoinScreen> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
-                          // height: 5,
                         ),
                       ),
                     ),
@@ -99,7 +128,6 @@ class _JoinScreenState extends State<JoinScreen> {
                             maxLength: 15,
                             cursorColor: Colors.black,
                             decoration: InputDecoration(
-                              counterText: '',
                               labelStyle: const TextStyle(color: Colors.black),
                               contentPadding: const EdgeInsets.only(left: 15),
                               border: OutlineInputBorder(
@@ -114,6 +142,7 @@ class _JoinScreenState extends State<JoinScreen> {
                                   color: Colors.black,
                                 ),
                               ),
+                              helperText: '',
                             ),
                             cursorHeight: 15,
                             style: const TextStyle(
@@ -162,7 +191,7 @@ class _JoinScreenState extends State<JoinScreen> {
                         ),
                       ],
                     ),
-                    const Gap(30),
+                    const Gap(10),
                     const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -189,6 +218,7 @@ class _JoinScreenState extends State<JoinScreen> {
                               color: Colors.black,
                               width: 1.0,
                             )),
+                        helperText: '',
                       ),
                       style: const TextStyle(
                         fontSize: 15,
@@ -200,7 +230,7 @@ class _JoinScreenState extends State<JoinScreen> {
                         return null;
                       },
                     ),
-                    const Gap(30), // 에러 메시지 및 공간 확보
+                    const Gap(10),
                     const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -227,6 +257,7 @@ class _JoinScreenState extends State<JoinScreen> {
                               color: Colors.black,
                               width: 1.0,
                             )),
+                        helperText: '',
                       ),
                       style: const TextStyle(
                         fontSize: 15,
@@ -238,7 +269,7 @@ class _JoinScreenState extends State<JoinScreen> {
                         return null;
                       },
                     ),
-                    const Gap(30), // 에러 메시지 및 공간 확보
+                    const Gap(10), // 에러 메시지 및 공간 확보
                     const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -259,8 +290,7 @@ class _JoinScreenState extends State<JoinScreen> {
                             cursorColor: Colors.black,
                             decoration: InputDecoration(
                               labelStyle: const TextStyle(color: Colors.black),
-                              contentPadding:
-                                  const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              contentPadding: const EdgeInsets.only(left: 15),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 borderSide: const BorderSide(
@@ -273,6 +303,7 @@ class _JoinScreenState extends State<JoinScreen> {
                                   color: Colors.black,
                                 ),
                               ),
+                              helperText: '',
                             ),
                             style: const TextStyle(
                               fontSize: 15,
@@ -320,7 +351,7 @@ class _JoinScreenState extends State<JoinScreen> {
                         ),
                       ],
                     ),
-                    const Gap(30), // 에러 메시지 및 공간 확보
+                    const Gap(10), // 에러 메시지 및 공간 확보
                     const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -341,8 +372,7 @@ class _JoinScreenState extends State<JoinScreen> {
                             cursorColor: Colors.black,
                             decoration: InputDecoration(
                               labelStyle: const TextStyle(color: Colors.black),
-                              contentPadding:
-                                  const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              contentPadding: const EdgeInsets.only(left: 15),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 borderSide: const BorderSide(
@@ -355,6 +385,7 @@ class _JoinScreenState extends State<JoinScreen> {
                                   color: Colors.black,
                                 ),
                               ),
+                              helperText: '',
                             ),
                             style: const TextStyle(
                               fontSize: 15,
@@ -382,7 +413,7 @@ class _JoinScreenState extends State<JoinScreen> {
                           height: 50, // TextFormField와 동일한 높이
                           child: ElevatedButton(
                             onPressed: () {
-                              print("중복확인");
+                              startTimer();
                             },
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
@@ -408,6 +439,46 @@ class _JoinScreenState extends State<JoinScreen> {
                         ),
                       ],
                     ),
+                    const Gap(5),
+                    if (openAuthCode)
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 150,
+                            child: TextField(
+                              textAlign: TextAlign.center,
+                              inputFormatters: <TextInputFormatter>[
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(6)
+                              ],
+                              decoration: InputDecoration(
+                                hintText: "인증번호 입력",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  borderSide: const BorderSide(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  borderSide: const BorderSide(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                helperText: '',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10), // 간격
+                          Text(
+                            "${(remainingTime ~/ 60).toString().padLeft(2, '0')}:${(remainingTime % 60).toString().padLeft(2, '0')}", // 분:초 형태로 표시
+                            style: const TextStyle(
+                              color: Colors.red, // 타이머 색상
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
