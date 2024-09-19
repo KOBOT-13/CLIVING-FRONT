@@ -1,5 +1,6 @@
 import 'package:cliving_front/screens/analytics_screen.dart';
 import 'package:cliving_front/screens/calendar_screen.dart';
+import 'package:cliving_front/screens/community_screen.dart';
 import 'package:cliving_front/screens/mypage_screen.dart';
 
 import 'package:flutter/material.dart';
@@ -17,7 +18,7 @@ class _MainScreenState extends State<MainScreen> {
   final List _pages = [
     CalendarScreen(),
     CameraScreen(),
-    AnalyticsScreen(),
+    CommunityScreen(),
     MyPageScreen(),
   ];
 
@@ -44,8 +45,8 @@ class _MainScreenState extends State<MainScreen> {
             label: '카메라',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.analytics_outlined),
-            label: '통계',
+            icon: Icon(Icons.forum_outlined),
+            label: '커뮤니티',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
