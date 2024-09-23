@@ -151,310 +151,323 @@ class _MyPageScreenState extends State<MyPageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 80, 20, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 1,
-              child: SizedBox(
-                width: double.infinity,
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                    side: const BorderSide(
-                      color: Color.fromRGBO(46, 149, 210, 1),
-                    ),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  color: const Color.fromARGB(255, 214, 240, 255),
-                  elevation: 0,
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                    child: Stack(
-                      children: [
-                        Stack(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.only(top: 20),
-                              width: 100,
-                              height: 100,
-                              color: Colors.transparent,
-                            ),
-                            const Positioned(
-                              width: 80,
-                              height: 80,
-                              top: 12,
-                              left: 20,
-                              child: CircleAvatar(
-                                radius: 50,
-                                backgroundImage: AssetImage(
-                                    'assets/images/profile_image.png'),
-                                backgroundColor: Colors.transparent,
-                              ),
-                            ),
-                          ],
+      body: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
+          child: IntrinsicHeight(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 80, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            color: Color.fromRGBO(46, 149, 210, 1),
+                          ),
+                          borderRadius: BorderRadius.circular(10.0),
                         ),
-                        const Positioned(
-                          top: 20,
-                          left: 120,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        color: const Color.fromARGB(255, 214, 240, 255),
+                        elevation: 0,
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          child: Stack(
                             children: [
-                              Text(
-                                "임혜진 님",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 18,
+                              Stack(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.only(top: 20),
+                                    width: 100,
+                                    height: 100,
+                                    color: Colors.transparent,
+                                  ),
+                                  const Positioned(
+                                    width: 80,
+                                    height: 80,
+                                    top: 12,
+                                    left: 20,
+                                    child: CircleAvatar(
+                                      radius: 50,
+                                      backgroundImage: AssetImage(
+                                          'assets/images/profile_image.png'),
+                                      backgroundColor: Colors.transparent,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Positioned(
+                                top: 20,
+                                left: 120,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "임혜진 님",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      "3레벨 클라이머",
+                                    ),
+                                    SizedBox(
+                                      height: 4,
+                                    ),
+                                  ],
                                 ),
                               ),
-                              SizedBox(
-                                height: 10,
+                              Positioned(
+                                top: 5,
+                                right: 5,
+                                child: IconButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const SettingScreen()));
+                                  },
+                                  icon: const Icon(Icons.settings_sharp),
+                                  iconSize: 23,
+                                  color: Colors.grey[600],
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          height: 60,
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                left: 0,
+                                top: 5,
+                                child: IconButton(
+                                  icon: const Icon(Icons.arrow_left),
+                                  onPressed: _isYearly
+                                      ? _goToPreviousYear
+                                      : _goToPreviousMonth,
+                                ),
                               ),
-                              Text(
-                                "3레벨 클라이머",
+                              Positioned(
+                                left: 75,
+                                top: 17,
+                                child: Text(
+                                  _isYearly
+                                      ? '${_selectedDate.year}년'
+                                      : '   ${DateFormat.MMMM('ko').format(_selectedDate)}  ', // 월 이름 포맷
+                                  style: const TextStyle(fontSize: 18),
+                                ),
                               ),
-                              SizedBox(
-                                height: 4,
+                              Positioned(
+                                left: 160,
+                                top: 5,
+                                child: IconButton(
+                                  icon: const Icon(Icons.arrow_right),
+                                  onPressed: _isYearly
+                                      ? _goToNextYear
+                                      : _goToNextMonth,
+                                ),
+                              ),
+                              Positioned(
+                                right: 85,
+                                top: 6,
+                                child: IconButton(
+                                    onPressed: _isYearly
+                                        ? _goToCurrentYear
+                                        : _goToCurrentMonth,
+                                    icon: const Icon(Icons.today_outlined)),
+                              ),
+                              Positioned(
+                                right: 5,
+                                top: 12,
+                                child: Container(
+                                  width: 80,
+                                  height: 35,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[350],
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(50.0),
+                                    ),
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      AnimatedAlign(
+                                        alignment: Alignment(xAlign, 0),
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        child: Container(
+                                          width: 80 * 0.5,
+                                          height: 35,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.blue,
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(50.0),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            xAlign = -1;
+                                            monthColor = selectedColor;
+
+                                            yearColor = normalColor;
+                                            _isYearly = false;
+                                          });
+                                        },
+                                        child: Align(
+                                          alignment: const Alignment(-1, 0),
+                                          child: Container(
+                                            width: 80 * 0.5,
+                                            color: Colors.transparent,
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              '월별',
+                                              style: TextStyle(
+                                                color: monthColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            xAlign = 1;
+                                            yearColor = selectedColor;
+
+                                            monthColor = normalColor;
+                                            _isYearly = true;
+                                          });
+                                        },
+                                        child: Align(
+                                          alignment: const Alignment(1, 0),
+                                          child: Container(
+                                            width: 80 * 0.5,
+                                            color: Colors.transparent,
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              '연별',
+                                              style: TextStyle(
+                                                color: yearColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        Positioned(
-                          top: 5,
-                          right: 5,
-                          child: IconButton(
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SettingScreen()));
-                            },
-                            icon: const Icon(Icons.settings_sharp),
-                            iconSize: 23,
-                            color: Colors.grey[600],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 3,
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          left: 0,
-                          top: 5,
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_left),
-                            onPressed: _isYearly
-                                ? _goToPreviousYear
-                                : _goToPreviousMonth,
-                          ),
-                        ),
-                        Positioned(
-                          left: 75,
-                          top: 17,
-                          child: Text(
-                            _isYearly
-                                ? '${_selectedDate.year}년'
-                                : '   ${DateFormat.MMMM('ko').format(_selectedDate)}  ', // 월 이름 포맷
-                            style: const TextStyle(fontSize: 18),
-                          ),
-                        ),
-                        Positioned(
-                          left: 160,
-                          top: 5,
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_right),
-                            onPressed:
-                                _isYearly ? _goToNextYear : _goToNextMonth,
-                          ),
-                        ),
-                        Positioned(
-                          right: 85,
-                          top: 6,
-                          child: IconButton(
-                              onPressed: _isYearly
-                                  ? _goToCurrentYear
-                                  : _goToCurrentMonth,
-                              icon: const Icon(Icons.today_outlined)),
-                        ),
-                        Positioned(
-                          right: 5,
-                          top: 12,
-                          child: Container(
-                            width: 80,
-                            height: 35,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[350],
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(50.0),
+                        // 통계 그래프
+                        Expanded(
+                          child: Row(children: [
+                            Expanded(
+                              child: FutureBuilder<String>(
+                                future: _isYearly ? annualTime : monthlyTime,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                        child: CircularProgressIndicator());
+                                  } else if (snapshot.hasError) {
+                                    return const Center(
+                                        child: Text('Error loading data'));
+                                  } else {
+                                    return Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            '클라이밍 시간',
+                                            style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w500),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          Text(
+                                            snapshot.data ?? 'N/A',
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                                fontSize: 30,
+                                                fontWeight: FontWeight.w700),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
                             ),
-                            child: Stack(
-                              children: [
-                                AnimatedAlign(
-                                  alignment: Alignment(xAlign, 0),
-                                  duration: const Duration(milliseconds: 300),
-                                  child: Container(
-                                    width: 80 * 0.5,
-                                    height: 35,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.blue,
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(50.0),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      xAlign = -1;
-                                      monthColor = selectedColor;
-
-                                      yearColor = normalColor;
-                                      _isYearly = false;
-                                    });
-                                  },
-                                  child: Align(
-                                    alignment: const Alignment(-1, 0),
-                                    child: Container(
-                                      width: 80 * 0.5,
-                                      color: Colors.transparent,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        '월별',
-                                        style: TextStyle(
-                                          color: monthColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      xAlign = 1;
-                                      yearColor = selectedColor;
-
-                                      monthColor = normalColor;
-                                      _isYearly = true;
-                                    });
-                                  },
-                                  child: Align(
-                                    alignment: const Alignment(1, 0),
-                                    child: Container(
-                                      width: 80 * 0.5,
-                                      color: Colors.transparent,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        '연별',
-                                        style: TextStyle(
-                                          color: yearColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                            Expanded(
+                                child: PieChartWidget(
+                                    // dataType: 2,
+                                    dataType: !_isYearly ? 1 : 2)),
+                          ]),
                         ),
                       ],
                     ),
                   ),
-                  // 통계 그래프
                   Expanded(
-                    child: Row(children: [
-                      Expanded(
-                        child: FutureBuilder<String>(
-                          future: _isYearly ? annualTime : monthlyTime,
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            } else if (snapshot.hasError) {
-                              return const Center(
-                                  child: Text('Error loading data'));
-                            } else {
-                              return Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    const Text(
-                                      '클라이밍 시간',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    Text(
-                                      snapshot.data ?? 'N/A',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.w700),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: double.maxFinite,
+                          height: 0,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                          ),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              top: BorderSide(),
+                            ),
+                          ),
+                        ),
+                        _settingItems(
+                          "고객 지원 센터",
+                          false,
+                          () {
+                            launchUrl(Uri.parse(''));
                           },
                         ),
-                      ),
-                      Expanded(
-                          child: PieChartWidget(
-                              // dataType: 2,
-                              dataType: !_isYearly ? 1 : 2)),
-                    ]),
+                        _settingItems("작성한 게시물", false, () {}),
+                        _settingItems("로그아웃", false, () {}),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              flex: 2,
-              child: Column(
-                children: [
-                  Container(
-                    width: double.maxFinite,
-                    height: 0,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 14,
-                    ),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        top: BorderSide(),
-                      ),
-                    ),
-                  ),
-                  _settingItems(
-                    "고객지원센터",
-                    false,
-                    () {
-                      launchUrl(Uri.parse(''));
-                    },
-                  ),
-                  _settingItems("작성한 게시물", false, () {}),
-                  _settingItems("로그아웃", false, () {}),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
