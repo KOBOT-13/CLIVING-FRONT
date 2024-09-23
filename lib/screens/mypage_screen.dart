@@ -162,8 +162,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 1,
+                  Flexible(
+                    // flex: 1,
                     child: SizedBox(
                       width: double.infinity,
                       child: Card(
@@ -176,7 +176,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         color: const Color.fromARGB(255, 214, 240, 255),
                         elevation: 0,
                         child: Container(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                           child: Stack(
                             children: [
                               Stack(
@@ -248,196 +248,200 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       ),
                     ),
                   ),
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          height: 60,
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                left: 0,
-                                top: 5,
-                                child: IconButton(
-                                  icon: const Icon(Icons.arrow_left),
-                                  onPressed: _isYearly
-                                      ? _goToPreviousYear
-                                      : _goToPreviousMonth,
-                                ),
-                              ),
-                              Positioned(
-                                left: 75,
-                                top: 17,
-                                child: Text(
-                                  _isYearly
-                                      ? '${_selectedDate.year}년'
-                                      : '   ${DateFormat.MMMM('ko').format(_selectedDate)}  ', // 월 이름 포맷
-                                  style: const TextStyle(fontSize: 18),
-                                ),
-                              ),
-                              Positioned(
-                                left: 160,
-                                top: 5,
-                                child: IconButton(
-                                  icon: const Icon(Icons.arrow_right),
-                                  onPressed: _isYearly
-                                      ? _goToNextYear
-                                      : _goToNextMonth,
-                                ),
-                              ),
-                              Positioned(
-                                right: 85,
-                                top: 6,
-                                child: IconButton(
+                  Flexible(
+                    child: IntrinsicHeight(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            height: 60,
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  left: 0,
+                                  top: 5,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.arrow_left),
                                     onPressed: _isYearly
-                                        ? _goToCurrentYear
-                                        : _goToCurrentMonth,
-                                    icon: const Icon(Icons.today_outlined)),
-                              ),
-                              Positioned(
-                                right: 5,
-                                top: 12,
-                                child: Container(
-                                  width: 80,
-                                  height: 35,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[350],
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(50.0),
+                                        ? _goToPreviousYear
+                                        : _goToPreviousMonth,
+                                  ),
+                                ),
+                                Positioned(
+                                  left: 75,
+                                  top: 17,
+                                  child: Text(
+                                    _isYearly
+                                        ? '${_selectedDate.year}년'
+                                        : '   ${DateFormat.MMMM('ko').format(_selectedDate)}  ', // 월 이름 포맷
+                                    style: const TextStyle(fontSize: 18),
+                                  ),
+                                ),
+                                Positioned(
+                                  left: 160,
+                                  top: 5,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.arrow_right),
+                                    onPressed: _isYearly
+                                        ? _goToNextYear
+                                        : _goToNextMonth,
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 85,
+                                  top: 6,
+                                  child: IconButton(
+                                      onPressed: _isYearly
+                                          ? _goToCurrentYear
+                                          : _goToCurrentMonth,
+                                      icon: const Icon(Icons.today_outlined)),
+                                ),
+                                Positioned(
+                                  right: 5,
+                                  top: 12,
+                                  child: Container(
+                                    width: 80,
+                                    height: 35,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[350],
+                                      borderRadius: const BorderRadius.all(
+                                        Radius.circular(50.0),
+                                      ),
+                                    ),
+                                    child: Stack(
+                                      children: [
+                                        AnimatedAlign(
+                                          alignment: Alignment(xAlign, 0),
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          child: Container(
+                                            width: 80 * 0.5,
+                                            height: 35,
+                                            decoration: const BoxDecoration(
+                                              color: Colors.blue,
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(50.0),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              xAlign = -1;
+                                              monthColor = selectedColor;
+
+                                              yearColor = normalColor;
+                                              _isYearly = false;
+                                            });
+                                          },
+                                          child: Align(
+                                            alignment: const Alignment(-1, 0),
+                                            child: Container(
+                                              width: 80 * 0.5,
+                                              color: Colors.transparent,
+                                              alignment: Alignment.center,
+                                              child: Text(
+                                                '월별',
+                                                style: TextStyle(
+                                                  color: monthColor,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              xAlign = 1;
+                                              yearColor = selectedColor;
+
+                                              monthColor = normalColor;
+                                              _isYearly = true;
+                                            });
+                                          },
+                                          child: Align(
+                                            alignment: const Alignment(1, 0),
+                                            child: Container(
+                                              width: 80 * 0.5,
+                                              color: Colors.transparent,
+                                              alignment: Alignment.center,
+                                              child: Text(
+                                                '연별',
+                                                style: TextStyle(
+                                                  color: yearColor,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  child: Stack(
-                                    children: [
-                                      AnimatedAlign(
-                                        alignment: Alignment(xAlign, 0),
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        child: Container(
-                                          width: 80 * 0.5,
-                                          height: 35,
-                                          decoration: const BoxDecoration(
-                                            color: Colors.blue,
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(50.0),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            xAlign = -1;
-                                            monthColor = selectedColor;
+                                ),
+                              ],
+                            ),
+                          ),
 
-                                            yearColor = normalColor;
-                                            _isYearly = false;
-                                          });
-                                        },
-                                        child: Align(
-                                          alignment: const Alignment(-1, 0),
-                                          child: Container(
-                                            width: 80 * 0.5,
-                                            color: Colors.transparent,
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              '월별',
+                          // 통계 그래프
+                          SizedBox(
+                            height: MediaQuery.of(context).size.width * 0.5,
+                            child:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
+                              Expanded(
+                                child: FutureBuilder<String>(
+                                  future: _isYearly ? annualTime : monthlyTime,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    } else if (snapshot.hasError) {
+                                      return const Center(
+                                          child: Text('Error loading data'));
+                                    } else {
+                                      return Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            const Text(
+                                              '클라이밍 시간',
                                               style: TextStyle(
-                                                color: monthColor,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w500),
+                                              textAlign: TextAlign.center,
                                             ),
-                                          ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            xAlign = 1;
-                                            yearColor = selectedColor;
-
-                                            monthColor = normalColor;
-                                            _isYearly = true;
-                                          });
-                                        },
-                                        child: Align(
-                                          alignment: const Alignment(1, 0),
-                                          child: Container(
-                                            width: 80 * 0.5,
-                                            color: Colors.transparent,
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              '연별',
-                                              style: TextStyle(
-                                                color: yearColor,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                            Text(
+                                              snapshot.data ?? 'N/A',
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                  fontSize: 30,
+                                                  fontWeight: FontWeight.w700),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      );
+                                    }
+                                  },
                                 ),
                               ),
-                            ],
+                              Expanded(
+                                  child: PieChartWidget(
+                                      // dataType: 2,
+                                      dataType: !_isYearly ? 1 : 2)),
+                            ]),
                           ),
-                        ),
-                        // 통계 그래프
-                        Expanded(
-                          child: Row(children: [
-                            Expanded(
-                              child: FutureBuilder<String>(
-                                future: _isYearly ? annualTime : monthlyTime,
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const Center(
-                                        child: CircularProgressIndicator());
-                                  } else if (snapshot.hasError) {
-                                    return const Center(
-                                        child: Text('Error loading data'));
-                                  } else {
-                                    return Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            '클라이밍 시간',
-                                            style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w500),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          Text(
-                                            snapshot.data ?? 'N/A',
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                                fontSize: 30,
-                                                fontWeight: FontWeight.w700),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                            Expanded(
-                                child: PieChartWidget(
-                                    // dataType: 2,
-                                    dataType: !_isYearly ? 1 : 2)),
-                          ]),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                  Expanded(
-                    flex: 2,
+                  Flexible(
                     child: Column(
                       children: [
                         Container(
