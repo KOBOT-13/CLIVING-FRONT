@@ -44,7 +44,95 @@ class NumberFormatter extends TextInputFormatter {
 class _SettingScreenState extends State<SettingScreen> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "설정",
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        bottomOpacity: 2.0,
+        backgroundColor: Colors.white,
+        shape: const Border(
+            bottom: BorderSide(
+          color: Color.fromRGBO(0, 0, 0, 0.2),
+          width: 1,
+        )),
+      ),
+      body: Container(
+        padding: const EdgeInsets.only(left: 20, top: 20, right: 20),
+        child: GestureDetector(
+            onTap: () {
+              FocusScope.of(context).unfocus();
+              print('click');
+            },
+            child: ListView(children: [
+              Center(
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 130,
+                      height: 130,
+                      decoration: BoxDecoration(
+                          border: Border.all(width: 2, color: Colors.white),
+                          boxShadow: [
+                            BoxShadow(
+                                spreadRadius: 1,
+                                blurRadius: 10,
+                                color: Colors.black.withOpacity(0.1))
+                          ],
+                          shape: BoxShape.circle,
+                          image: const DecorationImage(
+                            fit: BoxFit.cover,
+                            image:
+                                AssetImage('assets/images/profile_image.png'),
+                          )),
+                    ),
+                    Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(width: 4, color: Colors.white),
+                              color: const Color.fromARGB(255, 101, 195, 250)),
+                          child: const Icon(Icons.edit, color: Colors.white),
+                        )),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 30,
+              ),
+              CustomProfileField('닉네임', 'imagine', true, true, false),
+              CustomProfileField('전화번호', '', false, false, true),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 50),
+                    backgroundColor: const Color.fromARGB(255, 101, 195, 250),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10))),
+                child: const Text("저장하기",
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                        color: Color.fromARGB(255, 0, 0, 0))),
+              ),
+              const SizedBox(height: 50),
+              const SizedBox(
+                height: 10,
+              ),
+            ])),
+      ),
+    );
+  }
+
   Widget CustomProfileField(String labelText, String placeholder,
       bool DuplicateCheck, bool maxLength, bool isNumber) {
     return Container(
