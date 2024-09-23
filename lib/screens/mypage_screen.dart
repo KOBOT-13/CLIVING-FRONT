@@ -461,6 +461,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         ),
                         _settingItems("작성한 게시물", false, () {}),
                         _settingItems("로그아웃", false, () {}),
+                        _settingItems("비밀번호 변경", false, () {}),
+                        _settingItems("탈퇴하기", true, () {}),
                       ],
                     ),
                   ),
