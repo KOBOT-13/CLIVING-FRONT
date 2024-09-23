@@ -1,5 +1,9 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
@@ -42,6 +46,22 @@ class NumberFormatter extends TextInputFormatter {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
+  XFile? _pickedFile;
+
+  _getPhotoLibraryImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _pickedFile = pickedFile;
+      });
+    } else {
+      if (kDebugMode) {
+        print('이미지 선택안함');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,10 +104,14 @@ class _SettingScreenState extends State<SettingScreen> {
                                 color: Colors.black.withOpacity(0.1))
                           ],
                           shape: BoxShape.circle,
-                          image: const DecorationImage(
+                          image: DecorationImage(
                             fit: BoxFit.cover,
-                            image:
-                                AssetImage('assets/images/profile_image.png'),
+                            image: (_pickedFile == null)
+                                ? const AssetImage(
+                                        'assets/images/profile_image.png')
+                                    as ImageProvider
+                                : FileImage(File(_pickedFile!.path))
+                                    as ImageProvider,
                           )),
                     ),
                     Positioned(
@@ -100,7 +124,12 @@ class _SettingScreenState extends State<SettingScreen> {
                               shape: BoxShape.circle,
                               border: Border.all(width: 4, color: Colors.white),
                               color: const Color.fromARGB(255, 101, 195, 250)),
-                          child: const Icon(Icons.edit, color: Colors.white),
+                          child: IconButton(
+                            padding: const EdgeInsets.all(0),
+                            icon: const Icon(Icons.edit),
+                            color: Colors.white,
+                            onPressed: () => _getPhotoLibraryImage(),
+                          ),
                         )),
                   ],
                 ),
