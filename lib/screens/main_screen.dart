@@ -1,5 +1,6 @@
 import 'package:cliving_front/screens/analytics_screen.dart';
 import 'package:cliving_front/screens/calendar_screen.dart';
+import 'package:cliving_front/screens/mypage_screen.dart';
 
 import 'package:flutter/material.dart';
 import 'camera_screen.dart';
@@ -17,6 +18,7 @@ class _MainScreenState extends State<MainScreen> {
     CalendarScreen(),
     CameraScreen(),
     AnalyticsScreen(),
+    MyPageScreen(),
   ];
 
   int _selectedIndex = 0;
@@ -45,10 +47,17 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.analytics_outlined),
             label: '통계',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: '마이페이지',
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+        showUnselectedLabels: false,
       ),
     );
   }
