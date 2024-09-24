@@ -35,6 +35,7 @@ dependencies:
   ribbon_widget: ^1.0.5
   url_launcher: ^6.3.0
   camera_avfoundation: ^0.9.17+3
+  image_picker: ^1.1.2
 
 
   
