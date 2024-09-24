@@ -48,11 +48,19 @@ class _JoinScreenState extends State<JoinScreen> {
   late String id;
   late String password;
   late String password2;
+  String phoneNumber = "";
 
   bool isIdValid = true;
+  bool isPasswordValid = true;
+  bool isPassword2Valid = true;
+  bool isPhoneNumberValid = true;
+
   bool openAuthCode = false;
-  int remainingTime = 10; // 타이머 시간(초)
+  int remainingTime = 180; // 타이머 시간(초)
   Timer? timer; // 타이머 객체
+
+  final passwordPattern =
+      RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$');
 
   @override
   void dispose() {
@@ -64,7 +72,7 @@ class _JoinScreenState extends State<JoinScreen> {
   void startTimer() {
     setState(() {
       openAuthCode = true;
-      remainingTime = 10; // 3분으로 초기화
+      remainingTime = 180; // 3분으로 초기화
     });
 
     // 타이머 설정: 1초마다 실행
@@ -154,8 +162,8 @@ class _JoinScreenState extends State<JoinScreen> {
                               }
                               return null;
                             },
-                            onSaved: (value) {
-                              id = value!;
+                            onChanged: (value) {
+                              id = value;
                             },
                           ),
                         ),
@@ -204,25 +212,34 @@ class _JoinScreenState extends State<JoinScreen> {
                     ),
                     const Gap(10),
                     TextFormField(
+                      obscureText: true,
                       cursorColor: Colors.black,
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.only(left: 15),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: const BorderSide(
-                              color: Colors.black,
-                            )),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: const BorderSide(
-                              color: Colors.black,
-                              width: 1.0,
-                            )),
-                        helperText: '',
-                      ),
+                          contentPadding: const EdgeInsets.only(left: 15),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: const BorderSide(
+                                color: Colors.black,
+                              )),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: const BorderSide(
+                                color: Colors.black,
+                                width: 1.0,
+                              )),
+                          helperText: '',
+                          errorText: isPasswordValid
+                              ? null
+                              : '비밀번호는 8자 이상, 영어 + 숫자 + 특수기호를 포함해야 합니다.'),
                       style: const TextStyle(
                         fontSize: 15,
                       ),
+                      onChanged: (value) {
+                        setState(() {
+                          isPasswordValid = passwordPattern.hasMatch(value);
+                          password = value;
+                        });
+                      },
                       validator: (value) {
                         if (value!.isEmpty) {
                           return '비밀번호를 입력해주세요.';
@@ -243,22 +260,24 @@ class _JoinScreenState extends State<JoinScreen> {
                     ),
                     const Gap(10),
                     TextFormField(
+                      obscureText: true,
                       cursorColor: Colors.black,
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.only(left: 15),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: const BorderSide(
-                              color: Colors.black,
-                            )),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: const BorderSide(
-                              color: Colors.black,
-                              width: 1.0,
-                            )),
-                        helperText: '',
-                      ),
+                          contentPadding: const EdgeInsets.only(left: 15),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: const BorderSide(
+                                color: Colors.black,
+                              )),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: const BorderSide(
+                                color: Colors.black,
+                                width: 1.0,
+                              )),
+                          helperText: '',
+                          errorText:
+                              isPassword2Valid ? null : '비밀번호가 일치하지 않습니다.'),
                       style: const TextStyle(
                         fontSize: 15,
                       ),
@@ -267,6 +286,15 @@ class _JoinScreenState extends State<JoinScreen> {
                           return '비밀번호 확인을 입력해주세요.';
                         }
                         return null;
+                      },
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != password)
+                            isPassword2Valid = false;
+                          else
+                            isPassword2Valid = true;
+                          password2 = value;
+                        });
                       },
                     ),
                     const Gap(10), // 에러 메시지 및 공간 확보
@@ -371,22 +399,25 @@ class _JoinScreenState extends State<JoinScreen> {
                           child: TextFormField(
                             cursorColor: Colors.black,
                             decoration: InputDecoration(
-                              labelStyle: const TextStyle(color: Colors.black),
-                              contentPadding: const EdgeInsets.only(left: 15),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                                borderSide: const BorderSide(
-                                  color: Colors.black,
+                                labelStyle:
+                                    const TextStyle(color: Colors.black),
+                                contentPadding: const EdgeInsets.only(left: 15),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  borderSide: const BorderSide(
+                                    color: Colors.black,
+                                  ),
                                 ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                                borderSide: const BorderSide(
-                                  color: Colors.black,
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  borderSide: const BorderSide(
+                                    color: Colors.black,
+                                  ),
                                 ),
-                              ),
-                              helperText: '',
-                            ),
+                                helperText: '',
+                                errorText: isPhoneNumberValid
+                                    ? null
+                                    : '전화번호를 입력해주세요.'),
                             style: const TextStyle(
                               fontSize: 15,
                             ),
@@ -396,8 +427,10 @@ class _JoinScreenState extends State<JoinScreen> {
                               }
                               return null;
                             },
-                            onSaved: (value) {
-                              id = value!;
+                            onChanged: (value) {
+                              setState(() {
+                                phoneNumber = value;
+                              });
                             },
                             keyboardType: TextInputType.number,
                             inputFormatters: <TextInputFormatter>[
@@ -413,7 +446,13 @@ class _JoinScreenState extends State<JoinScreen> {
                           height: 50, // TextFormField와 동일한 높이
                           child: ElevatedButton(
                             onPressed: () {
-                              startTimer();
+                              setState(() {
+                                if (phoneNumber.length == 13) {
+                                  isPhoneNumberValid = true;
+                                  startTimer();
+                                } else
+                                  isPhoneNumberValid = false;
+                              });
                             },
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
@@ -441,44 +480,69 @@ class _JoinScreenState extends State<JoinScreen> {
                     ),
                     const Gap(5),
                     if (openAuthCode)
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 150,
-                            child: TextField(
-                              textAlign: TextAlign.center,
-                              inputFormatters: <TextInputFormatter>[
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(6)
-                              ],
-                              decoration: InputDecoration(
-                                hintText: "인증번호 입력",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: const BorderSide(
-                                    color: Colors.black,
-                                  ),
+                      Container(
+                          padding: EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.black,
+                            ),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                  child: TextField(
+                                textAlign: TextAlign.center,
+                                inputFormatters: <TextInputFormatter>[
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(6)
+                                ],
+                                decoration: const InputDecoration(
+                                  hintText: "인증번호 입력",
+                                  border: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 10), // 텍스트 여백
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: const BorderSide(
-                                    color: Colors.black,
-                                  ),
+                              )),
+                              Text(
+                                "${(remainingTime ~/ 60).toString().padLeft(2, '0')}:${(remainingTime % 60).toString().padLeft(2, '0')}", // 분:초 형태로 표시
+                                style: const TextStyle(
+                                  color: Colors.red, // 타이머 색상
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                helperText: '',
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 10), // 간격
-                          Text(
-                            "${(remainingTime ~/ 60).toString().padLeft(2, '0')}:${(remainingTime % 60).toString().padLeft(2, '0')}", // 분:초 형태로 표시
-                            style: const TextStyle(
-                              color: Colors.red, // 타이머 색상
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+                              const Gap(15),
+                              SizedBox(
+                                  width: 30,
+                                  height: 20,
+                                  child: ElevatedButton(
+                                    onPressed: () {},
+                                    style: ElevatedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
+                                        side: const BorderSide(
+                                          color: Colors.transparent,
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      padding: EdgeInsets.zero,
+                                      elevation: 0,
+                                      backgroundColor: const Color.fromARGB(
+                                          255, 101, 195, 250),
+                                    ),
+                                    child: const Text(
+                                      "인증",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  )),
+                              const Gap(10),
+                            ],
+                          ))
                   ],
                 ),
               ),
