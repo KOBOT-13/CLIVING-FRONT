@@ -93,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Expanded(
                     child: TextButton(
                         onPressed: () {
-                          // Navigator.pushNamed(context, '');
+                          Navigator.pushNamed(context, '/join');
                         },
                         child: const Text(
                           "회원가입",
