@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'dart:async';
+import '../services/join_api.dart';
 
 class NumberFormatter extends TextInputFormatter {
   @override
@@ -44,11 +45,15 @@ class JoinScreen extends StatefulWidget {
 }
 
 class _JoinScreenState extends State<JoinScreen> {
+  JoinApi api = JoinApi();
+
   final formKey = GlobalKey<FormState>();
   late String id;
   late String password;
   late String password2;
+  late String nickname;
   String phoneNumber = "";
+  String verificationCode = "";
 
   bool isIdValid = true;
   bool isPasswordValid = true;
@@ -86,6 +91,18 @@ class _JoinScreenState extends State<JoinScreen> {
         }
       });
     });
+  }
+
+  void postJoin() async {
+    await api.postJoin(id, password, password2, nickname, phoneNumber);
+  }
+
+  void sendVerificationCode() async {
+    await api.verificationCode(phoneNumber);
+  }
+
+  void verifyCode() async {
+    await api.verifyPhoneCode(verificationCode, phoneNumber);
   }
 
   @override
@@ -342,8 +359,10 @@ class _JoinScreenState extends State<JoinScreen> {
                               }
                               return null;
                             },
-                            onSaved: (value) {
-                              id = value!;
+                            onChanged: (value) {
+                              setState(() {
+                                nickname = value;
+                              });
                             },
                           ),
                         ),
@@ -449,6 +468,7 @@ class _JoinScreenState extends State<JoinScreen> {
                               setState(() {
                                 if (phoneNumber.length == 13) {
                                   isPhoneNumberValid = true;
+                                  sendVerificationCode();
                                   startTimer();
                                 } else
                                   isPhoneNumberValid = false;
@@ -505,6 +525,11 @@ class _JoinScreenState extends State<JoinScreen> {
                                   contentPadding: EdgeInsets.symmetric(
                                       vertical: 10, horizontal: 10), // 텍스트 여백
                                 ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    verificationCode = value;
+                                  });
+                                },
                               )),
                               Text(
                                 "${(remainingTime ~/ 60).toString().padLeft(2, '0')}:${(remainingTime % 60).toString().padLeft(2, '0')}", // 분:초 형태로 표시
@@ -518,7 +543,9 @@ class _JoinScreenState extends State<JoinScreen> {
                                   width: 30,
                                   height: 20,
                                   child: ElevatedButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      verifyCode();
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(15),
@@ -558,7 +585,7 @@ class _JoinScreenState extends State<JoinScreen> {
                 onPressed: () {
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
-                    print('유효성 검사 통과');
+                    postJoin();
                   }
                 },
                 child: const Text(
