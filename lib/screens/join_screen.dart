@@ -61,8 +61,11 @@ class _JoinScreenState extends State<JoinScreen> {
   bool isPassword2Valid = true;
   bool isPhoneNumberValid = true;
   bool isVerify = false;
+  bool isCheckId = false;
+  bool isCheckNickname = false;
 
   bool openAuthCode = false;
+  bool closeAuthCode = false;
   int remainingTime = 180; // 타이머 시간(초)
   Timer? timer; // 타이머 객체
 
@@ -105,6 +108,13 @@ class _JoinScreenState extends State<JoinScreen> {
 
   void verifyCode() async {
     isVerify = await api.verifyPhoneCode(verificationCode, phoneNumber);
+    if (isVerify) {
+      showMyDialog(context, "전화번호 인증 완료", "회원가입을 진행해주세요.");
+      closeAuthCode = true;
+    } else {
+      showMyDialog(context, "전화번호 인증 실패", "인증 번호가 일치하지 않습니다.");
+      closeAuthCode = true;
+    }
   }
 
   void checkUsername() async {
@@ -114,6 +124,7 @@ class _JoinScreenState extends State<JoinScreen> {
     } else {
       showMyDialog(context, "닉네임 중복 오류", "이미 존재하는 닉네임입니다.");
     }
+    isCheckId = check;
   }
 
   void checkNickname() async {
@@ -123,6 +134,15 @@ class _JoinScreenState extends State<JoinScreen> {
     } else {
       showMyDialog(context, "닉네임 중복 오류", "이미 존재하는 닉네임입니다.");
     }
+    isCheckNickname = check;
+  }
+
+  Future<bool> checkPhoneNumber() async {
+    bool check = await api.checkPhoneNumber(phoneNumber);
+    if (!check) {
+      showMyDialog(context, "전화번호 중복 오류", "이미 존재하는 휴대폰 번호입니다.");
+    }
+    return check;
   }
 
   @override
@@ -484,14 +504,19 @@ class _JoinScreenState extends State<JoinScreen> {
                           width: 60,
                           height: 50, // TextFormField와 동일한 높이
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
+                              bool check = await checkPhoneNumber();
                               setState(() {
                                 if (phoneNumber.length == 13) {
-                                  isPhoneNumberValid = true;
-                                  sendVerificationCode();
-                                  startTimer();
-                                } else
+                                  if (check) {
+                                    isPhoneNumberValid = true;
+                                    closeAuthCode = false;
+                                    sendVerificationCode();
+                                    startTimer();
+                                  }
+                                } else {
                                   isPhoneNumberValid = false;
+                                }
                               });
                             },
                             style: ElevatedButton.styleFrom(
@@ -519,7 +544,7 @@ class _JoinScreenState extends State<JoinScreen> {
                       ],
                     ),
                     const Gap(5),
-                    if (openAuthCode)
+                    if (openAuthCode && !closeAuthCode)
                       Container(
                           padding: EdgeInsets.all(5),
                           decoration: BoxDecoration(
@@ -603,11 +628,16 @@ class _JoinScreenState extends State<JoinScreen> {
                   backgroundColor: const Color.fromARGB(255, 101, 195, 250),
                 ),
                 onPressed: () {
-                  if (formKey.currentState!.validate() && isVerify) {
+                  if (formKey.currentState!.validate() &&
+                      isVerify &&
+                      isCheckId &&
+                      isCheckNickname) {
                     formKey.currentState!.save();
                     postJoin();
                   } else if (!formKey.currentState!.validate()) {
                     showMyDialog(context, "유효성 검사 에러", "입력한 정보를 확인해주세요.");
+                  } else if (!isCheckId || !isCheckNickname) {
+                    showMyDialog(context, "중복 확인 미실시", "아이디, 닉네임 중복확인을 해주세요.");
                   } else if (!isVerify) {
                     showMyDialog(context, "전화번호 인증 에러", "전화번호 인증이 완료되지 않았습니다.");
                   }
