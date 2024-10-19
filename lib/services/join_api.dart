@@ -181,4 +181,39 @@ class JoinApi {
       return false;
     }
   }
+
+  // 전화번호 중복확인 메서드
+  Future<bool> checkPhoneNumber(String phoneNumber) async {
+    // 서버로 요청할 URL 설정
+    uri = Uri.parse('$API_ADDRESS/api/users/check-phone-number/');
+
+    // 요청 바디 데이터 (JSON 형식)
+    Map<String, String> body = {
+      'phone_number': phoneNumber,
+    };
+
+    // 헤더 설정
+    Map<String, String> headers = {
+      'Content-Type': 'application/json', // JSON 데이터를 보내기 위해 Content-Type 설정
+    };
+
+    // HTTP POST 요청
+    final response = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode(body), // body를 JSON 형식으로 변환
+    );
+
+    // 응답 처리
+    if (response.statusCode == 200) {
+      // 성공 시 응답 바디 출력
+      print("Response: ${utf8.decode(response.bodyBytes)}");
+      return true;
+    } else {
+      // 실패 시 에러 출력
+      print(
+          "Failed to phone number: ${response.statusCode}, ${utf8.decode(response.bodyBytes)}");
+      return false;
+    }
+  }
 }
