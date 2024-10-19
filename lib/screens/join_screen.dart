@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'dart:async';
+import '../services/join_api.dart';
+import '../widgets/custom_dialog.dart';
 
 class NumberFormatter extends TextInputFormatter {
   @override
@@ -44,18 +46,26 @@ class JoinScreen extends StatefulWidget {
 }
 
 class _JoinScreenState extends State<JoinScreen> {
+  JoinApi api = JoinApi();
+
   final formKey = GlobalKey<FormState>();
   late String id;
   late String password;
   late String password2;
+  late String nickname;
   String phoneNumber = "";
+  String verificationCode = "";
 
   bool isIdValid = true;
   bool isPasswordValid = true;
   bool isPassword2Valid = true;
   bool isPhoneNumberValid = true;
+  bool isVerify = false;
+  bool isCheckId = false;
+  bool isCheckNickname = false;
 
   bool openAuthCode = false;
+  bool closeAuthCode = false;
   int remainingTime = 180; // 타이머 시간(초)
   Timer? timer; // 타이머 객체
 
@@ -86,6 +96,53 @@ class _JoinScreenState extends State<JoinScreen> {
         }
       });
     });
+  }
+
+  void postJoin() async {
+    await api.postJoin(id, password, password2, nickname, phoneNumber);
+  }
+
+  void sendVerificationCode() async {
+    await api.verificationCode(phoneNumber);
+  }
+
+  void verifyCode() async {
+    isVerify = await api.verifyPhoneCode(verificationCode, phoneNumber);
+    if (isVerify) {
+      showMyDialog(context, "전화번호 인증 완료", "회원가입을 진행해주세요.");
+      closeAuthCode = true;
+    } else {
+      showMyDialog(context, "전화번호 인증 실패", "인증 번호가 일치하지 않습니다.");
+      closeAuthCode = true;
+    }
+  }
+
+  void checkUsername() async {
+    bool check = await api.checkUsername(id);
+    if (check) {
+      showMyDialog(context, "닉네임 중복 확인 완료", "사용 가능한 닉네임입니다.");
+    } else {
+      showMyDialog(context, "닉네임 중복 오류", "이미 존재하는 닉네임입니다.");
+    }
+    isCheckId = check;
+  }
+
+  void checkNickname() async {
+    bool check = await api.checkNickname(nickname);
+    if (check) {
+      showMyDialog(context, "닉네임 중복 확인 완료", "사용 가능한 닉네임입니다.");
+    } else {
+      showMyDialog(context, "닉네임 중복 오류", "이미 존재하는 닉네임입니다.");
+    }
+    isCheckNickname = check;
+  }
+
+  Future<bool> checkPhoneNumber() async {
+    bool check = await api.checkPhoneNumber(phoneNumber);
+    if (!check) {
+      showMyDialog(context, "전화번호 중복 오류", "이미 존재하는 휴대폰 번호입니다.");
+    }
+    return check;
   }
 
   @override
@@ -173,7 +230,7 @@ class _JoinScreenState extends State<JoinScreen> {
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () {
-                              print("중복확인");
+                              checkUsername();
                             },
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
@@ -342,8 +399,10 @@ class _JoinScreenState extends State<JoinScreen> {
                               }
                               return null;
                             },
-                            onSaved: (value) {
-                              id = value!;
+                            onChanged: (value) {
+                              setState(() {
+                                nickname = value;
+                              });
                             },
                           ),
                         ),
@@ -353,7 +412,7 @@ class _JoinScreenState extends State<JoinScreen> {
                           height: 50, // TextFormField와 동일한 높이
                           child: ElevatedButton(
                             onPressed: () {
-                              print("중복확인");
+                              checkNickname();
                             },
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
@@ -445,13 +504,19 @@ class _JoinScreenState extends State<JoinScreen> {
                           width: 60,
                           height: 50, // TextFormField와 동일한 높이
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
+                              bool check = await checkPhoneNumber();
                               setState(() {
                                 if (phoneNumber.length == 13) {
-                                  isPhoneNumberValid = true;
-                                  startTimer();
-                                } else
+                                  if (check) {
+                                    isPhoneNumberValid = true;
+                                    closeAuthCode = false;
+                                    sendVerificationCode();
+                                    startTimer();
+                                  }
+                                } else {
                                   isPhoneNumberValid = false;
+                                }
                               });
                             },
                             style: ElevatedButton.styleFrom(
@@ -479,7 +544,7 @@ class _JoinScreenState extends State<JoinScreen> {
                       ],
                     ),
                     const Gap(5),
-                    if (openAuthCode)
+                    if (openAuthCode && !closeAuthCode)
                       Container(
                           padding: EdgeInsets.all(5),
                           decoration: BoxDecoration(
@@ -505,6 +570,11 @@ class _JoinScreenState extends State<JoinScreen> {
                                   contentPadding: EdgeInsets.symmetric(
                                       vertical: 10, horizontal: 10), // 텍스트 여백
                                 ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    verificationCode = value;
+                                  });
+                                },
                               )),
                               Text(
                                 "${(remainingTime ~/ 60).toString().padLeft(2, '0')}:${(remainingTime % 60).toString().padLeft(2, '0')}", // 분:초 형태로 표시
@@ -518,7 +588,9 @@ class _JoinScreenState extends State<JoinScreen> {
                                   width: 30,
                                   height: 20,
                                   child: ElevatedButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      verifyCode();
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(15),
@@ -556,9 +628,18 @@ class _JoinScreenState extends State<JoinScreen> {
                   backgroundColor: const Color.fromARGB(255, 101, 195, 250),
                 ),
                 onPressed: () {
-                  if (formKey.currentState!.validate()) {
+                  if (formKey.currentState!.validate() &&
+                      isVerify &&
+                      isCheckId &&
+                      isCheckNickname) {
                     formKey.currentState!.save();
-                    print('유효성 검사 통과');
+                    postJoin();
+                  } else if (!formKey.currentState!.validate()) {
+                    showMyDialog(context, "유효성 검사 에러", "입력한 정보를 확인해주세요.");
+                  } else if (!isCheckId || !isCheckNickname) {
+                    showMyDialog(context, "중복 확인 미실시", "아이디, 닉네임 중복확인을 해주세요.");
+                  } else if (!isVerify) {
+                    showMyDialog(context, "전화번호 인증 에러", "전화번호 인증이 완료되지 않았습니다.");
                   }
                 },
                 child: const Text(
