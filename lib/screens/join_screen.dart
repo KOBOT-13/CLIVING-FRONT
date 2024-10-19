@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'dart:async';
 import '../services/join_api.dart';
+import '../widgets/custom_dialog.dart';
 
 class NumberFormatter extends TextInputFormatter {
   @override
@@ -59,6 +60,7 @@ class _JoinScreenState extends State<JoinScreen> {
   bool isPasswordValid = true;
   bool isPassword2Valid = true;
   bool isPhoneNumberValid = true;
+  bool isVerify = false;
 
   bool openAuthCode = false;
   int remainingTime = 180; // 타이머 시간(초)
@@ -102,7 +104,25 @@ class _JoinScreenState extends State<JoinScreen> {
   }
 
   void verifyCode() async {
-    await api.verifyPhoneCode(verificationCode, phoneNumber);
+    isVerify = await api.verifyPhoneCode(verificationCode, phoneNumber);
+  }
+
+  void checkUsername() async {
+    bool check = await api.checkUsername(id);
+    if (check) {
+      showMyDialog(context, "닉네임 중복 확인 완료", "사용 가능한 닉네임입니다.");
+    } else {
+      showMyDialog(context, "닉네임 중복 오류", "이미 존재하는 닉네임입니다.");
+    }
+  }
+
+  void checkNickname() async {
+    bool check = await api.checkNickname(nickname);
+    if (check) {
+      showMyDialog(context, "닉네임 중복 확인 완료", "사용 가능한 닉네임입니다.");
+    } else {
+      showMyDialog(context, "닉네임 중복 오류", "이미 존재하는 닉네임입니다.");
+    }
   }
 
   @override
@@ -190,7 +210,7 @@ class _JoinScreenState extends State<JoinScreen> {
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () {
-                              print("중복확인");
+                              checkUsername();
                             },
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
@@ -372,7 +392,7 @@ class _JoinScreenState extends State<JoinScreen> {
                           height: 50, // TextFormField와 동일한 높이
                           child: ElevatedButton(
                             onPressed: () {
-                              print("중복확인");
+                              checkNickname();
                             },
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
@@ -583,9 +603,13 @@ class _JoinScreenState extends State<JoinScreen> {
                   backgroundColor: const Color.fromARGB(255, 101, 195, 250),
                 ),
                 onPressed: () {
-                  if (formKey.currentState!.validate()) {
+                  if (formKey.currentState!.validate() && isVerify) {
                     formKey.currentState!.save();
                     postJoin();
+                  } else if (!formKey.currentState!.validate()) {
+                    showMyDialog(context, "유효성 검사 에러", "입력한 정보를 확인해주세요.");
+                  } else if (!isVerify) {
+                    showMyDialog(context, "전화번호 인증 에러", "전화번호 인증이 완료되지 않았습니다.");
                   }
                 },
                 child: const Text(
