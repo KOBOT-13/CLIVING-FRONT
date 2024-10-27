@@ -99,7 +99,13 @@ class _JoinScreenState extends State<JoinScreen> {
   }
 
   void postJoin() async {
-    await api.postJoin(id, password, password2, nickname, phoneNumber);
+    bool check =
+        await api.postJoin(id, password, password2, nickname, phoneNumber);
+    if (check) {
+      showMyDialog(context, "회원가입 완료", "회원가입이 성공적으로 완료되었습니다.");
+    } else {
+      showMyDialog(context, "회원가입 실패", "입력한 정보를 다시 확인해주세요.");
+    }
   }
 
   void sendVerificationCode() async {
@@ -120,9 +126,9 @@ class _JoinScreenState extends State<JoinScreen> {
   void checkUsername() async {
     bool check = await api.checkUsername(id);
     if (check) {
-      showMyDialog(context, "닉네임 중복 확인 완료", "사용 가능한 닉네임입니다.");
+      showMyDialog(context, "아이디 중복 확인 완료", "사용 가능한 아이디입니다.");
     } else {
-      showMyDialog(context, "닉네임 중복 오류", "이미 존재하는 닉네임입니다.");
+      showMyDialog(context, "아이디 중복 오류", "이미 존재하는 아이디입니다.");
     }
     isCheckId = check;
   }

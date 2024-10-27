@@ -7,7 +7,7 @@ class JoinApi {
   late Uri uri;
 
   // postJoin 메서드 - 아이디, 비밀번호, 닉네임 등을 파라미터로 받음
-  Future<void> postJoin(String username, String password1, String password2,
+  Future<bool> postJoin(String username, String password1, String password2,
       String nickname, String phoneNumber) async {
     // 서버로 요청할 URL 설정
     uri = Uri.parse('$API_ADDRESS/api/users/auth/registration/');
@@ -37,10 +37,12 @@ class JoinApi {
     if (response.statusCode == 201) {
       // 성공 시 응답 바디 출력
       print("Response: ${response.body}");
+      return true;
     } else {
       // 실패 시 에러 출력
       print(
           "Failed to register: ${response.statusCode}, ${utf8.decode(response.bodyBytes)}");
+      return false;
     }
   }
 
