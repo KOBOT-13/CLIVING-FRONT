@@ -12,6 +12,8 @@ Future<void> main() async {
   await dotenv.load(fileName: ".env");
   await initializeDateFormatting('ko_KR', null);
   Get.put(AuthController());
+  final authController = Get.find<AuthController>();
+  await authController.loadLoginInfo();
   runApp(const MyApp());
 }
 
