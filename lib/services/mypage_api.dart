@@ -11,15 +11,12 @@ class UserService {
 
   Future<Map<String, dynamic>?> fetchUserProfile() async {
     final accessToken = authController.accessToken.value;
-    print(accessToken);
-    print("??");
     print("Authorization Header: Bearer $accessToken");
 
     Map<String, String> headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $accessToken',
     };
-    print(API_ADDRESS);
     final url = Uri.parse('$API_ADDRESS/api/users/profile/');
 
     final response = await http.get(url, headers: headers);
