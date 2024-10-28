@@ -243,11 +243,18 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           right: 5,
                           child: IconButton(
                             onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SettingScreen()));
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled:
+                                    true, // Bottom Sheet 높이 제어 가능
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(25.0)),
+                                ),
+                                builder: (BuildContext context) {
+                                  return const SettingScreen(); // SettingScreen을 Bottom Sheet로 표시
+                                },
+                              );
                             },
                             icon: const Icon(Icons.settings_sharp),
                             iconSize: 23,
