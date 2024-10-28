@@ -1,6 +1,8 @@
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:convert'; // for jsonEncode
+import 'dart:convert';
+import '../controllers/auth_controller.dart'; // for jsonEncode
 
 class LoginApi {
   final String API_ADDRESS = dotenv.get('API_ADDRESS'); // 환경 변수 불러오기
@@ -29,8 +31,17 @@ class LoginApi {
 
     // 응답 처리
     if (response.statusCode == 200) {
-      // 성공 시 응답 바디 출력
-      print("Response: ${utf8.decode(response.bodyBytes)}");
+      // 로그인 성공 시 서버 응답을 파싱하여 토큰 저장
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+      final accessToken = data['access'];
+      final refreshToken = data['refresh'];
+
+      // AuthController에 토큰 저장
+      final AuthController authController = Get.find<AuthController>();
+      authController.login(accessToken, refreshToken);
+
+      // print("Access Token: $accessToken");
+      // print("Refresh Token: $refreshToken");
       return true;
     } else {
       // 실패 시 에러 출력
