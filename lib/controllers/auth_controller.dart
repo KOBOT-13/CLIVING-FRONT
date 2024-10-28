@@ -12,16 +12,18 @@ class AuthController extends GetxController {
   var refreshToken = RxnString();
 
   Future<void> login(String access, String refresh) async {
+    // login_api에서 받은 토큰 값을 저장소에 저장
     await _storage.write(key: 'accessToken', value: access);
     await _storage.write(key: 'refreshToken', value: refresh);
 
+    // // 저장 후 확인용 코드
+    // print("Access Token Saved: ${await _storage.read(key: 'accessToken')}");
+    // print("Refresh Token Saved: ${await _storage.read(key: 'refreshToken')}");
+
+    // AuthController의 상태 변수 업데이트
     accessToken.value = access;
     refreshToken.value = refresh;
     isLoggedIn.value = true;
-
-    // // 확인용 콘솔 출력
-    // print("Access Token Saved: $access");
-    // print("Refresh Token Saved: $refresh");
   }
 
   Future<void> logout() async {
