@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cliving_front/charts/pie_chart.dart';
 import 'package:cliving_front/screens/login_screen.dart';
 import 'package:cliving_front/screens/setting_screen.dart';
+import 'package:cliving_front/services/logout_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -52,6 +53,7 @@ Widget _settingItems(String title, bool isLast, Function onTapAction) {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
+  final LogoutApi logoutApi = LogoutApi();
   final authController = Get.find<AuthController>();
   Map<String, dynamic>? userProfile;
   DateTime _selectedDate = DateTime.now();
@@ -466,9 +468,15 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     },
                   ),
                   _settingItems("작성한 게시물", false, () {}),
-                  _settingItems("로그아웃", false, () {
-                    authController.logout();
-                    Get.to(() => const LoginScreen());
+                  _settingItems("로그아웃", false, () async {
+                    bool success = await logoutApi.logout();
+                    if (success) {
+                      Get.offAll(
+                          () => const LoginScreen()); // 모든 화면을 닫고 로그인 화면으로 이동
+                    } else {
+                      Get.snackbar(
+                          "Logout Failed", "Please try again."); // 실패 메시지 표시
+                    }
                   }),
                 ],
               ),
