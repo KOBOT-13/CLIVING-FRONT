@@ -5,9 +5,13 @@ import 'package:cliving_front/screens/setting_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+
+import '../controllers/auth_controller.dart';
+import '../services/mypage_api.dart';
 
 class MyPageScreen extends StatefulWidget {
   const MyPageScreen({super.key});
@@ -47,6 +51,8 @@ Widget _settingItems(String title, bool isLast, Function onTapAction) {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
+  final authController = Get.find<AuthController>();
+  Map<String, dynamic>? userProfile;
   DateTime _selectedDate = DateTime.now();
   bool _isYearly = false;
   double xAlign = -1;
@@ -58,8 +64,17 @@ class _MyPageScreenState extends State<MyPageScreen> {
   @override
   void initState() {
     super.initState();
+    _loadUserProfile();
     annualTime = _getAnnualTime();
     monthlyTime = _getMonthlyTime();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final profile = await UserService().fetchUserProfile();
+    setState(() {
+      userProfile = profile;
+      print(profile);
+    });
   }
 
   // 월 이동 함수
@@ -195,26 +210,26 @@ class _MyPageScreenState extends State<MyPageScreen> {
                             ),
                           ],
                         ),
-                        const Positioned(
+                        Positioned(
                           top: 20,
                           left: 120,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "임혜진 님",
-                                style: TextStyle(
+                                "${userProfile?['username']} 님",
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w500,
                                   fontSize: 18,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 10,
                               ),
-                              Text(
+                              const Text(
                                 "3레벨 클라이머",
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 4,
                               ),
                             ],
