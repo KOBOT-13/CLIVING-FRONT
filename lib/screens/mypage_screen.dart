@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cliving_front/charts/pie_chart.dart';
+import 'package:cliving_front/screens/login_screen.dart';
 import 'package:cliving_front/screens/setting_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -465,7 +466,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     },
                   ),
                   _settingItems("작성한 게시물", false, () {}),
-                  _settingItems("로그아웃", false, () {}),
+                  _settingItems("로그아웃", false, () {
+                    authController.logout();
+                    Get.to(() => const LoginScreen());
+                  }),
                 ],
               ),
             ),
