@@ -1,3 +1,4 @@
+import 'package:cliving_front/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
@@ -7,8 +8,12 @@ import 'screens/join_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   await initializeDateFormatting('ko_KR', null);
+  Get.put(AuthController());
+  final authController = Get.find<AuthController>();
+  await authController.loadLoginInfo();
   runApp(const MyApp());
 }
 

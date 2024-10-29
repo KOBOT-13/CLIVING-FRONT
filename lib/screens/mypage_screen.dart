@@ -1,13 +1,19 @@
 import 'dart:convert';
 
 import 'package:cliving_front/charts/pie_chart.dart';
+import 'package:cliving_front/screens/login_screen.dart';
 import 'package:cliving_front/screens/setting_screen.dart';
+import 'package:cliving_front/services/logout_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+
+import '../controllers/auth_controller.dart';
+import '../services/mypage_api.dart';
 
 class MyPageScreen extends StatefulWidget {
   const MyPageScreen({super.key});
@@ -47,6 +53,9 @@ Widget _settingItems(String title, bool isLast, Function onTapAction) {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
+  final LogoutApi logoutApi = LogoutApi();
+  final authController = Get.find<AuthController>();
+  Map<String, dynamic>? userProfile;
   DateTime _selectedDate = DateTime.now();
   bool _isYearly = false;
   double xAlign = -1;
@@ -58,8 +67,17 @@ class _MyPageScreenState extends State<MyPageScreen> {
   @override
   void initState() {
     super.initState();
+    _loadUserProfile();
     annualTime = _getAnnualTime();
     monthlyTime = _getMonthlyTime();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final profile = await UserService().fetchUserProfile();
+    setState(() {
+      userProfile = profile;
+      print(profile);
+    });
   }
 
   // 월 이동 함수
@@ -195,26 +213,26 @@ class _MyPageScreenState extends State<MyPageScreen> {
                             ),
                           ],
                         ),
-                        const Positioned(
+                        Positioned(
                           top: 20,
                           left: 120,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "임혜진 님",
-                                style: TextStyle(
+                                "${userProfile?['username']} 님",
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w500,
                                   fontSize: 18,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 10,
                               ),
-                              Text(
+                              const Text(
                                 "3레벨 클라이머",
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 4,
                               ),
                             ],
@@ -225,11 +243,18 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           right: 5,
                           child: IconButton(
                             onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SettingScreen()));
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled:
+                                    true, // Bottom Sheet 높이 제어 가능
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(25.0)),
+                                ),
+                                builder: (BuildContext context) {
+                                  return const SettingScreen(); // SettingScreen을 Bottom Sheet로 표시
+                                },
+                              );
                             },
                             icon: const Icon(Icons.settings_sharp),
                             iconSize: 23,
@@ -450,7 +475,16 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     },
                   ),
                   _settingItems("작성한 게시물", false, () {}),
-                  _settingItems("로그아웃", false, () {}),
+                  _settingItems("로그아웃", false, () async {
+                    bool success = await logoutApi.logout();
+                    if (success) {
+                      Get.offAll(
+                          () => const LoginScreen()); // 모든 화면을 닫고 로그인 화면으로 이동
+                    } else {
+                      Get.snackbar(
+                          "Logout Failed", "Please try again."); // 실패 메시지 표시
+                    }
+                  }),
                 ],
               ),
             ),

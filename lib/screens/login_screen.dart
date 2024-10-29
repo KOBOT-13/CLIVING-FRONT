@@ -1,4 +1,6 @@
+import 'package:cliving_front/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../services/login_api.dart';
 import '../widgets/custom_dialog.dart';
 
@@ -11,6 +13,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   LoginApi api = LoginApi();
+  final AuthController authController = Get.find<AuthController>();
 
   late String id;
   late String password;
@@ -18,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void login() async {
     bool check = await api.login(id, password);
     if (check) {
+      await authController.login('access_token', 'refresh_token');
       Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
     } else {
       showMyDialog(context, "로그인 실패", "로그인을 실패하였습니다. 아이디와 비밀번호를 확인해주세요.");
