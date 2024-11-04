@@ -211,6 +211,21 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                 backgroundColor: Colors.transparent,
                               ),
                             ),
+                            Positioned(
+                                bottom: 5,
+                                right: 0,
+                                child: Container(
+                                  height: 25,
+                                  width: 25,
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          width: 2, color: Colors.white),
+                                      color: Colors.blue),
+                                  child: const Icon(Icons.edit,
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      size: Checkbox.width),
+                                )),
                           ],
                         ),
                         Positioned(
