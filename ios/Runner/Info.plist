@@ -65,5 +65,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>앱에서 사진 라이브러리에 접근하려면 권한이 필요합니다.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>앱에서 사진 라이브러리에 접근하려면 권한이 필요합니다.</string>
 </dict>
 </plist>
