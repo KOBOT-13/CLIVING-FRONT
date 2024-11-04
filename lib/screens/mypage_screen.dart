@@ -1,5 +1,7 @@
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:cliving_front/charts/pie_chart.dart';
 import 'package:cliving_front/screens/login_screen.dart';
 import 'package:cliving_front/screens/setting_screen.dart';
@@ -63,6 +65,21 @@ class _MyPageScreenState extends State<MyPageScreen> {
   Color yearColor = normalColor;
   late Future<String> annualTime;
   late Future<String> monthlyTime;
+
+  XFile? _pickedFile;
+  _getPhotoLibraryImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _pickedFile = pickedFile;
+      });
+    } else {
+      if (kDebugMode) {
+        print('이미지 선택안함');
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -199,33 +216,60 @@ class _MyPageScreenState extends State<MyPageScreen> {
                               height: 100,
                               color: Colors.transparent,
                             ),
-                            const Positioned(
+                            Positioned(
                               width: 80,
                               height: 80,
                               top: 12,
                               left: 20,
-                              child: CircleAvatar(
-                                radius: 50,
-                                backgroundImage: AssetImage(
-                                    'assets/images/profile_image.png'),
-                                backgroundColor: Colors.transparent,
+                              child: Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border:
+                                      Border.all(width: 2, color: Colors.white),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      spreadRadius: 1,
+                                      blurRadius: 10,
+                                      color: Colors.black.withOpacity(0.1),
+                                    ),
+                                  ],
+                                  image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: (_pickedFile == null)
+                                        ? const AssetImage(
+                                                'assets/images/profile_image.png')
+                                            as ImageProvider
+                                        : FileImage(File(_pickedFile!.path)),
+                                  ),
+                                ),
                               ),
                             ),
                             Positioned(
-                                bottom: 5,
-                                right: 0,
-                                child: Container(
-                                  height: 25,
-                                  width: 25,
-                                  decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                          width: 2, color: Colors.white),
-                                      color: Colors.blue),
-                                  child: const Icon(Icons.edit,
+                              bottom: 5,
+                              right: 0,
+                              child: Container(
+                                height: 25,
+                                width: 25,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border:
+                                      Border.all(width: 2, color: Colors.white),
+                                  color: Colors.blue,
+                                ),
+                                child: GestureDetector(
+                                  onTap: () => _getPhotoLibraryImage(),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.edit,
                                       color: Color.fromARGB(255, 255, 255, 255),
-                                      size: Checkbox.width),
-                                )),
+                                      size: 16, // Container 크기에 맞게 아이콘 크기를 조정
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                         Positioned(
