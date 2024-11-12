@@ -8,6 +8,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
+import 'package:image/image.dart' as img;
+import 'dart:io';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -38,6 +40,7 @@ class _CameraScreenState extends State<CameraScreen> {
   XFile? file;
   XFile? video;
   bool _buttonCheck = false;
+  bool isSelectingStartHold = true;
   bool _recordingCheck = false;
   Future<Map<int, List<dynamic>>>? imageHoldInfos;
   int? key;
@@ -49,6 +52,9 @@ class _CameraScreenState extends State<CameraScreen> {
   double _previousScale = 1.0;
   double _maxZoomLevel = 0;
   double _minZoomLevel = 0;
+  late int imageWidth;
+  late int imageHeight;
+  int clickedHold = 0;
 
   @override
   void initState() {
@@ -114,6 +120,10 @@ class _CameraScreenState extends State<CameraScreen> {
       setState(() {
         file = newFile;
       });
+      final bytes = await File(newFile.path).readAsBytes();
+      final image = img.decodeImage(bytes);
+      imageHeight = image!.height;
+      imageWidth = image!.width;
       // 사진 벡엔드에 보내는 코드
       try {
         String apiAddress = dotenv.get("API_ADDRESS");
@@ -322,6 +332,11 @@ class _CameraScreenState extends State<CameraScreen> {
     print(response.statusCode);
   }
 
+  Future<void> fetchStart() async {
+    String apiAddress = dotenv.get("API_ADDRESS");
+    final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/$key/');
+  }
+
   @override
   void dispose() {
     _controller?.dispose();
@@ -349,7 +364,6 @@ class _CameraScreenState extends State<CameraScreen> {
                       setState(() {
                         _scale = (_previousScale * details.scale)
                             .clamp(_minZoomLevel, _maxZoomLevel); // 줌 범위 제한
-                        print("scale : $_scale");
                         _controller!.setZoomLevel(_scale); // 줌 레벨 설정
                       });
                     },
@@ -468,6 +482,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     onPressed: () {
                       setState(() {
                         if (_buttonCheck) {
+                          if (isSelectingStartHold) {}
                           if (!_recordingCheck) {
                             _showColorModal(context);
                           }
@@ -501,35 +516,56 @@ class _CameraScreenState extends State<CameraScreen> {
                             for (var t in buttonHold.entries)
                               Positioned(
                                 top: (t.value[0][1]) /
-                                    4032.0 *
+                                    imageHeight *
                                     constraints.maxHeight,
                                 right: (t.value[0][0]) /
-                                    3024.0 *
+                                    imageWidth *
                                     constraints.maxWidth,
                                 child: SizedBox(
                                   width: (t.value[0][2] /
-                                          3024.0 *
+                                          imageWidth *
                                           constraints.maxWidth) -
                                       (t.value[0][0] /
-                                          3024.0 *
+                                          imageWidth *
                                           constraints.maxWidth),
                                   height: (t.value[0][3] /
-                                          4032.0 *
+                                          imageHeight *
                                           constraints.maxHeight) -
                                       (t.value[0][1] /
-                                          4032.0 *
+                                          imageHeight *
                                           constraints.maxHeight),
                                   child: OutlinedButton(
                                       onPressed: () {
                                         setState(() {
-                                          buttonHold.entries.forEach((element) {
-                                            if (!element.value[1]) {
-                                              element.value[1] = true;
+                                          if (isSelectingStartHold) {
+                                            if (clickedHold < 2) {
+                                              if (t.value[1]) {
+                                                t.value[1] = false;
+                                                clickedHold++;
+                                                _buttonCheck = true;
+                                              } else {
+                                                t.value[1] = true;
+                                                clickedHold--;
+                                              }
+                                            } else {
+                                              if (!t.value[1]) {
+                                                t.value[1] = true;
+                                                clickedHold--;
+                                              }
                                             }
-                                            t.value[1] = false;
-                                            _buttonCheck = true;
-                                            key = t.key;
-                                          });
+                                            if (clickedHold == 0)
+                                              _buttonCheck = false;
+                                          } else {
+                                            buttonHold.entries
+                                                .forEach((element) {
+                                              if (!element.value[1]) {
+                                                element.value[1] = true;
+                                              }
+                                              t.value[1] = false;
+                                              _buttonCheck = true;
+                                              key = t.key;
+                                            });
+                                          }
                                         });
                                       },
                                       child: Text(""),

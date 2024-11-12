@@ -37,6 +37,7 @@ dependencies:
   camera_avfoundation: ^0.9.17+3
   gap: ^3.0.1
   flutter_secure_storage: ^8.1.0
+  image: ^4.3.0
 
 
   
