@@ -54,6 +54,7 @@ Widget _settingItems(String title, bool isLast, Function onTapAction) {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
+  final String API_ADDRESS = dotenv.get('API_ADDRESS');
   final LogoutApi logoutApi = LogoutApi();
   final authController = Get.find<AuthController>();
   Map<String, dynamic>? userProfile;
@@ -64,6 +65,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
   Color yearColor = normalColor;
   late Future<String> annualTime;
   late Future<String> monthlyTime;
+  late RxnString nickname;
+  late RxnString profileImage;
+  RxBool isEditing = false.obs;
+  late TextEditingController nicknameController;
 
   XFile? _pickedFile;
   _getPhotoLibraryImage() async {
@@ -83,17 +88,48 @@ class _MyPageScreenState extends State<MyPageScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserProfile();
+    nickname = authController.nickname;
+    profileImage = authController.profileImage;
+
     annualTime = _getAnnualTime();
     monthlyTime = _getMonthlyTime();
+
+    nicknameController =
+        TextEditingController(text: authController.nickname.value);
   }
 
-  Future<void> _loadUserProfile() async {
-    final profile = await UserService().fetchUserProfile();
-    setState(() {
-      userProfile = profile;
-      print(profile);
-    });
+  @override
+  void dispose() {
+    nicknameController.dispose();
+    super.dispose();
+  }
+
+  void saveUsername() async {
+    // TextField에서 입력된 닉네임을 nickname 변수에 저장
+    nickname.value = nicknameController.text;
+    isEditing.value = false;
+
+    // 닉네임이 비어 있지 않은 경우에만 서버에 업데이트 요청
+    if (nickname.value != null && nickname.value!.isNotEmpty) {
+      // 서버에 닉네임 업데이트 요청
+      final response = await UserService().updateNickname(nickname.value!);
+
+      if (response != null) {
+        print("닉네임이 성공적으로 업데이트되었습니다.");
+      } else {
+        print("닉네임 업데이트 실패");
+      }
+    }
+  }
+
+  void cancelEdit() {
+    // 수정 모드 종료
+    isEditing.value = false;
+
+    // authController에서 최신 닉네임 가져와서 nicknameController에 설정
+    nicknameController.text = authController.nickname.value ?? '';
+
+    // print("닉네임 초기화: ${authController.nickname.value}");
   }
 
   // 월 이동 함수
@@ -181,6 +217,19 @@ class _MyPageScreenState extends State<MyPageScreen> {
       throw Exception('Failed to read Annual Time.');
     }
   }
+
+  final TextStyle textStyle = const TextStyle(
+    fontWeight: FontWeight.w500,
+    fontSize: 19,
+    color: Colors.black,
+  );
+
+  final UnderlineInputBorder textFieldBorder = const UnderlineInputBorder(
+    borderSide: BorderSide(
+      color: Color.fromRGBO(46, 149, 210, 1), // 기본 밑줄 색상 (파란색)
+      width: 1.0,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -277,18 +326,73 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                "${userProfile?['username']} 님",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 18,
+                              Obx(
+                                () => Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (isEditing.value)
+                                      SizedBox(
+                                        width: 150,
+                                        child: TextField(
+                                          controller: nicknameController,
+                                          autofocus: true,
+                                          style: textStyle,
+                                          decoration: InputDecoration(
+                                            hintText:
+                                                '${authController.nickname.value}',
+                                            hintStyle: textStyle,
+                                            border:
+                                                InputBorder.none, // 기본 테두리 제거
+                                            enabledBorder:
+                                                textFieldBorder, // 활성화 상태 밑줄 스타일
+                                            focusedBorder:
+                                                const UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                color: Colors
+                                                    .blueAccent, // 포커스 시 진한 파란색 밑줄
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            contentPadding:
+                                                const EdgeInsets.only(
+                                                    bottom: 0),
+                                            isDense: true,
+                                            // contentPadding: EdgeInsets.zero
+                                          ),
+                                        ),
+                                      )
+                                    else
+                                      Text("$nickname 님", style: textStyle),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    if (isEditing.value) ...[
+                                      GestureDetector(
+                                        onTap: saveUsername,
+                                        child: const Icon(Icons.check,
+                                            color: Colors.green, size: 18),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      GestureDetector(
+                                        onTap: cancelEdit,
+                                        child: const Icon(Icons.close,
+                                            color: Colors.red, size: 18),
+                                      ),
+                                    ] else
+                                      GestureDetector(
+                                        onTap: () {
+                                          isEditing.value = true;
+                                        },
+                                        child: const Icon(Icons.edit, size: 18),
+                                      ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(
-                                height: 10,
+                                height: 7,
                               ),
                               const Text(
-                                "3레벨 클라이머",
+                                "클라이머",
                               ),
                               const SizedBox(
                                 height: 4,
