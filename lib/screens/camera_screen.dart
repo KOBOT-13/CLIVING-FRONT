@@ -43,7 +43,7 @@ class _CameraScreenState extends State<CameraScreen> {
   bool isSelectingStartHold = true;
   bool _recordingCheck = false;
   Future<Map<int, List<dynamic>>>? imageHoldInfos;
-  int? key;
+  List<int> keys = [];
   int? first_image_id;
   String? dateFormat;
   String selectedColor = "";
@@ -321,7 +321,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<void> fetchTop() async {
     String apiAddress = dotenv.get("API_ADDRESS");
-    final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/$key/');
+    final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/${keys[0]}/');
     final response = await http.put(url,
         headers: {
           'Content-Type': 'application/json',
@@ -334,7 +334,35 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<void> fetchStart() async {
     String apiAddress = dotenv.get("API_ADDRESS");
-    final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/$key/');
+    for (int i = 0; i < clickedHold; i++) {
+      final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/${keys[i]}/');
+      final response = await http.put(url,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: json.encode({
+            'is_start': true,
+          }));
+      print(response.statusCode);
+    }
+  }
+
+  Future<void> resetImageHoldInfos() async {
+    // Future<Map<int, List<dynamic>>>를 실제 Map으로 변환하여 값 가져오기
+    Map<int, List<dynamic>>? holdInfos = await imageHoldInfos;
+
+    // 값이 존재하는 경우 for 루프를 사용하여 모든 값을 변경
+    if (holdInfos != null) {
+      holdInfos.forEach((key, value) {
+        // 원하는 변경 작업 수행
+        value[1] = true; // 예시: 두 번째 요소를 false로 변경
+      });
+      clickedHold = 0;
+      // 변경된 값을 다시 상태에 반영
+      setState(() {
+        imageHoldInfos = Future.value(holdInfos);
+      });
+    }
   }
 
   @override
@@ -461,6 +489,10 @@ class _CameraScreenState extends State<CameraScreen> {
                       setState(() {
                         file = null;
                         imageHoldInfos = null;
+                        clickedHold = 0;
+                        _buttonCheck = false;
+                        isSelectingStartHold = true;
+                        keys = [-1, -1];
                       });
                     },
                     child: Text("재촬영"),
@@ -482,9 +514,15 @@ class _CameraScreenState extends State<CameraScreen> {
                     onPressed: () {
                       setState(() {
                         if (_buttonCheck) {
-                          if (isSelectingStartHold) {}
-                          if (!_recordingCheck) {
-                            _showColorModal(context);
+                          if (isSelectingStartHold) {
+                            fetchStart();
+                            isSelectingStartHold = false;
+                            _buttonCheck = false;
+                            resetImageHoldInfos();
+                          } else {
+                            if (!_recordingCheck) {
+                              _showColorModal(context);
+                            }
                           }
                         } else {
                           Fluttertoast.showToast(
@@ -541,18 +579,22 @@ class _CameraScreenState extends State<CameraScreen> {
                                             if (clickedHold < 2) {
                                               if (t.value[1]) {
                                                 t.value[1] = false;
+                                                keys.add(t.key);
                                                 clickedHold++;
                                                 _buttonCheck = true;
                                               } else {
                                                 t.value[1] = true;
+                                                keys.remove(t.key);
                                                 clickedHold--;
                                               }
                                             } else {
                                               if (!t.value[1]) {
                                                 t.value[1] = true;
+                                                keys.remove(t.key);
                                                 clickedHold--;
                                               }
                                             }
+
                                             if (clickedHold == 0)
                                               _buttonCheck = false;
                                           } else {
@@ -563,7 +605,7 @@ class _CameraScreenState extends State<CameraScreen> {
                                               }
                                               t.value[1] = false;
                                               _buttonCheck = true;
-                                              key = t.key;
+                                              keys[0] = t.key;
                                             });
                                           }
                                         });
