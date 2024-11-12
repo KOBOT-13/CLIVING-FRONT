@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cliving_front/charts/pie_chart.dart';
 import 'package:cliving_front/screens/login_screen.dart';
-import 'package:cliving_front/screens/setting_screen.dart';
 import 'package:cliving_front/services/logout_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -297,29 +296,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                             ],
                           ),
                         ),
-                        Positioned(
-                          top: 5,
-                          right: 5,
-                          child: IconButton(
-                            onPressed: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled:
-                                    true, // Bottom Sheet 높이 제어 가능
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(25.0)),
-                                ),
-                                builder: (BuildContext context) {
-                                  return const SettingScreen(); // SettingScreen을 Bottom Sheet로 표시
-                                },
-                              );
-                            },
-                            icon: const Icon(Icons.settings_sharp),
-                            iconSize: 23,
-                            color: Colors.grey[600],
-                          ),
-                        )
                       ],
                     ),
                   ),
