@@ -45,6 +45,10 @@ class _CameraScreenState extends State<CameraScreen> {
   String? dateFormat;
   String selectedColor = "";
   List<String> selectedColorList = [];
+  double _scale = 1.0;
+  double _previousScale = 1.0;
+  double _maxZoomLevel = 0;
+  double _minZoomLevel = 0;
 
   @override
   void initState() {
@@ -70,6 +74,14 @@ class _CameraScreenState extends State<CameraScreen> {
       ];
     }
     return tmp;
+  }
+
+  Future<void> fetchZoomLevel() async {
+    // 디바이스 최대 줌 크기 체크. 15배 이상 가능할 경우 15배로 설정
+    _maxZoomLevel = await _controller!.getMaxZoomLevel() ?? 1.0;
+    if (_maxZoomLevel > 15) _maxZoomLevel = 15.0;
+    // 디바이스 최소 줌 크기 체크.
+    _minZoomLevel = await _controller!.getMinZoomLevel() ?? 1.0;
   }
 
   void setCamera() {
@@ -328,7 +340,47 @@ class _CameraScreenState extends State<CameraScreen> {
             future: _initializeControllerFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
-                return CameraPreview(_controller!);
+                fetchZoomLevel();
+                return GestureDetector(
+                    onScaleStart: (ScaleStartDetails details) {
+                      _previousScale = _scale;
+                    },
+                    onScaleUpdate: (ScaleUpdateDetails details) {
+                      setState(() {
+                        _scale = (_previousScale * details.scale)
+                            .clamp(_minZoomLevel, _maxZoomLevel); // 줌 범위 제한
+                        print("scale : $_scale");
+                        _controller!.setZoomLevel(_scale); // 줌 레벨 설정
+                      });
+                    },
+                    onScaleEnd: (ScaleEndDetails details) {
+                      _previousScale = 1.0;
+                    },
+                    child: Stack(
+                      children: [
+                        CameraPreview(
+                          _controller!,
+                        ),
+
+                        // 오른쪽 하단에 배율 표시
+                        Positioned(
+                          bottom: 16.0,
+                          right: 16.0,
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Text(
+                              "${_scale.toStringAsFixed(1)}x", // 배율 텍스트
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 16.0),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ));
               } else {
                 return const Center(
                     child: CircularProgressIndicator(
@@ -382,129 +434,136 @@ class _CameraScreenState extends State<CameraScreen> {
                   alignment: const Alignment(-0.9, 0.9),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        surfaceTintColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        textStyle: TextStyle(
-                          color: Colors.white,
-                        ),
+                      backgroundColor: Colors.black,
+                      surfaceTintColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      onPressed: (){
-                        setState(() {
-                          file = null;
-                          imageHoldInfos = null;
-                        });
-                      },
-                      child: Text("재촬영"),
+                      textStyle: TextStyle(
+                        color: Colors.white,
+                      ),
                     ),
+                    onPressed: () {
+                      setState(() {
+                        file = null;
+                        imageHoldInfos = null;
+                      });
+                    },
+                    child: Text("재촬영"),
                   ),
-                  Container(
-                    alignment: Alignment(0.9, 0.9),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        surfaceTintColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                          textStyle: TextStyle(
-                          color: Colors.white,
-                        ),
+                ),
+                Container(
+                  alignment: Alignment(0.9, 0.9),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      surfaceTintColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          if (_buttonCheck) {
-                            if (!_recordingCheck) {
-                              _showColorModal(context);
-                            }
-                          } else {
-                            Fluttertoast.showToast(
-                              msg: "홀드를 선택해주세요.",
-                              gravity: ToastGravity.BOTTOM,
-                              backgroundColor: const Color.fromRGBO(0, 0, 0, 0.8),
-                            );
+                      textStyle: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        if (_buttonCheck) {
+                          if (!_recordingCheck) {
+                            _showColorModal(context);
                           }
-                        });
-                      },
-                      child: const Text("확정"),
-                    ),
-                  ),
-                  FutureBuilder<Map<int, List<dynamic>>>(
-                    future: imageHoldInfos,
-                    builder: ((context, snapshot){
-                      if(imageHoldInfos == null){
-                        return Container();
-                      }
-                      if(snapshot.connectionState == ConnectionState.waiting){
-                        return SizedBox.shrink();
-                      }
-                      else if(snapshot.hasError){
-                        return Center(child: Text('Error'));
-                      }
-                      else{
-                        Map<int, List<dynamic>> buttonHold = snapshot.data!;
-                        return LayoutBuilder(
-                            builder: (context, constraints) {
-                              return Stack(
-                                children: [
-                                  for(var t in buttonHold.entries)
-                                    Positioned(
-                                      top:  (t.value[0][1]) / 4032.0 * constraints.maxHeight,
-                                      right: (t.value[0][0]) / 3024.0 * constraints.maxWidth,
-                                      child: SizedBox(
-                                        width: (t.value[0][2] / 3024.0 * constraints.maxWidth) - (t.value[0][0] / 3024.0 * constraints.maxWidth),
-                                        height: (t.value[0][3] / 4032.0 * constraints.maxHeight) - (t.value[0][1] / 4032.0 * constraints.maxHeight),
-                                        child: OutlinedButton(
-                                          onPressed: (){
-                                            setState(() {
-                                              buttonHold.entries.forEach((element) {
-                                                if(!element.value[1]){
-                                                  element.value[1] = true;
-                                                }
-                                                t.value[1] = false;
-                                                _buttonCheck = true;
-                                                key = t.key;
-                                              });
-                                            });
-                                          },
-                                          child: Text(""),
-                                          style: ButtonStyle(
-                                            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.zero, // 각진 모서리
-                                              ),
-                                            ),
-                                            side: WidgetStateProperty.resolveWith<BorderSide>(
-                                              (states){
-                                                return BorderSide(
-                                                  color: colorMap["orange"],
-                                                  width: 2.0,
-                                                );
-                                              }
-                                            ),
-                                            backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                                              (states) {
-                                                if(t.value[1]){
-                                                  return Colors.transparent;
-                                                }
-                                                else{
-                                                  return Color.fromRGBO(0, 0, 0, 0.494);
-                                                }
-                                              }
-                                            )
-                                          )
-                                        ),
-                                      ),
-                                    ),
-                                ]
-                              );     
-                            },
+                        } else {
+                          Fluttertoast.showToast(
+                            msg: "홀드를 선택해주세요.",
+                            gravity: ToastGravity.BOTTOM,
+                            backgroundColor: const Color.fromRGBO(0, 0, 0, 0.8),
                           );
-                      }
-                    }
+                        }
+                      });
+                    },
+                    child: const Text("확정"),
                   ),
+                ),
+                FutureBuilder<Map<int, List<dynamic>>>(
+                  future: imageHoldInfos,
+                  builder: ((context, snapshot) {
+                    if (imageHoldInfos == null) {
+                      return Container();
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return SizedBox.shrink();
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error'));
+                    } else {
+                      Map<int, List<dynamic>> buttonHold = snapshot.data!;
+                      return LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Stack(children: [
+                            for (var t in buttonHold.entries)
+                              Positioned(
+                                top: (t.value[0][1]) /
+                                    4032.0 *
+                                    constraints.maxHeight,
+                                right: (t.value[0][0]) /
+                                    3024.0 *
+                                    constraints.maxWidth,
+                                child: SizedBox(
+                                  width: (t.value[0][2] /
+                                          3024.0 *
+                                          constraints.maxWidth) -
+                                      (t.value[0][0] /
+                                          3024.0 *
+                                          constraints.maxWidth),
+                                  height: (t.value[0][3] /
+                                          4032.0 *
+                                          constraints.maxHeight) -
+                                      (t.value[0][1] /
+                                          4032.0 *
+                                          constraints.maxHeight),
+                                  child: OutlinedButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          buttonHold.entries.forEach((element) {
+                                            if (!element.value[1]) {
+                                              element.value[1] = true;
+                                            }
+                                            t.value[1] = false;
+                                            _buttonCheck = true;
+                                            key = t.key;
+                                          });
+                                        });
+                                      },
+                                      child: Text(""),
+                                      style: ButtonStyle(
+                                          shape: WidgetStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.zero, // 각진 모서리
+                                            ),
+                                          ),
+                                          side: WidgetStateProperty.resolveWith<
+                                              BorderSide>((states) {
+                                            return BorderSide(
+                                              color: colorMap["orange"],
+                                              width: 2.0,
+                                            );
+                                          }),
+                                          backgroundColor: WidgetStateProperty
+                                              .resolveWith<Color>((states) {
+                                            if (t.value[1]) {
+                                              return Colors.transparent;
+                                            } else {
+                                              return Color.fromRGBO(
+                                                  0, 0, 0, 0.494);
+                                            }
+                                          }))),
+                                ),
+                              ),
+                          ]);
+                        },
+                      );
+                    }
+                  }),
                 ),
               ]),
             ),
