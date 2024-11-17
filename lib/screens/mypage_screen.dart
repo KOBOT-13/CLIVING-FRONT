@@ -72,12 +72,23 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   XFile? _pickedFile;
   _getPhotoLibraryImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    final UserService userService = UserService(); // 인스턴스 생성
+    final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 30 // 이미지 크기의 압축을 위해 퀄리티를 30으로 낮춤
+        );
     if (pickedFile != null) {
       setState(() {
         _pickedFile = pickedFile;
       });
+      //서버에 이미지 업로드
+      final result = await userService.updateProfileImage(
+          pickedFile, authController.accessToken.value!);
+      if (result != null) {
+        print("프로필 업데이트 성공");
+      } else {
+        print("프로필 업데이트 실패");
+      }
     } else {
       if (kDebugMode) {
         print('이미지 선택안함');
@@ -284,13 +295,12 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                     ),
                                   ],
                                   image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: (_pickedFile == null)
-                                        ? const AssetImage(
-                                                'assets/images/profile_image.png')
-                                            as ImageProvider
-                                        : FileImage(File(_pickedFile!.path)),
-                                  ),
+                                      fit: BoxFit.cover,
+                                      image: (_pickedFile != null)
+                                          ? FileImage(File(_pickedFile!.path))
+                                              as ImageProvider
+                                          : NetworkImage(authController
+                                              .profileImage.value!)),
                                 ),
                               ),
                             ),
