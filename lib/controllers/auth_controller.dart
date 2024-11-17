@@ -98,4 +98,11 @@ class AuthController extends GetxController {
 
     print("Updated Profile Image in Storage: $newProfileImage");
   }
+
+  Future<void> updateNicknameInStorage(String newNickname) async {
+    await _storage.write(key: 'nickname', value: newNickname);
+    nickname.value = newNickname;
+
+    print("Updated Nickname in Storage: $newNickname");
+  }
 }
