@@ -13,7 +13,7 @@ class UserService {
 
   Future<Map<String, dynamic>?> updateNickname(String newNickname) async {
     //URL 설정
-    final url = Uri.parse('$API_ADDRESS/api/users/profile/update/');
+    final url = Uri.parse('$API_ADDRESS/api/users/profile/');
     final accessToken = authController.accessToken.value;
     print("Authorization Header: Bearer $accessToken");
 
@@ -31,6 +31,9 @@ class UserService {
 
     if (response.statusCode == 200) {
       // 성공적으로 사용자 정보 가져옴
+      // Flutter Secure Storage에 새로운 닉네임 저장
+      await authController.updateNicknameInStorage(newNickname);
+
       return json.decode(response.body);
     } else {
       print("Failed to patch nickname: ${response.statusCode}");
@@ -45,7 +48,7 @@ class UserService {
     print("Authorization Header: Bearer $accessToken");
 
     dio.Dio dioClient = dio.Dio();
-    final authController = Get.find<AuthController>();
+    // final authController = Get.find<AuthController>();
     try {
       dio.FormData formData = dio.FormData.fromMap({
         'profile_image': await dio.MultipartFile.fromFile(
