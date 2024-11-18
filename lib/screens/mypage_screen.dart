@@ -104,37 +104,28 @@ class _MyPageScreenState extends State<MyPageScreen> {
     profileImage = authController.profileImage;
 
     // 초기 데이터 로드
-    fetchAnnualTime();
-    fetchMonthlyTime();
+    fetchAnnualTime("${_selectedDate.year % 100}");
+    fetchMonthlyTime("${_selectedDate.year % 100}", "${_selectedDate.month}");
 
     nicknameController =
         TextEditingController(text: authController.nickname.value);
   }
 
-  void fetchMonthlyTime() async {
+  Future<String> fetchMonthlyTime(String year, String month) async {
     try {
-      String time = await AnalyticsApi().getMonthlyTime(
-        "${_selectedDate.year % 100}",
-        "${_selectedDate.month}",
-      );
-      monthlyTime.value = time;
-      monthlyTime.refresh();
+      return await AnalyticsApi().getMonthlyTime(year, month);
     } catch (e) {
-      monthlyTime.value = 'Error';
       print('Failed to fetch monthly time: $e');
+      return 'Error';
     }
   }
 
-  void fetchAnnualTime() async {
+  Future<String> fetchAnnualTime(String year) async {
     try {
-      String time = await AnalyticsApi().getAnnualTime(
-        "${_selectedDate.year % 100}",
-      );
-      annualTime.value = time;
-      annualTime.refresh();
+      return await AnalyticsApi().getAnnualTime(year);
     } catch (e) {
-      annualTime.value = 'Error';
       print('Failed to fetch annual time: $e');
+      return 'Error';
     }
   }
 
@@ -177,7 +168,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
     setState(() {
       _selectedDate = DateTime(_selectedDate.year, _selectedDate.month - 1);
     });
-    fetchMonthlyTime();
   }
 
   void _goToNextMonth() {
@@ -187,7 +177,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
       setState(() {
         _selectedDate = DateTime(_selectedDate.year, _selectedDate.month + 1);
       });
-      fetchMonthlyTime();
     }
   }
 
@@ -196,7 +185,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
     setState(() {
       _selectedDate = DateTime(_selectedDate.year - 1, _selectedDate.month);
     });
-    fetchAnnualTime();
   }
 
   void _goToNextYear() {
@@ -204,7 +192,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
       setState(() {
         _selectedDate = DateTime(_selectedDate.year + 1, _selectedDate.month);
       });
-      fetchAnnualTime();
     }
   }
 
@@ -213,7 +200,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
     setState(() {
       _selectedDate = DateTime.now();
     });
-    fetchMonthlyTime();
   }
 
   // 이번 연도로 돌아가기
@@ -221,7 +207,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
     setState(() {
       _selectedDate = DateTime(DateTime.now().year, _selectedDate.month);
     });
-    fetchAnnualTime();
   }
 
   final TextStyle textStyle = const TextStyle(
@@ -551,57 +536,45 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: Obx(() {
-                            if (_isYearly.value) {
-                              return annualTime.value.isEmpty
-                                  ? const Center(
-                                      child: CircularProgressIndicator())
-                                  : Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            '클라이밍 시간',
-                                            style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          Text(
-                                            annualTime.value,
-                                            style: const TextStyle(
-                                                fontSize: 30,
-                                                fontWeight: FontWeight.w700),
-                                          ),
-                                        ],
+                          child: FutureBuilder<String>(
+                            future: _isYearly.value
+                                ? fetchAnnualTime("${_selectedDate.year % 100}")
+                                : fetchMonthlyTime(
+                                    "${_selectedDate.year % 100}",
+                                    "${_selectedDate.month}",
+                                  ),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              } else if (snapshot.hasError ||
+                                  !snapshot.hasData) {
+                                return const Center(
+                                    child: Text('Error loading data'));
+                              } else {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        '클라이밍 시간',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500),
                                       ),
-                                    );
-                            } else {
-                              return monthlyTime.value.isEmpty
-                                  ? const Center(
-                                      child: CircularProgressIndicator())
-                                  : Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            '클라이밍 시간',
-                                            style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          Text(
-                                            monthlyTime.value,
-                                            style: const TextStyle(
-                                                fontSize: 30,
-                                                fontWeight: FontWeight.w700),
-                                          ),
-                                        ],
+                                      Text(
+                                        snapshot.data!,
+                                        style: const TextStyle(
+                                            fontSize: 30,
+                                            fontWeight: FontWeight.w700),
                                       ),
-                                    );
-                            }
-                          }),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
+                          ),
                         ),
                         Expanded(
                           child: Obx(() => PieChartWidget(
