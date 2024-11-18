@@ -606,6 +606,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         Expanded(
                           child: Obx(() => PieChartWidget(
                                 dataType: !_isYearly.value ? 1 : 2,
+                                selectedYear: "${_selectedDate.year % 100}",
+                                selectedMonth: "${_selectedDate.month}",
                               )),
                         ),
                       ],
