@@ -9,10 +9,10 @@ class AnalyticsApi {
   final AuthController authController = Get.find<AuthController>();
   final String API_ADDRESS = dotenv.get('API_ADDRESS');
   late Uri uri;
+  String apiAddress = dotenv.get("API_ADDRESS");
 
   Future<String> getMonthlyTime(
       String selectedYear, String selectedMonth) async {
-    String apiAddress = dotenv.get("API_ADDRESS");
     final accessToken = authController.accessToken.value;
     final url = Uri.parse(
         '$apiAddress/v1/statistics/climbing-time/$selectedYear/$selectedMonth');
@@ -38,7 +38,6 @@ class AnalyticsApi {
   }
 
   Future<String> getAnnualTime(String selectedYear) async {
-    String apiAddress = dotenv.get("API_ADDRESS");
     final accessToken = authController.accessToken.value;
     final url =
         Uri.parse('$apiAddress/v1/statistics/climbing-time/$selectedYear/');
