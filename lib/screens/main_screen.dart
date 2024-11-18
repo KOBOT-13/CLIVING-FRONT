@@ -1,4 +1,3 @@
-import 'package:cliving_front/screens/analytics_screen.dart';
 import 'package:cliving_front/screens/calendar_screen.dart';
 import 'package:cliving_front/screens/mypage_screen.dart';
 
@@ -17,7 +16,6 @@ class _MainScreenState extends State<MainScreen> {
   final List _pages = [
     CalendarScreen(),
     CameraScreen(),
-    AnalyticsScreen(),
     MyPageScreen(),
   ];
 
@@ -42,10 +40,6 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.camera),
             label: '카메라',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.analytics_outlined),
-            label: '통계',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
