@@ -15,7 +15,7 @@ class AnalyticsApi {
       String selectedYear, String selectedMonth) async {
     final accessToken = authController.accessToken.value;
     final url = Uri.parse(
-        '$apiAddress/v1/statistics/climbing-time/$selectedYear/$selectedMonth');
+        '$apiAddress/v1/statistics/climbing-time/$selectedYear/$selectedMonth/');
 
     final response = await http.get(
       url,
