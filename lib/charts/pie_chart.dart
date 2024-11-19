@@ -1,13 +1,17 @@
-import 'dart:convert';
+import 'package:cliving_front/services/analytics_api.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PieChartWidget extends StatefulWidget {
   final int dataType;
+  final String selectedYear;
+  final String selectedMonth;
 
-  const PieChartWidget({super.key, required this.dataType});
+  const PieChartWidget(
+      {super.key,
+      required this.dataType,
+      required this.selectedYear,
+      required this.selectedMonth});
 
   @override
   State<StatefulWidget> createState() => PieChartWidgetState();
@@ -27,7 +31,9 @@ class PieChartWidgetState extends State<PieChartWidget> {
   @override
   void didUpdateWidget(covariant PieChartWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.dataType != widget.dataType) {
+    if (oldWidget.dataType != widget.dataType ||
+        oldWidget.selectedYear != widget.selectedYear ||
+        oldWidget.selectedMonth != widget.selectedMonth) {
       setState(() {
         colorData =
             _getColorData(widget.dataType); // 변경된 dataType에 맞는 데이터 다시 가져오기
@@ -37,50 +43,12 @@ class PieChartWidgetState extends State<PieChartWidget> {
 
   Future<List<dynamic>> _getColorData(int dataType) {
     if (dataType == 1) {
-      return _getMonthlyColor();
+      // 월별 데이터를 가져옴
+      return AnalyticsApi()
+          .getMonthlyColor(widget.selectedYear, widget.selectedMonth);
     } else {
-      return _getAnnualColor();
-    }
-  }
-
-  Future<List<dynamic>> _getMonthlyColor() async {
-    print('api실행');
-    String apiAddress = dotenv.get("API_ADDRESS");
-    final url = Uri.parse('$apiAddress/v1/statistics/monthly/color-tries/');
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      List<dynamic> readMonthlyColor =
-          json.decode(utf8.decode(response.bodyBytes));
-      return readMonthlyColor;
-    } else {
-      throw Exception('Failed to read Monthly Color.');
-    }
-  }
-
-  Future<List<dynamic>> _getAnnualColor() async {
-    String apiAddress = dotenv.get("API_ADDRESS");
-    final url = Uri.parse('$apiAddress/v1/statistics/annual/color-tries/');
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      List<dynamic> readAnnualColor =
-          json.decode(utf8.decode(response.bodyBytes));
-      return readAnnualColor;
-    } else {
-      throw Exception('Failed to read Annual Color.');
+      // 연별 데이터를 가져옴
+      return AnalyticsApi().getAnnualColor(widget.selectedYear);
     }
   }
 

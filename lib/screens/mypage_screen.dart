@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
+import 'package:cliving_front/services/analytics_api.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cliving_front/charts/pie_chart.dart';
@@ -11,7 +11,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 
 import '../controllers/auth_controller.dart';
 import '../services/mypage_api.dart';
@@ -59,12 +58,14 @@ class _MyPageScreenState extends State<MyPageScreen> {
   final authController = Get.find<AuthController>();
   Map<String, dynamic>? userProfile;
   DateTime _selectedDate = DateTime.now();
-  bool _isYearly = false;
   double xAlign = -1;
   Color monthColor = selectedColor;
   Color yearColor = normalColor;
-  late Future<String> annualTime;
-  late Future<String> monthlyTime;
+
+  RxString monthlyTime = ''.obs;
+  RxString annualTime = ''.obs;
+  final RxBool _isYearly = false.obs;
+
   late RxnString nickname;
   late RxnString profileImage;
   RxBool isEditing = false.obs;
@@ -72,12 +73,23 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   XFile? _pickedFile;
   _getPhotoLibraryImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    final UserService userService = UserService(); // 인스턴스 생성
+    final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 30 // 이미지 크기의 압축을 위해 퀄리티를 30으로 낮춤
+        );
     if (pickedFile != null) {
       setState(() {
         _pickedFile = pickedFile;
       });
+      //서버에 이미지 업로드
+      final result = await userService.updateProfileImage(
+          pickedFile, authController.accessToken.value!);
+      if (result != null) {
+        print("프로필 업데이트 성공");
+      } else {
+        print("프로필 업데이트 실패");
+      }
     } else {
       if (kDebugMode) {
         print('이미지 선택안함');
@@ -91,11 +103,30 @@ class _MyPageScreenState extends State<MyPageScreen> {
     nickname = authController.nickname;
     profileImage = authController.profileImage;
 
-    annualTime = _getAnnualTime();
-    monthlyTime = _getMonthlyTime();
+    // 초기 데이터 로드
+    fetchAnnualTime("${_selectedDate.year % 100}");
+    fetchMonthlyTime("${_selectedDate.year % 100}", "${_selectedDate.month}");
 
     nicknameController =
         TextEditingController(text: authController.nickname.value);
+  }
+
+  Future<String> fetchMonthlyTime(String year, String month) async {
+    try {
+      return await AnalyticsApi().getMonthlyTime(year, month);
+    } catch (e) {
+      print('Failed to fetch monthly time: $e');
+      return 'Error';
+    }
+  }
+
+  Future<String> fetchAnnualTime(String year) async {
+    try {
+      return await AnalyticsApi().getAnnualTime(year);
+    } catch (e) {
+      print('Failed to fetch annual time: $e');
+      return 'Error';
+    }
   }
 
   @override
@@ -178,46 +209,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
     });
   }
 
-  Future<String> _getMonthlyTime() async {
-    String apiAddress = dotenv.get("API_ADDRESS");
-    final url = Uri.parse('$apiAddress/v1/statistics/monthly/climbing-time/');
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      Map<String, dynamic> readMonthlyTime =
-          json.decode(utf8.decode(response.bodyBytes));
-      return readMonthlyTime['total_climbing_time_hhmm'];
-    } else {
-      throw Exception('Failed to read Monthly Time.');
-    }
-  }
-
-  Future<String> _getAnnualTime() async {
-    String apiAddress = dotenv.get("API_ADDRESS");
-    final url = Uri.parse('$apiAddress/v1/statistics/annual/climbing-time/');
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      Map<String, dynamic> readAnnualTime =
-          json.decode(utf8.decode(response.bodyBytes));
-      return readAnnualTime['total_climbing_time_hhmm'];
-    } else {
-      throw Exception('Failed to read Annual Time.');
-    }
-  }
-
   final TextStyle textStyle = const TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 19,
@@ -284,13 +275,12 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                     ),
                                   ],
                                   image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: (_pickedFile == null)
-                                        ? const AssetImage(
-                                                'assets/images/profile_image.png')
-                                            as ImageProvider
-                                        : FileImage(File(_pickedFile!.path)),
-                                  ),
+                                      fit: BoxFit.cover,
+                                      image: (_pickedFile != null)
+                                          ? FileImage(File(_pickedFile!.path))
+                                              as ImageProvider
+                                          : NetworkImage(authController
+                                              .profileImage.value!)),
                                 ),
                               ),
                             ),
@@ -420,7 +410,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           top: 5,
                           child: IconButton(
                             icon: const Icon(Icons.arrow_left),
-                            onPressed: _isYearly
+                            onPressed: _isYearly.value
                                 ? _goToPreviousYear
                                 : _goToPreviousMonth,
                           ),
@@ -429,7 +419,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           left: 75,
                           top: 17,
                           child: Text(
-                            _isYearly
+                            _isYearly.value
                                 ? '${_selectedDate.year}년'
                                 : '   ${DateFormat.MMMM('ko').format(_selectedDate)}  ', // 월 이름 포맷
                             style: const TextStyle(fontSize: 18),
@@ -440,15 +430,16 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           top: 5,
                           child: IconButton(
                             icon: const Icon(Icons.arrow_right),
-                            onPressed:
-                                _isYearly ? _goToNextYear : _goToNextMonth,
+                            onPressed: _isYearly.value
+                                ? _goToNextYear
+                                : _goToNextMonth,
                           ),
                         ),
                         Positioned(
                           right: 85,
                           top: 6,
                           child: IconButton(
-                              onPressed: _isYearly
+                              onPressed: _isYearly.value
                                   ? _goToCurrentYear
                                   : _goToCurrentMonth,
                               icon: const Icon(Icons.today_outlined)),
@@ -488,7 +479,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                       monthColor = selectedColor;
 
                                       yearColor = normalColor;
-                                      _isYearly = false;
+                                      _isYearly.value = false;
                                     });
                                   },
                                   child: Align(
@@ -514,7 +505,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                       yearColor = selectedColor;
 
                                       monthColor = normalColor;
-                                      _isYearly = true;
+                                      _isYearly.value = true;
                                     });
                                   },
                                   child: Align(
@@ -542,50 +533,58 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   ),
                   // 통계 그래프
                   Expanded(
-                    child: Row(children: [
-                      Expanded(
-                        child: FutureBuilder<String>(
-                          future: _isYearly ? annualTime : monthlyTime,
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            } else if (snapshot.hasError) {
-                              return const Center(
-                                  child: Text('Error loading data'));
-                            } else {
-                              return Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    const Text(
-                                      '클라이밍 시간',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    Text(
-                                      snapshot.data ?? 'N/A',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.w700),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                          },
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: FutureBuilder<String>(
+                            future: _isYearly.value
+                                ? fetchAnnualTime("${_selectedDate.year % 100}")
+                                : fetchMonthlyTime(
+                                    "${_selectedDate.year % 100}",
+                                    "${_selectedDate.month}",
+                                  ),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              } else if (snapshot.hasError ||
+                                  !snapshot.hasData) {
+                                return const Center(
+                                    child: Text('Error loading data'));
+                              } else {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        '클라이밍 시간',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                      Text(
+                                        snapshot.data!,
+                                        style: const TextStyle(
+                                            fontSize: 30,
+                                            fontWeight: FontWeight.w700),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
+                          ),
                         ),
-                      ),
-                      Expanded(
-                          child: PieChartWidget(
-                              // dataType: 2,
-                              dataType: !_isYearly ? 1 : 2)),
-                    ]),
+                        Expanded(
+                          child: Obx(() => PieChartWidget(
+                                dataType: !_isYearly.value ? 1 : 2,
+                                selectedYear: "${_selectedDate.year % 100}",
+                                selectedMonth: "${_selectedDate.month}",
+                              )),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

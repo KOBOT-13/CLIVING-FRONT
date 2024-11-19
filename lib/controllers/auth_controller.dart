@@ -90,4 +90,19 @@ class AuthController extends GetxController {
     print("nickname: ${nickname.value}");
     print("profileImage: ${profileImage.value}");
   }
+
+  Future<void> updateProfileImageInStorage(String newProfileImage) async {
+    // Flutter Secure Storage에 새로운 프로필 이미지 저장
+    await _storage.write(key: 'profileImage', value: newProfileImage);
+    profileImage.value = newProfileImage;
+
+    print("Updated Profile Image in Storage: $newProfileImage");
+  }
+
+  Future<void> updateNicknameInStorage(String newNickname) async {
+    await _storage.write(key: 'nickname', value: newNickname);
+    nickname.value = newNickname;
+
+    print("Updated Nickname in Storage: $newNickname");
+  }
 }
