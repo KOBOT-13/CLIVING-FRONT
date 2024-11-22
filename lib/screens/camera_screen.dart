@@ -210,7 +210,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       _controller!.startVideoRecording();
                       _recordingCheck = true;
                       file = null;
-                      fetchTop();
+                      showCustomToast(context, "동영상 촬영이 시작되었습니다.");
                     }
                     Navigator.of(context).pop(selectedColor);
                   },
