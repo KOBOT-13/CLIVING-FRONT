@@ -9,7 +9,6 @@ import 'package:image_picker/image_picker.dart';
 class UserService {
   final AuthController authController = Get.find<AuthController>();
   final String API_ADDRESS = dotenv.get('API_ADDRESS');
-  late Uri uri;
 
   Future<Map<String, dynamic>?> updateNickname(String newNickname) async {
     //URL 설정
@@ -48,7 +47,6 @@ class UserService {
     print("Authorization Header: Bearer $accessToken");
 
     dio.Dio dioClient = dio.Dio();
-    // final authController = Get.find<AuthController>();
     try {
       dio.FormData formData = dio.FormData.fromMap({
         'profile_image': await dio.MultipartFile.fromFile(
@@ -65,7 +63,6 @@ class UserService {
         data: formData,
         options: dio.Options(
           headers: {
-            // 'Content-Type': 'multipart/form-data',
             'Authorization': 'Bearer $accessToken',
           },
           validateStatus: (status) => status != null && status < 500,
