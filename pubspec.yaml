@@ -39,6 +39,7 @@ dependencies:
   flutter_secure_storage: ^8.1.0
   image_picker: ^1.1.2
   dio: ^5.7.0
+  device_preview: ^1.2.0
 
 
   
