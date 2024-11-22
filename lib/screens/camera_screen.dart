@@ -416,7 +416,6 @@ class _CameraScreenState extends State<CameraScreen> {
                         CameraPreview(
                           _controller!,
                         ),
-
                         // 오른쪽 하단에 배율 표시
                         Positioned(
                           bottom: 16.0,
@@ -478,77 +477,77 @@ class _CameraScreenState extends State<CameraScreen> {
                       child: Container(
                         color: Colors.black.withOpacity(0.1),
                       ))),
-              Container(
-                alignment: const Alignment(-0.9, 0.9),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    surfaceTintColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    textStyle: const TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      file = null;
-                      imageHoldInfos = null;
-                      clickedHold = 0;
-                      _buttonCheck = false;
-                      isSelectingStartHold = true;
-                      keys.clear();
-                    });
-                  },
-                  child: const Text("재촬영"),
-                ),
-              ),
-              Container(
-                alignment: const Alignment(0.9, 0.9),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    surfaceTintColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    textStyle: const TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      if (_buttonCheck) {
-                        if (isSelectingStartHold) {
-                          fetchStart();
-                          isSelectingStartHold = false;
-                          _buttonCheck = false;
-                          resetImageHoldInfos();
-                        } else {
-                          fetchTop();
-                          if (!_recordingCheck) {
-                            _showColorModal(context);
-                          }
-                        }
-                      } else {
-                        showCustomToast(context, "홀드를 선택해주세요.");
-                      }
-                    });
-                  },
-                  child: const Text("확정"),
-                ),
-              ),
             ],
           ),
         if (file != null)
           Center(
             child: SizedBox(
-              width: 393.0,
-              height: 524.0,
+              width: imageWidth.toDouble(),
+              height: imageHeight.toDouble(),
               child: Stack(children: [
                 Positioned.fill(
                   child: Image(image: XFileImage(file!)),
+                ),
+                Container(
+                  alignment: const Alignment(-0.9, 0.99),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      surfaceTintColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        file = null;
+                        imageHoldInfos = null;
+                        clickedHold = 0;
+                        _buttonCheck = false;
+                        isSelectingStartHold = true;
+                        keys.clear();
+                      });
+                    },
+                    child: const Text("재촬영"),
+                  ),
+                ),
+                Container(
+                  alignment: const Alignment(0.9, 0.99),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      surfaceTintColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        if (_buttonCheck) {
+                          if (isSelectingStartHold) {
+                            fetchStart();
+                            isSelectingStartHold = false;
+                            _buttonCheck = false;
+                            resetImageHoldInfos();
+                          } else {
+                            fetchTop();
+                            if (!_recordingCheck) {
+                              _showColorModal(context);
+                            }
+                          }
+                        } else {
+                          showCustomToast(context, "홀드를 선택해주세요.");
+                        }
+                      });
+                    },
+                    child: const Text("확정"),
+                  ),
                 ),
                 FutureBuilder<Map<int, List<dynamic>>>(
                   future: imageHoldInfos,
