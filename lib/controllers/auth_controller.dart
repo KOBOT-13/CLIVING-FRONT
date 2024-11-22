@@ -68,7 +68,7 @@ class AuthController extends GetxController {
   }
 
   Future<void> logout() async {
-    await _storage.delete(key: 'accessToekn');
+    await _storage.delete(key: 'accessToken');
     await _storage.delete(key: 'refreshToken');
 
     accessToken.value = null;
