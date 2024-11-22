@@ -322,30 +322,40 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<void> fetchTop() async {
     String apiAddress = dotenv.get("API_ADDRESS");
-    final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/${keys[0]}/');
-    final response = await http.put(url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'is_top': true,
-        }));
-    print(response.statusCode);
-  }
-
-  Future<void> fetchStart() async {
-    String apiAddress = dotenv.get("API_ADDRESS");
-    for (int i = 0; i < clickedHold; i++) {
-      final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/${keys[i]}/');
+    try {
+      final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/${keys[0]}/');
       final response = await http.put(url,
           headers: {
             'Content-Type': 'application/json',
           },
           body: json.encode({
-            'is_start': true,
+            'is_top': true,
           }));
       print(response.statusCode);
+    } catch (e) {
+      print('Error for key: ${keys[0]}, Error: $e');
     }
+  }
+
+  Future<void> fetchStart() async {
+    String apiAddress = dotenv.get("API_ADDRESS");
+    for (int key in keys) {
+      try {
+        final url = Uri.parse('$apiAddress/v1/hold/$first_image_id/$key/');
+        final response = await http.put(url,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: json.encode({
+              'is_start': true,
+            }));
+        print('Response for key: $key, StatusCode: ${response.statusCode}');
+        showCustomToast(context, "탑 홀드를 선택해주세요.");
+      } catch (e) {
+        print('Error for key: $key, Error: $e');
+      }
+    }
+    keys.clear();
   }
 
   Future<void> resetImageHoldInfos() async {
@@ -486,7 +496,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       clickedHold = 0;
                       _buttonCheck = false;
                       isSelectingStartHold = true;
-                      keys = [-1, -1];
+                      keys.clear();
                     });
                   },
                   child: const Text("재촬영"),
@@ -514,6 +524,7 @@ class _CameraScreenState extends State<CameraScreen> {
                           _buttonCheck = false;
                           resetImageHoldInfos();
                         } else {
+                          fetchTop();
                           if (!_recordingCheck) {
                             _showColorModal(context);
                           }
@@ -588,7 +599,6 @@ class _CameraScreenState extends State<CameraScreen> {
                                                 keys.remove(t.key);
                                                 clickedHold--;
                                               }
-                                              print(keys);
                                             } else {
                                               if (!t.value[1]) {
                                                 t.value[1] = true;
@@ -596,7 +606,6 @@ class _CameraScreenState extends State<CameraScreen> {
                                                 clickedHold--;
                                               }
                                             }
-
                                             if (clickedHold == 0)
                                               _buttonCheck = false;
                                           } else {
@@ -607,7 +616,7 @@ class _CameraScreenState extends State<CameraScreen> {
                                               }
                                               t.value[1] = false;
                                               _buttonCheck = true;
-                                              keys[0] = t.key;
+                                              keys.add(t.key);
                                             });
                                           }
                                         });
