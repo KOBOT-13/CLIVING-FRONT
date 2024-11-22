@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
-import '../controllers/auth_controller.dart'; // for jsonEncode
+import '../controllers/auth_controller.dart';
 
 class DeleteAccountApi {
   final AuthController authController = Get.find<AuthController>();
