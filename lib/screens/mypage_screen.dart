@@ -159,8 +159,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
     // authController에서 최신 닉네임 가져와서 nicknameController에 설정
     nicknameController.text = authController.nickname.value ?? '';
-
-    // print("닉네임 초기화: ${authController.nickname.value}");
   }
 
   // 월 이동 함수
@@ -224,10 +222,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final double cardHeight = screenHeight * 0.15; // 화면 높이의 15%
-    final double avatarSize = cardHeight * 0.6; // 카드 높이의 60%
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
@@ -589,15 +583,13 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       launchUrl(Uri.parse(''));
                     },
                   ),
-                  _settingItems("작성한 게시물", false, () {}),
                   _settingItems("로그아웃", false, () async {
                     bool success = await logoutApi.logout();
                     if (success) {
                       Get.offAll(
                           () => const LoginScreen()); // 모든 화면을 닫고 로그인 화면으로 이동
                     } else {
-                      Get.snackbar(
-                          "Logout Failed", "Please try again."); // 실패 메시지 표시
+                      Get.snackbar("로그아웃 실패", "다시 시도해주세요."); // 실패 메시지 표시
                     }
                   }),
                 ],
