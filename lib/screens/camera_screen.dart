@@ -401,9 +401,11 @@ class _CameraScreenState extends State<CameraScreen> {
                     },
                     onScaleUpdate: (ScaleUpdateDetails details) {
                       setState(() {
-                        _scale = (_previousScale * details.scale)
-                            .clamp(_minZoomLevel, _maxZoomLevel); // 줌 범위 제한
-                        _controller!.setZoomLevel(_scale); // 줌 레벨 설정
+                        if (!_recordingCheck) {
+                          _scale = (_previousScale * details.scale)
+                              .clamp(_minZoomLevel, _maxZoomLevel); // 줌 범위 제한
+                          _controller!.setZoomLevel(_scale); // 줌 레벨 설정
+                        }
                       });
                     },
                     onScaleEnd: (ScaleEndDetails details) {
