@@ -224,174 +224,151 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final double cardHeight = screenHeight * 0.15; // 화면 높이의 15%
+    final double avatarSize = cardHeight * 0.6; // 카드 높이의 60%
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 80, 20, 0),
+        padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               flex: 1,
-              child: SizedBox(
-                width: double.infinity,
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                    side: const BorderSide(
-                      color: Color.fromRGBO(46, 149, 210, 1),
-                    ),
-                    borderRadius: BorderRadius.circular(10.0),
+              child: Card(
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(
+                    color: Color.fromRGBO(46, 149, 210, 1),
                   ),
-                  color: const Color.fromARGB(255, 214, 240, 255),
-                  elevation: 0,
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                    child: Stack(
-                      children: [
-                        Stack(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                color: const Color.fromARGB(255, 214, 240, 255),
+                elevation: 0,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // 프로필 이미지
+                      Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(width: 2, color: Colors.white),
+                              boxShadow: [
+                                BoxShadow(
+                                  spreadRadius: 1,
+                                  blurRadius: 10,
+                                  color: Colors.black.withOpacity(0.1),
+                                ),
+                              ],
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: (_pickedFile != null)
+                                    ? FileImage(File(_pickedFile!.path))
+                                        as ImageProvider
+                                    : NetworkImage(
+                                        authController.profileImage.value!),
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _getPhotoLibraryImage,
+                            child: Container(
+                              width: 25,
+                              height: 25,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.blue,
+                                border:
+                                    Border.all(width: 2, color: Colors.white),
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 16), // 프로필 이미지와 텍스트 간 간격
+                      // 프로필 텍스트 정보
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.only(top: 20),
-                              width: 100,
-                              height: 100,
-                              color: Colors.transparent,
-                            ),
-                            Positioned(
-                              width: 80,
-                              height: 80,
-                              top: 12,
-                              left: 20,
-                              child: Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border:
-                                      Border.all(width: 2, color: Colors.white),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      spreadRadius: 1,
-                                      blurRadius: 10,
-                                      color: Colors.black.withOpacity(0.1),
+                            Obx(
+                              () => Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isEditing.value)
+                                    Expanded(
+                                      child: TextField(
+                                        controller: nicknameController,
+                                        autofocus: true,
+                                        style: textStyle,
+                                        decoration: InputDecoration(
+                                          hintText:
+                                              authController.nickname.value,
+                                          hintStyle: textStyle,
+                                          border: InputBorder.none,
+                                          enabledBorder: textFieldBorder,
+                                          focusedBorder:
+                                              const UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: Colors.blueAccent,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.only(bottom: 0),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    Text(
+                                      "$nickname 님",
+                                      style: textStyle,
                                     ),
-                                  ],
-                                  image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: (_pickedFile != null)
-                                          ? FileImage(File(_pickedFile!.path))
-                                              as ImageProvider
-                                          : NetworkImage(authController
-                                              .profileImage.value!)),
-                                ),
+                                  const SizedBox(width: 8),
+                                  if (isEditing.value) ...[
+                                    GestureDetector(
+                                      onTap: saveUsername,
+                                      child: const Icon(Icons.check,
+                                          color: Colors.green, size: 18),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    GestureDetector(
+                                      onTap: cancelEdit,
+                                      child: const Icon(Icons.close,
+                                          color: Colors.red, size: 18),
+                                    ),
+                                  ] else
+                                    GestureDetector(
+                                      onTap: () => isEditing.value = true,
+                                      child: const Icon(Icons.edit, size: 18),
+                                    ),
+                                ],
                               ),
                             ),
-                            Positioned(
-                              bottom: 5,
-                              right: 0,
-                              child: Container(
-                                height: 25,
-                                width: 25,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border:
-                                      Border.all(width: 2, color: Colors.white),
-                                  color: Colors.blue,
-                                ),
-                                child: GestureDetector(
-                                  onTap: () => _getPhotoLibraryImage(),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.edit,
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      size: 16, // Container 크기에 맞게 아이콘 크기를 조정
-                                    ),
-                                  ),
-                                ),
-                              ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              "클라이머",
+                              style: TextStyle(
+                                  fontSize: 14, color: Colors.black54),
                             ),
                           ],
                         ),
-                        Positioned(
-                          top: 20,
-                          left: 120,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Obx(
-                                () => Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (isEditing.value)
-                                      SizedBox(
-                                        width: 150,
-                                        child: TextField(
-                                          controller: nicknameController,
-                                          autofocus: true,
-                                          style: textStyle,
-                                          decoration: InputDecoration(
-                                            hintText:
-                                                '${authController.nickname.value}',
-                                            hintStyle: textStyle,
-                                            border:
-                                                InputBorder.none, // 기본 테두리 제거
-                                            enabledBorder:
-                                                textFieldBorder, // 활성화 상태 밑줄 스타일
-                                            focusedBorder:
-                                                const UnderlineInputBorder(
-                                              borderSide: BorderSide(
-                                                color: Colors
-                                                    .blueAccent, // 포커스 시 진한 파란색 밑줄
-                                                width: 1.5,
-                                              ),
-                                            ),
-                                            contentPadding:
-                                                const EdgeInsets.only(
-                                                    bottom: 0),
-                                            isDense: true,
-                                            // contentPadding: EdgeInsets.zero
-                                          ),
-                                        ),
-                                      )
-                                    else
-                                      Text("$nickname 님", style: textStyle),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    if (isEditing.value) ...[
-                                      GestureDetector(
-                                        onTap: saveUsername,
-                                        child: const Icon(Icons.check,
-                                            color: Colors.green, size: 18),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      GestureDetector(
-                                        onTap: cancelEdit,
-                                        child: const Icon(Icons.close,
-                                            color: Colors.red, size: 18),
-                                      ),
-                                    ] else
-                                      GestureDetector(
-                                        onTap: () {
-                                          isEditing.value = true;
-                                        },
-                                        child: const Icon(Icons.edit, size: 18),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 7,
-                              ),
-                              const Text(
-                                "클라이머",
-                              ),
-                              const SizedBox(
-                                height: 4,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
