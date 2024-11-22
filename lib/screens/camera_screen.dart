@@ -4,12 +4,12 @@ import 'package:camera/camera.dart';
 import 'package:cross_file_image/cross_file_image.dart';
 import 'package:flutter/widgets.dart';
 import 'dart:ui';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
+import '../widgets/custom_toast.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -123,7 +123,7 @@ class _CameraScreenState extends State<CameraScreen> {
       final bytes = await File(newFile.path).readAsBytes();
       final image = img.decodeImage(bytes);
       imageHeight = image!.height;
-      imageWidth = image!.width;
+      imageWidth = image.width;
       // 사진 벡엔드에 보내는 코드
       try {
         String apiAddress = dotenv.get("API_ADDRESS");
@@ -132,13 +132,14 @@ class _CameraScreenState extends State<CameraScreen> {
         request.files
             .add(await http.MultipartFile.fromPath('image', file!.path));
         var response = await request.send();
-        print(response.statusCode);
         var responseBody = await response.stream.bytesToString();
         var jsonResponse = jsonDecode(responseBody);
         setState(() {
           imageHoldInfos = fetchData(jsonResponse["holds"]);
         });
         first_image_id = jsonResponse["holds"][0]["first_image"];
+
+        showCustomToast(context, "시작 홀드를 선택해 주세요.\n만약 인식이 잘되지 않았다면 다시 촬영해주세요.");
       } catch (e) {
         print('Unexpected error: $e');
       }
@@ -457,12 +458,76 @@ class _CameraScreenState extends State<CameraScreen> {
           ),
         ),
         if (file != null) // 조건을 검사하여 file이 null이 아닌 경우에만 Positioned 위젯을 생성
-          Positioned.fill(
-              child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    color: Colors.black.withOpacity(0.1),
-                  ))),
+          Stack(
+            children: [
+              Positioned.fill(
+                  child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                      child: Container(
+                        color: Colors.black.withOpacity(0.1),
+                      ))),
+              Container(
+                alignment: const Alignment(-0.9, 0.9),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    surfaceTintColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      file = null;
+                      imageHoldInfos = null;
+                      clickedHold = 0;
+                      _buttonCheck = false;
+                      isSelectingStartHold = true;
+                      keys = [-1, -1];
+                    });
+                  },
+                  child: const Text("재촬영"),
+                ),
+              ),
+              Container(
+                alignment: const Alignment(0.9, 0.9),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    surfaceTintColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      if (_buttonCheck) {
+                        if (isSelectingStartHold) {
+                          fetchStart();
+                          isSelectingStartHold = false;
+                          _buttonCheck = false;
+                          resetImageHoldInfos();
+                        } else {
+                          if (!_recordingCheck) {
+                            _showColorModal(context);
+                          }
+                        }
+                      } else {
+                        showCustomToast(context, "홀드를 선택해주세요.");
+                      }
+                    });
+                  },
+                  child: const Text("확정"),
+                ),
+              ),
+            ],
+          ),
         if (file != null)
           Center(
             child: SizedBox(
@@ -471,70 +536,6 @@ class _CameraScreenState extends State<CameraScreen> {
               child: Stack(children: [
                 Positioned.fill(
                   child: Image(image: XFileImage(file!)),
-                ),
-                Container(
-                  alignment: const Alignment(-0.9, 0.9),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      surfaceTintColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        file = null;
-                        imageHoldInfos = null;
-                        clickedHold = 0;
-                        _buttonCheck = false;
-                        isSelectingStartHold = true;
-                        keys = [-1, -1];
-                      });
-                    },
-                    child: Text("재촬영"),
-                  ),
-                ),
-                Container(
-                  alignment: Alignment(0.9, 0.9),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      surfaceTintColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        if (_buttonCheck) {
-                          if (isSelectingStartHold) {
-                            fetchStart();
-                            isSelectingStartHold = false;
-                            _buttonCheck = false;
-                            resetImageHoldInfos();
-                          } else {
-                            if (!_recordingCheck) {
-                              _showColorModal(context);
-                            }
-                          }
-                        } else {
-                          Fluttertoast.showToast(
-                            msg: "홀드를 선택해주세요.",
-                            gravity: ToastGravity.BOTTOM,
-                            backgroundColor: const Color.fromRGBO(0, 0, 0, 0.8),
-                          );
-                        }
-                      });
-                    },
-                    child: const Text("확정"),
-                  ),
                 ),
                 FutureBuilder<Map<int, List<dynamic>>>(
                   future: imageHoldInfos,
@@ -587,6 +588,7 @@ class _CameraScreenState extends State<CameraScreen> {
                                                 keys.remove(t.key);
                                                 clickedHold--;
                                               }
+                                              print(keys);
                                             } else {
                                               if (!t.value[1]) {
                                                 t.value[1] = true;
