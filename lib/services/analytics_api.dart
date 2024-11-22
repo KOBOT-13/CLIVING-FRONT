@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 
-import '../controllers/auth_controller.dart'; // for jsonEncode
+import '../controllers/auth_controller.dart';
 
 class AnalyticsApi {
   final AuthController authController = Get.find<AuthController>();
@@ -28,9 +28,6 @@ class AnalyticsApi {
     if (response.statusCode == 200) {
       Map<String, dynamic> readMonthlyTime =
           json.decode(utf8.decode(response.bodyBytes));
-      print(readMonthlyTime);
-      print(selectedMonth);
-      print(readMonthlyTime['total_climbing_time_hhmm']);
       return readMonthlyTime['total_climbing_time_hhmm'];
     } else {
       throw Exception('Failed to read Monthly Time.');
@@ -54,7 +51,6 @@ class AnalyticsApi {
       Map<String, dynamic> readAnnualTime =
           json.decode(utf8.decode(response.bodyBytes));
 
-      print(readAnnualTime['total_climbing_time_hhmm']);
       return readAnnualTime['total_climbing_time_hhmm'];
     } else {
       throw Exception('Failed to read Annual Time.');
