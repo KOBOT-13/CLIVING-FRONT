@@ -230,7 +230,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
     final double avatarSize = cardHeight * 0.6; // 카드 높이의 60%
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
+        padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
