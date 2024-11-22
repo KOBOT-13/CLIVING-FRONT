@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cliving_front/services/analytics_api.dart';
+import 'package:cliving_front/services/delete_account_api.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cliving_front/charts/pie_chart.dart';
@@ -583,6 +584,95 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       launchUrl(Uri.parse(''));
                     },
                   ),
+                  _settingItems("비밀번호 변경", false, () {}),
+                  _settingItems("탈퇴하기", false, () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(16), // 모서리 둥글게 설정
+                          ),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width *
+                                0.85, // 다이얼로그 너비 조정 (화면의 85%)
+                            padding: const EdgeInsets.all(20), // 내부 패딩 추가
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min, // 내용에 맞게 크기 설정
+                              children: [
+                                const Text(
+                                  "회원 탈퇴",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  "정말 탈퇴하시겠습니까?\n탈퇴 시 모든 데이터가 삭제되며,\n계정을 복구할 수 없습니다.",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {
+                                        // 취소 버튼: 다이얼로그 닫기
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text(
+                                        "취소",
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        // 확인 버튼: 탈퇴 API 호출
+                                        Navigator.of(context).pop(); // 다이얼로그 닫기
+                                        bool success = await DeleteAccountApi()
+                                            .deleteAccount();
+                                        if (success) {
+                                          // 탈퇴 성공 처리
+                                          Get.offAll(() =>
+                                              const LoginScreen()); // 로그인 페이지로 이동
+                                          Get.snackbar(
+                                            "탈퇴 성공",
+                                            "계정이 정상적으로 삭제되었습니다.",
+                                            snackPosition: SnackPosition.BOTTOM,
+                                          );
+                                        } else {
+                                          // 탈퇴 실패 처리
+                                          Get.snackbar(
+                                            "탈퇴 실패",
+                                            "계정 삭제에 실패했습니다. 다시 시도해주세요.",
+                                            snackPosition: SnackPosition.BOTTOM,
+                                            backgroundColor: Colors.red,
+                                            colorText: Colors.white,
+                                          );
+                                        }
+                                      },
+                                      child: const Text(
+                                        "확인",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }),
                   _settingItems("로그아웃", false, () async {
                     bool success = await logoutApi.logout();
                     if (success) {
