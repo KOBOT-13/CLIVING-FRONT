@@ -1,8 +1,9 @@
-import 'dart:convert';
-
+import 'dart:io';
+import 'package:cliving_front/services/analytics_api.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:cliving_front/charts/pie_chart.dart';
 import 'package:cliving_front/screens/login_screen.dart';
-import 'package:cliving_front/screens/setting_screen.dart';
 import 'package:cliving_front/services/logout_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -10,7 +11,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 
 import '../controllers/auth_controller.dart';
 import '../services/mypage_api.dart';
@@ -53,31 +53,114 @@ Widget _settingItems(String title, bool isLast, Function onTapAction) {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
+  final String API_ADDRESS = dotenv.get('API_ADDRESS');
   final LogoutApi logoutApi = LogoutApi();
   final authController = Get.find<AuthController>();
   Map<String, dynamic>? userProfile;
   DateTime _selectedDate = DateTime.now();
-  bool _isYearly = false;
   double xAlign = -1;
   Color monthColor = selectedColor;
   Color yearColor = normalColor;
-  late Future<String> annualTime;
-  late Future<String> monthlyTime;
+
+  RxString monthlyTime = ''.obs;
+  RxString annualTime = ''.obs;
+  final RxBool _isYearly = false.obs;
+
+  late RxnString nickname;
+  late RxnString profileImage;
+  RxBool isEditing = false.obs;
+  late TextEditingController nicknameController;
+
+  XFile? _pickedFile;
+  _getPhotoLibraryImage() async {
+    final UserService userService = UserService(); // 인스턴스 생성
+    final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 30 // 이미지 크기의 압축을 위해 퀄리티를 30으로 낮춤
+        );
+    if (pickedFile != null) {
+      setState(() {
+        _pickedFile = pickedFile;
+      });
+      //서버에 이미지 업로드
+      final result = await userService.updateProfileImage(
+          pickedFile, authController.accessToken.value!);
+      if (result != null) {
+        print("프로필 업데이트 성공");
+      } else {
+        print("프로필 업데이트 실패");
+      }
+    } else {
+      if (kDebugMode) {
+        print('이미지 선택안함');
+      }
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadUserProfile();
-    annualTime = _getAnnualTime();
-    monthlyTime = _getMonthlyTime();
+    nickname = authController.nickname;
+    profileImage = authController.profileImage;
+
+    // 초기 데이터 로드
+    fetchAnnualTime("${_selectedDate.year % 100}");
+    fetchMonthlyTime("${_selectedDate.year % 100}", "${_selectedDate.month}");
+
+    nicknameController =
+        TextEditingController(text: authController.nickname.value);
   }
 
-  Future<void> _loadUserProfile() async {
-    final profile = await UserService().fetchUserProfile();
-    setState(() {
-      userProfile = profile;
-      print(profile);
-    });
+  Future<String> fetchMonthlyTime(String year, String month) async {
+    try {
+      return await AnalyticsApi().getMonthlyTime(year, month);
+    } catch (e) {
+      print('Failed to fetch monthly time: $e');
+      return 'Error';
+    }
+  }
+
+  Future<String> fetchAnnualTime(String year) async {
+    try {
+      return await AnalyticsApi().getAnnualTime(year);
+    } catch (e) {
+      print('Failed to fetch annual time: $e');
+      return 'Error';
+    }
+  }
+
+  @override
+  void dispose() {
+    nicknameController.dispose();
+    super.dispose();
+  }
+
+  void saveUsername() async {
+    // TextField에서 입력된 닉네임을 nickname 변수에 저장
+    nickname.value = nicknameController.text;
+    isEditing.value = false;
+
+    // 닉네임이 비어 있지 않은 경우에만 서버에 업데이트 요청
+    if (nickname.value != null && nickname.value!.isNotEmpty) {
+      // 서버에 닉네임 업데이트 요청
+      final response = await UserService().updateNickname(nickname.value!);
+
+      if (response != null) {
+        print("닉네임이 성공적으로 업데이트되었습니다.");
+      } else {
+        print("닉네임 업데이트 실패");
+      }
+    }
+  }
+
+  void cancelEdit() {
+    // 수정 모드 종료
+    isEditing.value = false;
+
+    // authController에서 최신 닉네임 가져와서 nicknameController에 설정
+    nicknameController.text = authController.nickname.value ?? '';
+
+    // print("닉네임 초기화: ${authController.nickname.value}");
   }
 
   // 월 이동 함수
@@ -126,45 +209,18 @@ class _MyPageScreenState extends State<MyPageScreen> {
     });
   }
 
-  Future<String> _getMonthlyTime() async {
-    String apiAddress = dotenv.get("API_ADDRESS");
-    final url = Uri.parse('$apiAddress/v1/statistics/monthly/climbing-time/');
+  final TextStyle textStyle = const TextStyle(
+    fontWeight: FontWeight.w500,
+    fontSize: 19,
+    color: Colors.black,
+  );
 
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      Map<String, dynamic> readMonthlyTime =
-          json.decode(utf8.decode(response.bodyBytes));
-      return readMonthlyTime['total_climbing_time_hhmm'];
-    } else {
-      throw Exception('Failed to read Monthly Time.');
-    }
-  }
-
-  Future<String> _getAnnualTime() async {
-    String apiAddress = dotenv.get("API_ADDRESS");
-    final url = Uri.parse('$apiAddress/v1/statistics/annual/climbing-time/');
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      Map<String, dynamic> readAnnualTime =
-          json.decode(utf8.decode(response.bodyBytes));
-      return readAnnualTime['total_climbing_time_hhmm'];
-    } else {
-      throw Exception('Failed to read Annual Time.');
-    }
-  }
+  final UnderlineInputBorder textFieldBorder = const UnderlineInputBorder(
+    borderSide: BorderSide(
+      color: Color.fromRGBO(46, 149, 210, 1), // 기본 밑줄 색상 (파란색)
+      width: 1.0,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -199,16 +255,57 @@ class _MyPageScreenState extends State<MyPageScreen> {
                               height: 100,
                               color: Colors.transparent,
                             ),
-                            const Positioned(
+                            Positioned(
                               width: 80,
                               height: 80,
                               top: 12,
                               left: 20,
-                              child: CircleAvatar(
-                                radius: 50,
-                                backgroundImage: AssetImage(
-                                    'assets/images/profile_image.png'),
-                                backgroundColor: Colors.transparent,
+                              child: Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border:
+                                      Border.all(width: 2, color: Colors.white),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      spreadRadius: 1,
+                                      blurRadius: 10,
+                                      color: Colors.black.withOpacity(0.1),
+                                    ),
+                                  ],
+                                  image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: (_pickedFile != null)
+                                          ? FileImage(File(_pickedFile!.path))
+                                              as ImageProvider
+                                          : NetworkImage(authController
+                                              .profileImage.value!)),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 5,
+                              right: 0,
+                              child: Container(
+                                height: 25,
+                                width: 25,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border:
+                                      Border.all(width: 2, color: Colors.white),
+                                  color: Colors.blue,
+                                ),
+                                child: GestureDetector(
+                                  onTap: () => _getPhotoLibraryImage(),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.edit,
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      size: 16, // Container 크기에 맞게 아이콘 크기를 조정
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -219,18 +316,73 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                "${userProfile?['username']} 님",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 18,
+                              Obx(
+                                () => Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (isEditing.value)
+                                      SizedBox(
+                                        width: 150,
+                                        child: TextField(
+                                          controller: nicknameController,
+                                          autofocus: true,
+                                          style: textStyle,
+                                          decoration: InputDecoration(
+                                            hintText:
+                                                '${authController.nickname.value}',
+                                            hintStyle: textStyle,
+                                            border:
+                                                InputBorder.none, // 기본 테두리 제거
+                                            enabledBorder:
+                                                textFieldBorder, // 활성화 상태 밑줄 스타일
+                                            focusedBorder:
+                                                const UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                color: Colors
+                                                    .blueAccent, // 포커스 시 진한 파란색 밑줄
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            contentPadding:
+                                                const EdgeInsets.only(
+                                                    bottom: 0),
+                                            isDense: true,
+                                            // contentPadding: EdgeInsets.zero
+                                          ),
+                                        ),
+                                      )
+                                    else
+                                      Text("$nickname 님", style: textStyle),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    if (isEditing.value) ...[
+                                      GestureDetector(
+                                        onTap: saveUsername,
+                                        child: const Icon(Icons.check,
+                                            color: Colors.green, size: 18),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      GestureDetector(
+                                        onTap: cancelEdit,
+                                        child: const Icon(Icons.close,
+                                            color: Colors.red, size: 18),
+                                      ),
+                                    ] else
+                                      GestureDetector(
+                                        onTap: () {
+                                          isEditing.value = true;
+                                        },
+                                        child: const Icon(Icons.edit, size: 18),
+                                      ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(
-                                height: 10,
+                                height: 7,
                               ),
                               const Text(
-                                "3레벨 클라이머",
+                                "클라이머",
                               ),
                               const SizedBox(
                                 height: 4,
@@ -238,29 +390,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                             ],
                           ),
                         ),
-                        Positioned(
-                          top: 5,
-                          right: 5,
-                          child: IconButton(
-                            onPressed: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled:
-                                    true, // Bottom Sheet 높이 제어 가능
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(25.0)),
-                                ),
-                                builder: (BuildContext context) {
-                                  return const SettingScreen(); // SettingScreen을 Bottom Sheet로 표시
-                                },
-                              );
-                            },
-                            icon: const Icon(Icons.settings_sharp),
-                            iconSize: 23,
-                            color: Colors.grey[600],
-                          ),
-                        )
                       ],
                     ),
                   ),
@@ -281,7 +410,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           top: 5,
                           child: IconButton(
                             icon: const Icon(Icons.arrow_left),
-                            onPressed: _isYearly
+                            onPressed: _isYearly.value
                                 ? _goToPreviousYear
                                 : _goToPreviousMonth,
                           ),
@@ -290,7 +419,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           left: 75,
                           top: 17,
                           child: Text(
-                            _isYearly
+                            _isYearly.value
                                 ? '${_selectedDate.year}년'
                                 : '   ${DateFormat.MMMM('ko').format(_selectedDate)}  ', // 월 이름 포맷
                             style: const TextStyle(fontSize: 18),
@@ -301,15 +430,16 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           top: 5,
                           child: IconButton(
                             icon: const Icon(Icons.arrow_right),
-                            onPressed:
-                                _isYearly ? _goToNextYear : _goToNextMonth,
+                            onPressed: _isYearly.value
+                                ? _goToNextYear
+                                : _goToNextMonth,
                           ),
                         ),
                         Positioned(
                           right: 85,
                           top: 6,
                           child: IconButton(
-                              onPressed: _isYearly
+                              onPressed: _isYearly.value
                                   ? _goToCurrentYear
                                   : _goToCurrentMonth,
                               icon: const Icon(Icons.today_outlined)),
@@ -349,7 +479,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                       monthColor = selectedColor;
 
                                       yearColor = normalColor;
-                                      _isYearly = false;
+                                      _isYearly.value = false;
                                     });
                                   },
                                   child: Align(
@@ -375,7 +505,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                       yearColor = selectedColor;
 
                                       monthColor = normalColor;
-                                      _isYearly = true;
+                                      _isYearly.value = true;
                                     });
                                   },
                                   child: Align(
@@ -403,50 +533,58 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   ),
                   // 통계 그래프
                   Expanded(
-                    child: Row(children: [
-                      Expanded(
-                        child: FutureBuilder<String>(
-                          future: _isYearly ? annualTime : monthlyTime,
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            } else if (snapshot.hasError) {
-                              return const Center(
-                                  child: Text('Error loading data'));
-                            } else {
-                              return Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    const Text(
-                                      '클라이밍 시간',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    Text(
-                                      snapshot.data ?? 'N/A',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.w700),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                          },
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: FutureBuilder<String>(
+                            future: _isYearly.value
+                                ? fetchAnnualTime("${_selectedDate.year % 100}")
+                                : fetchMonthlyTime(
+                                    "${_selectedDate.year % 100}",
+                                    "${_selectedDate.month}",
+                                  ),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              } else if (snapshot.hasError ||
+                                  !snapshot.hasData) {
+                                return const Center(
+                                    child: Text('Error loading data'));
+                              } else {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        '클라이밍 시간',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                      Text(
+                                        snapshot.data!,
+                                        style: const TextStyle(
+                                            fontSize: 30,
+                                            fontWeight: FontWeight.w700),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
+                          ),
                         ),
-                      ),
-                      Expanded(
-                          child: PieChartWidget(
-                              // dataType: 2,
-                              dataType: !_isYearly ? 1 : 2)),
-                    ]),
+                        Expanded(
+                          child: Obx(() => PieChartWidget(
+                                dataType: !_isYearly.value ? 1 : 2,
+                                selectedYear: "${_selectedDate.year % 100}",
+                                selectedMonth: "${_selectedDate.month}",
+                              )),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
