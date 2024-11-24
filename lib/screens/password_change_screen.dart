@@ -100,82 +100,87 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
         ),
       ),
       resizeToAvoidBottomInset: true,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text("현재 사용 중인 비밀번호를 입력해주세요."),
-              const SizedBox(
-                height: 10,
-              ),
-              TextField(
-                controller: _currentPasswordController,
-                decoration: const InputDecoration(
-                    labelText: '현재 비밀번호',
-                    floatingLabelStyle: TextStyle(color: Colors.blue),
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 1),
-                    )),
-                obscureText: true,
-              ),
-              const SizedBox(height: 30.0),
-              const Text("변경할 새로운 비밀번호를 입력하세요."),
-              const SizedBox(
-                height: 10,
-              ),
-              TextFormField(
-                controller: _newPassword1Controller,
-                decoration: InputDecoration(
-                    labelText: '새로운 비밀번호',
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text("현재 사용 중인 비밀번호를 입력해주세요."),
+                const SizedBox(
+                  height: 10,
+                ),
+                TextField(
+                  controller: _currentPasswordController,
+                  decoration: const InputDecoration(
+                      labelText: '현재 비밀번호',
+                      floatingLabelStyle: TextStyle(color: Colors.blue),
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.blue, width: 1),
+                      )),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 30.0),
+                const Text("변경할 새로운 비밀번호를 입력하세요."),
+                const SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  controller: _newPassword1Controller,
+                  decoration: InputDecoration(
+                      labelText: '새로운 비밀번호',
+                      floatingLabelStyle: const TextStyle(color: Colors.blue),
+                      border: const OutlineInputBorder(),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.blue, width: 1),
+                      ),
+                      errorText: isPasswordValid
+                          ? null
+                          : '비밀번호는 8자 이상, 영어 + 숫자 + 특수기호를 포함해야 합니다.'),
+                  obscureText: true,
+                  onChanged: (value) => passwordValidate(),
+                ),
+                const SizedBox(height: 20.0),
+                TextFormField(
+                  controller: _newPassword2Controller,
+                  decoration: InputDecoration(
+                    labelText: '새로운 비밀번호 재입력',
                     floatingLabelStyle: const TextStyle(color: Colors.blue),
                     border: const OutlineInputBorder(),
                     focusedBorder: const OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.blue, width: 1),
                     ),
-                    errorText: isPasswordValid
-                        ? null
-                        : '비밀번호는 8자 이상, 영어 + 숫자 + 특수기호를 포함해야 합니다.'),
-                obscureText: true,
-                onChanged: (value) => passwordValidate(),
-              ),
-              const SizedBox(height: 20.0),
-              TextFormField(
-                controller: _newPassword2Controller,
-                decoration: InputDecoration(
-                  labelText: '새로운 비밀번호 재입력',
-                  floatingLabelStyle: const TextStyle(color: Colors.blue),
-                  border: const OutlineInputBorder(),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue, width: 1),
+                    errorText: isPasswordMatch ? null : '비밀번호가 일치하지 않습니다.',
                   ),
-                  errorText: isPasswordMatch ? null : '비밀번호가 일치하지 않습니다.',
+                  obscureText: true,
+                  onChanged: (value) => passwordMatch(),
                 ),
-                obscureText: true,
-                onChanged: (value) => passwordMatch(),
-              ),
-              const SizedBox(height: 24.0),
-              ElevatedButton(
-                onPressed: () {
-                  handlePasswordChange();
-                },
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    minimumSize: const Size(50, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    )),
-                child: const Text(
-                  "비밀번호 변경",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 20,
+                const SizedBox(height: 24.0),
+                ElevatedButton(
+                  onPressed: () {
+                    handlePasswordChange();
+                  },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      minimumSize: const Size(50, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      )),
+                  child: const Text(
+                    "비밀번호 변경",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
