@@ -1,6 +1,6 @@
+import 'package:cliving_front/services/mypage_api.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:get/get.dart';
 
 class PasswordChangeScreen extends StatefulWidget {
   const PasswordChangeScreen({super.key});
@@ -11,36 +11,69 @@ class PasswordChangeScreen extends StatefulWidget {
 
 class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   final _currentPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
+  final _newPassword1Controller = TextEditingController();
   final _newPassword2Controller = TextEditingController();
-
-  Future<void> _changePassword() async {
-    final url = Uri.parse("http://127.0.0.1:8000/api/users/change-password/");
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'current_password': _currentPasswordController.text,
-        'new_password': _newPasswordController.text,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password changed successfully!')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to change password.')),
-      );
-    }
-  }
+  final passwordPattern =
+      RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$');
+  bool isPasswordValid = true; // 비밀번호 유효성 검사
+  bool isPasswordMatch = true; // 비밀번호 재입력 검사
 
   @override
   void dispose() {
     _currentPasswordController.dispose();
-    _newPasswordController.dispose();
+    _newPassword1Controller.dispose();
+    _newPassword2Controller.dispose();
     super.dispose();
+  }
+
+  void passwordValidate() {
+    setState(() {
+      isPasswordValid =
+          passwordPattern.hasMatch(_newPassword1Controller.text); // 정규식 확인
+    });
+  }
+
+  void passwordMatch() {
+    setState(() {
+      isPasswordMatch = _newPassword1Controller.text ==
+          _newPassword2Controller.text; // 일치 여부 확인
+    });
+  }
+
+  Future<void> handlePasswordChange() async {
+    // 입력 유효성 검증
+    if (!isPasswordValid || !isPasswordMatch) {
+      Get.snackbar(
+        "비밀번호 변경 실패",
+        "비밀번호 조건을 확인해주세요.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    // 비밀번호 변경 API 호출
+    final success = await UserService().changePassword(
+      _currentPasswordController.text,
+      _newPassword1Controller.text,
+      _newPassword2Controller.text,
+    );
+    if (success) {
+      // 성공 시 스낵바 메시지 표시 및 마이페이지로 이동
+      if (context.mounted) {
+        Get.snackbar(
+          "비밀번호 변경 성공",
+          "비밀번호가 성공적으로 변경되었습니다.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        Navigator.pop(context); // 이전 화면(마이페이지)으로 이동
+      }
+    } else {
+      // 실패 시 오류 메시지 표시
+      Get.snackbar(
+        "비밀번호 변경 실패",
+        "현재 비밀번호가 일치하지 않습니다.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   @override
@@ -93,32 +126,41 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
               const SizedBox(
                 height: 10,
               ),
-              TextField(
-                controller: _newPasswordController,
-                decoration: const InputDecoration(
+              TextFormField(
+                controller: _newPassword1Controller,
+                decoration: InputDecoration(
                     labelText: '새로운 비밀번호',
-                    floatingLabelStyle: TextStyle(color: Colors.blue),
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
+                    floatingLabelStyle: const TextStyle(color: Colors.blue),
+                    border: const OutlineInputBorder(),
+                    focusedBorder: const OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.blue, width: 1),
-                    )),
+                    ),
+                    errorText: isPasswordValid
+                        ? null
+                        : '비밀번호는 8자 이상, 영어 + 숫자 + 특수기호를 포함해야 합니다.'),
                 obscureText: true,
+                onChanged: (value) => passwordValidate(),
               ),
               const SizedBox(height: 20.0),
-              TextField(
+              TextFormField(
                 controller: _newPassword2Controller,
-                decoration: const InputDecoration(
-                    labelText: '새로운 비밀번호 재입력',
-                    floatingLabelStyle: TextStyle(color: Colors.blue),
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 1),
-                    )),
+                decoration: InputDecoration(
+                  labelText: '새로운 비밀번호 재입력',
+                  floatingLabelStyle: const TextStyle(color: Colors.blue),
+                  border: const OutlineInputBorder(),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blue, width: 1),
+                  ),
+                  errorText: isPasswordMatch ? null : '비밀번호가 일치하지 않습니다.',
+                ),
                 obscureText: true,
+                onChanged: (value) => passwordMatch(),
               ),
               const SizedBox(height: 24.0),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  handlePasswordChange();
+                },
                 style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     minimumSize: const Size(50, 50),
