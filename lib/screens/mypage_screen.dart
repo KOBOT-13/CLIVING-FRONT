@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:cliving_front/screens/password_change.dart';
 import 'package:cliving_front/services/analytics_api.dart';
+import 'package:cliving_front/services/delete_account_api.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cliving_front/charts/pie_chart.dart';
@@ -159,8 +161,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
     // authController에서 최신 닉네임 가져와서 nicknameController에 설정
     nicknameController.text = authController.nickname.value ?? '';
-
-    // print("닉네임 초기화: ${authController.nickname.value}");
   }
 
   // 월 이동 함수
@@ -225,15 +225,18 @@ class _MyPageScreenState extends State<MyPageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 80, 20, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 1,
-              child: SizedBox(
-                width: double.infinity,
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 1,
                 child: Card(
                   shape: RoundedRectangleBorder(
                     side: const BorderSide(
@@ -243,119 +246,102 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   ),
                   color: const Color.fromARGB(255, 214, 240, 255),
                   elevation: 0,
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                    child: Stack(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        // 프로필 이미지
                         Stack(
+                          alignment: Alignment.bottomRight,
                           children: [
                             Container(
-                              padding: const EdgeInsets.only(top: 20),
-                              width: 100,
-                              height: 100,
-                              color: Colors.transparent,
-                            ),
-                            Positioned(
                               width: 80,
                               height: 80,
-                              top: 12,
-                              left: 20,
-                              child: Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border:
-                                      Border.all(width: 2, color: Colors.white),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      spreadRadius: 1,
-                                      blurRadius: 10,
-                                      color: Colors.black.withOpacity(0.1),
-                                    ),
-                                  ],
-                                  image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: (_pickedFile != null)
-                                          ? FileImage(File(_pickedFile!.path))
-                                              as ImageProvider
-                                          : NetworkImage(authController
-                                              .profileImage.value!)),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border:
+                                    Border.all(width: 2, color: Colors.white),
+                                boxShadow: [
+                                  BoxShadow(
+                                    spreadRadius: 1,
+                                    blurRadius: 10,
+                                    color: Colors.black.withOpacity(0.1),
+                                  ),
+                                ],
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: (_pickedFile != null)
+                                      ? FileImage(File(_pickedFile!.path))
+                                          as ImageProvider
+                                      : NetworkImage(
+                                          authController.profileImage.value!),
                                 ),
                               ),
                             ),
-                            Positioned(
-                              bottom: 5,
-                              right: 0,
+                            GestureDetector(
+                              onTap: _getPhotoLibraryImage,
                               child: Container(
-                                height: 25,
                                 width: 25,
+                                height: 25,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
+                                  color: Colors.blue,
                                   border:
                                       Border.all(width: 2, color: Colors.white),
-                                  color: Colors.blue,
                                 ),
-                                child: GestureDetector(
-                                  onTap: () => _getPhotoLibraryImage(),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.edit,
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      size: 16, // Container 크기에 맞게 아이콘 크기를 조정
-                                    ),
-                                  ),
+                                child: const Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                  size: 16,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        Positioned(
-                          top: 20,
-                          left: 120,
+                        const SizedBox(width: 16), // 프로필 이미지와 텍스트 간 간격
+                        // 프로필 텍스트 정보
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Obx(
                                 () => Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     if (isEditing.value)
-                                      SizedBox(
-                                        width: 150,
+                                      Expanded(
                                         child: TextField(
                                           controller: nicknameController,
                                           autofocus: true,
                                           style: textStyle,
                                           decoration: InputDecoration(
                                             hintText:
-                                                '${authController.nickname.value}',
+                                                authController.nickname.value,
                                             hintStyle: textStyle,
-                                            border:
-                                                InputBorder.none, // 기본 테두리 제거
-                                            enabledBorder:
-                                                textFieldBorder, // 활성화 상태 밑줄 스타일
+                                            border: InputBorder.none,
+                                            enabledBorder: textFieldBorder,
                                             focusedBorder:
                                                 const UnderlineInputBorder(
                                               borderSide: BorderSide(
-                                                color: Colors
-                                                    .blueAccent, // 포커스 시 진한 파란색 밑줄
+                                                color: Colors.blueAccent,
                                                 width: 1.5,
                                               ),
                                             ),
                                             contentPadding:
                                                 const EdgeInsets.only(
                                                     bottom: 0),
-                                            isDense: true,
-                                            // contentPadding: EdgeInsets.zero
                                           ),
                                         ),
                                       )
                                     else
-                                      Text("$nickname 님", style: textStyle),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
+                                      Text(
+                                        "$nickname 님",
+                                        style: textStyle,
+                                      ),
+                                    const SizedBox(width: 8),
                                     if (isEditing.value) ...[
                                       GestureDetector(
                                         onTap: saveUsername,
@@ -370,23 +356,13 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                       ),
                                     ] else
                                       GestureDetector(
-                                        onTap: () {
-                                          isEditing.value = true;
-                                        },
+                                        onTap: () => isEditing.value = true,
                                         child: const Icon(Icons.edit, size: 18),
                                       ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(
-                                height: 7,
-                              ),
-                              const Text(
-                                "클라이머",
-                              ),
-                              const SizedBox(
-                                height: 4,
-                              ),
+                              const SizedBox(height: 8)
                             ],
                           ),
                         ),
@@ -395,238 +371,336 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              flex: 3,
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          left: 0,
-                          top: 5,
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_left),
-                            onPressed: _isYearly.value
-                                ? _goToPreviousYear
-                                : _goToPreviousMonth,
-                          ),
-                        ),
-                        Positioned(
-                          left: 75,
-                          top: 17,
-                          child: Text(
-                            _isYearly.value
-                                ? '${_selectedDate.year}년'
-                                : '   ${DateFormat.MMMM('ko').format(_selectedDate)}  ', // 월 이름 포맷
-                            style: const TextStyle(fontSize: 18),
-                          ),
-                        ),
-                        Positioned(
-                          left: 160,
-                          top: 5,
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_right),
-                            onPressed: _isYearly.value
-                                ? _goToNextYear
-                                : _goToNextMonth,
-                          ),
-                        ),
-                        Positioned(
-                          right: 85,
-                          top: 6,
-                          child: IconButton(
+              Expanded(
+                flex: 3,
+                child: Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      height: 60,
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            top: 5,
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_left),
                               onPressed: _isYearly.value
-                                  ? _goToCurrentYear
-                                  : _goToCurrentMonth,
-                              icon: const Icon(Icons.today_outlined)),
-                        ),
-                        Positioned(
-                          right: 5,
-                          top: 12,
-                          child: Container(
-                            width: 80,
-                            height: 35,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[350],
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(50.0),
+                                  ? _goToPreviousYear
+                                  : _goToPreviousMonth,
+                            ),
+                          ),
+                          Positioned(
+                            left: 75,
+                            top: 17,
+                            child: Text(
+                              _isYearly.value
+                                  ? '${_selectedDate.year}년'
+                                  : '   ${DateFormat.MMMM('ko').format(_selectedDate)}  ', // 월 이름 포맷
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ),
+                          Positioned(
+                            left: 160,
+                            top: 5,
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_right),
+                              onPressed: _isYearly.value
+                                  ? _goToNextYear
+                                  : _goToNextMonth,
+                            ),
+                          ),
+                          Positioned(
+                            right: 85,
+                            top: 6,
+                            child: IconButton(
+                                onPressed: _isYearly.value
+                                    ? _goToCurrentYear
+                                    : _goToCurrentMonth,
+                                icon: const Icon(Icons.today_outlined)),
+                          ),
+                          Positioned(
+                            right: 5,
+                            top: 12,
+                            child: Container(
+                              width: 80,
+                              height: 35,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[350],
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(50.0),
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  AnimatedAlign(
+                                    alignment: Alignment(xAlign, 0),
+                                    duration: const Duration(milliseconds: 300),
+                                    child: Container(
+                                      width: 80 * 0.5,
+                                      height: 35,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.blue,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(50.0),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        xAlign = -1;
+                                        monthColor = selectedColor;
+
+                                        yearColor = normalColor;
+                                        _isYearly.value = false;
+                                      });
+                                    },
+                                    child: Align(
+                                      alignment: const Alignment(-1, 0),
+                                      child: Container(
+                                        width: 80 * 0.5,
+                                        color: Colors.transparent,
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          '월별',
+                                          style: TextStyle(
+                                            color: monthColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        xAlign = 1;
+                                        yearColor = selectedColor;
+
+                                        monthColor = normalColor;
+                                        _isYearly.value = true;
+                                      });
+                                    },
+                                    child: Align(
+                                      alignment: const Alignment(1, 0),
+                                      child: Container(
+                                        width: 80 * 0.5,
+                                        color: Colors.transparent,
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          '연별',
+                                          style: TextStyle(
+                                            color: yearColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            child: Stack(
-                              children: [
-                                AnimatedAlign(
-                                  alignment: Alignment(xAlign, 0),
-                                  duration: const Duration(milliseconds: 300),
-                                  child: Container(
-                                    width: 80 * 0.5,
-                                    height: 35,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.blue,
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(50.0),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      xAlign = -1;
-                                      monthColor = selectedColor;
-
-                                      yearColor = normalColor;
-                                      _isYearly.value = false;
-                                    });
-                                  },
-                                  child: Align(
-                                    alignment: const Alignment(-1, 0),
-                                    child: Container(
-                                      width: 80 * 0.5,
-                                      color: Colors.transparent,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        '월별',
-                                        style: TextStyle(
-                                          color: monthColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      xAlign = 1;
-                                      yearColor = selectedColor;
-
-                                      monthColor = normalColor;
-                                      _isYearly.value = true;
-                                    });
-                                  },
-                                  child: Align(
-                                    alignment: const Alignment(1, 0),
-                                    child: Container(
-                                      width: 80 * 0.5,
-                                      color: Colors.transparent,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        '연별',
-                                        style: TextStyle(
-                                          color: yearColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // 통계 그래프
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: FutureBuilder<String>(
-                            future: _isYearly.value
-                                ? fetchAnnualTime("${_selectedDate.year % 100}")
-                                : fetchMonthlyTime(
-                                    "${_selectedDate.year % 100}",
-                                    "${_selectedDate.month}",
-                                  ),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Center(
-                                    child: CircularProgressIndicator());
-                              } else if (snapshot.hasError ||
-                                  !snapshot.hasData) {
-                                return const Center(
-                                    child: Text('Error loading data'));
-                              } else {
-                                return Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Text(
-                                        '클라이밍 시간',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                      Text(
-                                        snapshot.data!,
-                                        style: const TextStyle(
-                                            fontSize: 30,
-                                            fontWeight: FontWeight.w700),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                        ),
-                        Expanded(
-                          child: Obx(() => PieChartWidget(
-                                dataType: !_isYearly.value ? 1 : 2,
-                                selectedYear: "${_selectedDate.year % 100}",
-                                selectedMonth: "${_selectedDate.month}",
-                              )),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              flex: 2,
-              child: Column(
-                children: [
-                  Container(
-                    width: double.maxFinite,
-                    height: 0,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 14,
-                    ),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        top: BorderSide(),
+                        ],
                       ),
                     ),
-                  ),
-                  _settingItems(
-                    "고객지원센터",
-                    false,
-                    () {
-                      launchUrl(Uri.parse(''));
-                    },
-                  ),
-                  _settingItems("작성한 게시물", false, () {}),
-                  _settingItems("로그아웃", false, () async {
-                    bool success = await logoutApi.logout();
-                    if (success) {
-                      Get.offAll(
-                          () => const LoginScreen()); // 모든 화면을 닫고 로그인 화면으로 이동
-                    } else {
-                      Get.snackbar(
-                          "Logout Failed", "Please try again."); // 실패 메시지 표시
-                    }
-                  }),
-                ],
+                    // 통계 그래프
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: FutureBuilder<String>(
+                              future: _isYearly.value
+                                  ? fetchAnnualTime(
+                                      "${_selectedDate.year % 100}")
+                                  : fetchMonthlyTime(
+                                      "${_selectedDate.year % 100}",
+                                      "${_selectedDate.month}",
+                                    ),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                } else if (snapshot.hasError ||
+                                    !snapshot.hasData) {
+                                  return const Center(
+                                      child: Text('Error loading data'));
+                                } else {
+                                  return Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          '클라이밍 시간',
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                        Text(
+                                          snapshot.data!,
+                                          style: const TextStyle(
+                                              fontSize: 30,
+                                              fontWeight: FontWeight.w700),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            child: Obx(() => PieChartWidget(
+                                  dataType: !_isYearly.value ? 1 : 2,
+                                  selectedYear: "${_selectedDate.year % 100}",
+                                  selectedMonth: "${_selectedDate.month}",
+                                )),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              Expanded(
+                flex: 2,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.maxFinite,
+                        height: 0,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
+                        decoration: const BoxDecoration(
+                          border: Border(
+                            top: BorderSide(),
+                          ),
+                        ),
+                      ),
+                      _settingItems(
+                        "고객지원센터",
+                        false,
+                        () {
+                          launchUrl(Uri.parse(''));
+                        },
+                      ),
+                      _settingItems("비밀번호 변경", false, () {
+                        Get.offAll(const PasswordChangeScreen());
+                      }),
+                      _settingItems("탈퇴하기", false, () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(16), // 모서리 둥글게 설정
+                              ),
+                              child: Container(
+                                width: MediaQuery.of(context).size.width *
+                                    0.85, // 다이얼로그 너비 조정 (화면의 85%)
+                                padding: const EdgeInsets.all(20), // 내부 패딩 추가
+                                child: Column(
+                                  mainAxisSize:
+                                      MainAxisSize.min, // 내용에 맞게 크기 설정
+                                  children: [
+                                    const Text(
+                                      "회원 탈퇴",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 24,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      "정말 탈퇴하시겠습니까?\n탈퇴 시 모든 데이터가 삭제되며,\n계정을 복구할 수 없습니다.",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        TextButton(
+                                          onPressed: () {
+                                            // 취소 버튼: 다이얼로그 닫기
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text(
+                                            "취소",
+                                            style: TextStyle(fontSize: 16),
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            // 확인 버튼: 탈퇴 API 호출
+                                            Navigator.of(context)
+                                                .pop(); // 다이얼로그 닫기
+                                            bool success =
+                                                await DeleteAccountApi()
+                                                    .deleteAccount();
+                                            if (success) {
+                                              // 탈퇴 성공 처리
+                                              Get.offAll(() =>
+                                                  const LoginScreen()); // 로그인 페이지로 이동
+                                              Get.snackbar(
+                                                "탈퇴 성공",
+                                                "계정이 정상적으로 삭제되었습니다.",
+                                                snackPosition:
+                                                    SnackPosition.BOTTOM,
+                                              );
+                                            } else {
+                                              // 탈퇴 실패 처리
+                                              Get.snackbar(
+                                                "탈퇴 실패",
+                                                "계정 삭제에 실패했습니다. 다시 시도해주세요.",
+                                                snackPosition:
+                                                    SnackPosition.BOTTOM,
+                                                backgroundColor: Colors.red,
+                                                colorText: Colors.white,
+                                              );
+                                            }
+                                          },
+                                          child: const Text(
+                                            "확인",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.red,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }),
+                      _settingItems("로그아웃", false, () async {
+                        bool success = await logoutApi.logout();
+                        if (success) {
+                          Get.offAll(() =>
+                              const LoginScreen()); // 모든 화면을 닫고 로그인 화면으로 이동
+                        } else {
+                          Get.snackbar("로그아웃 실패", "다시 시도해주세요."); // 실패 메시지 표시
+                        }
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

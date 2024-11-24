@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -46,9 +45,7 @@ class AuthController extends GetxController {
     try {
       final response = await http.get(
         url,
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
+        headers: {'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode == 200) {
@@ -70,10 +67,15 @@ class AuthController extends GetxController {
   Future<void> logout() async {
     await _storage.delete(key: 'accessToken');
     await _storage.delete(key: 'refreshToken');
+    await _storage.delete(key: 'nickname');
+    await _storage.delete(key: 'profileImage');
 
     accessToken.value = null;
     refreshToken.value = null;
     isLoggedIn.value = false;
+    nickname.value = null;
+    profileImage.value = null;
+    print("Success logout");
   }
 
   Future<void> loadLoginInfo() async {

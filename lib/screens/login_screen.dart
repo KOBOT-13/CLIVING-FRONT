@@ -21,7 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void login() async {
     bool check = await api.login(id, password);
     if (check) {
-      await authController.login('access_token', 'refresh_token');
       Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
     } else {
       showMyDialog(context, "로그인 실패", "로그인을 실패하였습니다. 아이디와 비밀번호를 확인해주세요.");
