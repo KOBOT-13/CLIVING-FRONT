@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'package:cliving_front/screens/password_change.dart';
 import 'package:cliving_front/services/analytics_api.dart';
 import 'package:cliving_front/services/delete_account_api.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cliving_front/charts/pie_chart.dart';
+import 'package:cliving_front/screens/password_change_screen.dart';
 import 'package:cliving_front/screens/login_screen.dart';
 import 'package:cliving_front/services/logout_api.dart';
 import 'package:flutter/material.dart';
@@ -591,7 +591,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         },
                       ),
                       _settingItems("비밀번호 변경", false, () {
-                        Get.offAll(const PasswordChangeScreen());
+                        Get.to(() => const PasswordChangeScreen());
                       }),
                       _settingItems("탈퇴하기", false, () {
                         showDialog(
