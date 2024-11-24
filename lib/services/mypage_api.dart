@@ -90,4 +90,41 @@ class UserService {
       return null;
     }
   }
+
+  Future<bool> changePassword(
+      String currentPassword, String newPassword1, String newPassword2) async {
+    // URL 설정
+    final url = Uri.parse('$API_ADDRESS/api/users/change-password/');
+    final accessToken = authController.accessToken.value;
+
+    // headers 정의
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $accessToken',
+    };
+
+    // body 정의
+    Map<String, String> body = {
+      'current_password': currentPassword,
+      'new_password1': newPassword1,
+      'new_password2': newPassword2,
+    };
+
+    try {
+      final response =
+          await http.post(url, headers: headers, body: jsonEncode(body));
+
+      if (response.statusCode == 200) {
+        print("비밀번호 변경 성공");
+        return true;
+      } else {
+        print("비밀번호 변경 실패: ${utf8.decode(response.bodyBytes)}");
+        print("서버 응답: ${utf8.decode(response.bodyBytes)}");
+        return false;
+      }
+    } catch (e) {
+      print("비밀번호 변경 중 오류 발생: $e");
+      return false;
+    }
+  }
 }
