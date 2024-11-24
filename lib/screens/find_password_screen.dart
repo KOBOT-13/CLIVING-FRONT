@@ -26,6 +26,7 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
   void dispose() {
     _idController.dispose();
     _phoneNumberController.dispose();
+    _verificationCodeContoroller.dispose();
     super.dispose();
   }
 
@@ -74,6 +75,7 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
 
     if (check) {
       // 스크린 이동
+      Navigator.pushNamed(context, '/change-password');
     } else {
       Get.snackbar("인증 실패", "인증 번호를 다시 확인해주세요.",
           snackPosition: SnackPosition.BOTTOM);

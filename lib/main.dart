@@ -7,6 +7,8 @@ import 'package:get/get.dart';
 import 'screens/entry_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/join_screen.dart';
+import 'screens/find_password_screen.dart';
+import 'screens/change_password_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:device_preview/device_preview.dart';
 
@@ -38,6 +40,9 @@ class MyApp extends StatelessWidget {
       routes: <String, WidgetBuilder>{
         '/join': (BuildContext context) => const JoinScreen(),
         '/main': (BuildContext context) => const MainScreen(),
+        '/find-password': (BuildContext context) => const FindPasswordScreen(),
+        '/change-password': (BuildContext context) =>
+            const ChangePasswordScreen(),
       },
     );
   }

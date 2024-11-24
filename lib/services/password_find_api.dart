@@ -93,4 +93,35 @@ class PasswordFindApi {
       return false;
     }
   }
+
+  Future<bool> changePassword(String newPassword1, String newPassword2) async {
+    // API 아직 안나옴.
+    final url = Uri.parse('$API_ADDRESS/api/users/??/');
+
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+    };
+
+    Map<String, String> body = {
+      'new_password1': newPassword1,
+      'new_password2': newPassword2,
+    };
+
+    try {
+      final response =
+          await http.post(url, headers: headers, body: jsonEncode(body));
+
+      if (response.statusCode == 200) {
+        print('인증성공');
+        return true;
+      } else {
+        print(response.statusCode);
+        print(utf8.decode(response.bodyBytes));
+        return false;
+      }
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
 }
