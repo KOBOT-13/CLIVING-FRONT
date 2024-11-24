@@ -135,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Expanded(
                         child: TextButton(
                             onPressed: () {
-                              // Navigator.pushNamed(context, '');
+                              Navigator.pushNamed(context, '/find-password');
                             },
                             child: const Text(
                               "비밀번호 찾기",
