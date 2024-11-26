@@ -587,7 +587,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         "고객지원센터",
                         false,
                         () {
-                          launchUrl(Uri.parse(''));
+                          launchUrl(Uri.parse(
+                              'https://lily-pyramid-444.notion.site/1481c3c8a802808e95c8e7227a8ad380?pvs=4'));
                         },
                       ),
                       _settingItems("비밀번호 변경", false, () {
