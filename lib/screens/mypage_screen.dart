@@ -4,7 +4,7 @@ import 'package:cliving_front/services/delete_account_api.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cliving_front/charts/pie_chart.dart';
-import 'package:cliving_front/screens/password_change_screen.dart';
+import 'package:cliving_front/screens/change_password_w_token_screen.dart';
 import 'package:cliving_front/screens/login_screen.dart';
 import 'package:cliving_front/services/logout_api.dart';
 import 'package:flutter/material.dart';
@@ -584,6 +584,14 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         ),
                       ),
                       _settingItems(
+                        "클리빙 앱 사용가이드",
+                        false,
+                        () {
+                          launchUrl(Uri.parse(
+                              'https://lily-pyramid-444.notion.site/14a1c3c8a80280b69c8ff86dbfe6bb4d?pvs=4'));
+                        },
+                      ),
+                      _settingItems(
                         "고객지원센터",
                         false,
                         () {
@@ -592,7 +600,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         },
                       ),
                       _settingItems("비밀번호 변경", false, () {
-                        Get.to(() => const PasswordChangeScreen());
+                        Get.to(() => const PasswordChangewScreen());
                       }),
                       _settingItems("탈퇴하기", false, () {
                         showDialog(
