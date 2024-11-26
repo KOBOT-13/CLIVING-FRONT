@@ -314,19 +314,19 @@ class _RecordScreenState extends State<RecordScreen> {
                 DateTime startDateTime =
                     DateTime.parse('2024-04-19 $startTime');
                 DateTime endDateTime = DateTime.parse('2024-04-19 $endTime');
-                List<int> colorSuccessCounter =
-                    List<int>.from(pageData['color_success_counter']);
-                List<int> colorFailCounter =
-                    List<int>.from(pageData['color_fail_counter']);
+                // List<int> colorSuccessCounter =
+                //     List<int>.from(pageData['color_success_counter']);
+                // List<int> colorFailCounter =
+                //     List<int>.from(pageData['color_fail_counter']);
                 List<int> colorTotalCounter =
                     List<int>.from(pageData['bouldering_clear_color_counter']);
 
                 int startH = startDateTime.hour;
                 int startM = startDateTime.minute;
-                int startS = startDateTime.second;
+                // int startS = startDateTime.second;
                 int finishH = endDateTime.hour;
                 int finishM = endDateTime.minute;
-                int finishS = endDateTime.second;
+                // int finishS = endDateTime.second;
 
                 return Container(
                   height: MediaQuery.of(context).size.height,
