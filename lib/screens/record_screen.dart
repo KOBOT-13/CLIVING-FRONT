@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'package:cliving_front/controllers/auth_controller.dart';
 import 'package:cliving_front/screens/event.dart';
+import 'package:cliving_front/screens/video_player_screen.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:ribbon_widget/ribbon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,6 +25,7 @@ class RecordScreen extends StatefulWidget {
 }
 
 class _RecordScreenState extends State<RecordScreen> {
+  final AuthController authController = Get.find<AuthController>();
   late Future<Map<String, dynamic>> futurePage;
   late Future<List<String>> videoUrls;
   late Future<List<String>> thumbnailUrls;
@@ -61,12 +65,15 @@ class _RecordScreenState extends State<RecordScreen> {
 
   Future<Map<String, dynamic>> _getPage() async {
     String apiAddress = dotenv.get("API_ADDRESS");
+    final accessToken = authController.accessToken.value;
+
     final url = Uri.parse('$apiAddress/v1/page/$pageId');
 
     final response = await http.get(
       url,
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
       },
     );
 
@@ -81,6 +88,7 @@ class _RecordScreenState extends State<RecordScreen> {
 
   Future<void> _updatePlace(String newPlace) async {
     String apiAddress = dotenv.env['API_ADDRESS']!;
+    final accessToken = authController.accessToken.value;
     final url = Uri.parse('$apiAddress/v1/page/$pageId/');
 
     try {
@@ -88,6 +96,7 @@ class _RecordScreenState extends State<RecordScreen> {
         url,
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
         },
         body: jsonEncode({
           'climbing_center_name': newPlace,
@@ -112,11 +121,13 @@ class _RecordScreenState extends State<RecordScreen> {
   Future<List<String>> getVideoUrls() async {
     String apiAddress = dotenv.env['API_ADDRESS']!;
     final url = Uri.parse('$apiAddress/v1/videoclips/by_page/paths/$pageId/');
+    final accessToken = authController.accessToken.value;
 
     final response = await http.get(
       url,
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
       },
     );
 
@@ -134,6 +145,7 @@ class _RecordScreenState extends State<RecordScreen> {
 
   Future<List<String>> getThumbnailUrls() async {
     String apiAddress = dotenv.env['API_ADDRESS']!;
+    final accessToken = authController.accessToken.value;
     final url =
         Uri.parse('$apiAddress/v1/videoclips/by_page/thumbnails/$pageId/');
 
@@ -141,6 +153,7 @@ class _RecordScreenState extends State<RecordScreen> {
       url,
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
       },
     );
 
@@ -158,12 +171,14 @@ class _RecordScreenState extends State<RecordScreen> {
 
   Future<List<String>> getColorsList() async {
     String apiAddress = dotenv.env['API_ADDRESS']!;
+    final accessToken = authController.accessToken.value;
     final url = Uri.parse('$apiAddress/v1/videoclips/by_page/colors/$pageId/');
 
     final response = await http.get(
       url,
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
       },
     );
 
@@ -178,12 +193,14 @@ class _RecordScreenState extends State<RecordScreen> {
 
   Future<List<String>> getTypesList() async {
     String apiAddress = dotenv.env['API_ADDRESS']!;
+    final accessToken = authController.accessToken.value;
     final url = Uri.parse('$apiAddress/v1/videoclips/by_page/types/$pageId/');
 
     final response = await http.get(
       url,
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
       },
     );
 
