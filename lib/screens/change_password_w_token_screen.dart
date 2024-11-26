@@ -2,14 +2,14 @@ import 'package:cliving_front/services/mypage_api.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class PasswordChangeScreen extends StatefulWidget {
-  const PasswordChangeScreen({super.key});
+class PasswordChangewScreen extends StatefulWidget {
+  const PasswordChangewScreen({super.key});
 
   @override
-  State<PasswordChangeScreen> createState() => _PasswordChangeScreenState();
+  State<PasswordChangewScreen> createState() => _PasswordChangeScreenState();
 }
 
-class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
+class _PasswordChangeScreenState extends State<PasswordChangewScreen> {
   final _currentPasswordController = TextEditingController();
   final _newPassword1Controller = TextEditingController();
   final _newPassword2Controller = TextEditingController();
