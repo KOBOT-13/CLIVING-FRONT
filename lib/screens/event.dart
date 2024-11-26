@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import '../controllers/auth_controller.dart';
 
 class Event {
   String place;
@@ -37,11 +39,14 @@ class Event {
 Future<Map<DateTime, List<Event>>> fetchEvents(int year) async {
   String apiAddress = dotenv.get("API_ADDRESS");
   final url = Uri.parse('$apiAddress/v1/pages/$year');
+  final AuthController authController = Get.find<AuthController>();
+  final accessToken = authController.accessToken.value;
 
   final response = await http.get(
     url,
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': 'Bearer $accessToken',
     },
   );
 
