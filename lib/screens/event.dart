@@ -38,7 +38,7 @@ class Event {
 
 Future<Map<DateTime, List<Event>>> fetchEvents(int year) async {
   String apiAddress = dotenv.get("API_ADDRESS");
-  final url = Uri.parse('$apiAddress/v1/pages/$year');
+  final url = Uri.parse('$apiAddress/v1/pages/$year/');
   final AuthController authController = Get.find<AuthController>();
   final accessToken = authController.accessToken.value;
 

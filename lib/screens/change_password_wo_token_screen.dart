@@ -1,16 +1,16 @@
-import 'package:cliving_front/services/mypage_api.dart';
+import 'package:cliving_front/services/password_change_api.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class PasswordChangeScreen extends StatefulWidget {
-  const PasswordChangeScreen({super.key});
+class PasswordChangewoScreen extends StatefulWidget {
+  final String username;
+  const PasswordChangewoScreen(this.username, {super.key});
 
   @override
-  State<PasswordChangeScreen> createState() => _PasswordChangeScreenState();
+  State<PasswordChangewoScreen> createState() => _PasswordChangeScreenState();
 }
 
-class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
-  final _currentPasswordController = TextEditingController();
+class _PasswordChangeScreenState extends State<PasswordChangewoScreen> {
   final _newPassword1Controller = TextEditingController();
   final _newPassword2Controller = TextEditingController();
   final passwordPattern =
@@ -20,7 +20,6 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
 
   @override
   void dispose() {
-    _currentPasswordController.dispose();
     _newPassword1Controller.dispose();
     _newPassword2Controller.dispose();
     super.dispose();
@@ -41,6 +40,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   }
 
   Future<void> handlePasswordChange() async {
+    print("API 실행!!");
     // 입력 유효성 검증
     if (!isPasswordValid || !isPasswordMatch) {
       Get.snackbar(
@@ -50,29 +50,29 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       );
       return;
     }
-    // 비밀번호 변경 API 호출
-    final success = await UserService().changePassword(
-      _currentPasswordController.text,
-      _newPassword1Controller.text,
-      _newPassword2Controller.text,
-    );
-    if (success) {
-      // 성공 시 스낵바 메시지 표시 및 마이페이지로 이동
-      if (context.mounted) {
-        Get.snackbar(
-          "비밀번호 변경 성공",
-          "비밀번호가 성공적으로 변경되었습니다.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        Navigator.pop(context); // 이전 화면(마이페이지)으로 이동
-      }
-    } else {
-      // 실패 시 오류 메시지 표시
-      Get.snackbar(
-        "비밀번호 변경 실패",
-        "현재 비밀번호가 일치하지 않습니다.",
-        snackPosition: SnackPosition.BOTTOM,
+    try {
+      // 비밀번호 변경 API 호출
+      final success = await PasswordChangeApi().changePassword(
+        widget.username,
+        _newPassword1Controller.text,
+        _newPassword2Controller.text,
       );
+      if (success) {
+        // 성공 시 스낵바 메시지 표시 및 마이페이지로 이동
+        if (context.mounted) {
+          Get.snackbar(
+            "비밀번호 변경 성공",
+            "비밀번호가 성공적으로 변경되었습니다.",
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          Navigator.pop(context); // 이전 화면(마이페이지)으로 이동
+        }
+      } else {
+        // 실패 시 오류 메시지 표시
+        throw Exception("비밀번호 변경 실패: 서버에서 실패 응답을 받았습니다.");
+      }
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -110,22 +110,6 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text("현재 사용 중인 비밀번호를 입력해주세요."),
-                const SizedBox(
-                  height: 10,
-                ),
-                TextField(
-                  controller: _currentPasswordController,
-                  decoration: const InputDecoration(
-                      labelText: '현재 비밀번호',
-                      floatingLabelStyle: TextStyle(color: Colors.blue),
-                      border: OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue, width: 1),
-                      )),
-                  obscureText: true,
-                ),
-                const SizedBox(height: 30.0),
                 const Text("변경할 새로운 비밀번호를 입력하세요."),
                 const SizedBox(
                   height: 10,
