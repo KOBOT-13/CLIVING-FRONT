@@ -1,4 +1,5 @@
 import 'package:cliving_front/controllers/auth_controller.dart';
+import 'package:cliving_front/screens/change_password_verify_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/login_api.dart';
@@ -135,10 +136,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       Expanded(
                         child: TextButton(
                             onPressed: () {
-                              // Navigator.pushNamed(context, '');
+                              Get.to(() => const ChangePasswordVerifyScreen());
                             },
                             child: const Text(
-                              "비밀번호 찾기",
+                              "비밀번호 변경",
                               style: TextStyle(
                                 color: Color(0xFF1B1B1B),
                               ),
