@@ -1,4 +1,4 @@
-package com.example.cliving_front
+package com.cliving.app
 
 import io.flutter.embedding.android.FlutterActivity
 
