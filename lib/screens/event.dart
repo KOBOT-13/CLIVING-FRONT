@@ -55,27 +55,37 @@ Future<Map<DateTime, List<Event>>> fetchEvents(int year) async {
     Map<DateTime, List<Event>> events = {};
 
     for (var eventData in jsonData) {
-      // API 응답에서 날짜와 시간을 파싱하는 부분
-      DateTime date = DateTime.parse(eventData['date_dateFieldValue']);
+      try {
+        String dateField = eventData['date_dateFieldValue'];
+        String? startTime = eventData['today_start_time'];
+        String? endTime = eventData['today_end_time'];
 
-      // 날짜와 시간을 함께 파싱하여 DateTime 객체로 변환
-      DateTime startTime = DateTime.parse(
-          "${eventData['date_dateFieldValue']} ${eventData['today_start_time']}");
-      DateTime endTime = DateTime.parse(
-          "${eventData['date_dateFieldValue']} ${eventData['today_end_time']}");
+        // 날짜와 시간을 안전하게 변환
+        if (startTime == null || endTime == null) {
+          throw FormatException(
+              "Invalid startTime or endTime: $startTime, $endTime");
+        }
 
-      // Event 객체 생성 시, 변환된 DateTime 객체를 사용
-      Event event = Event(
-        place: eventData['climbing_center_name'],
-        color: List<String>.from(eventData['bouldering_clear_color']),
-        start: startTime,
-        finish: endTime,
-      );
+        DateTime date = DateTime.parse(dateField);
+        DateTime startDateTime = DateTime.parse("$dateField $startTime");
+        DateTime endDateTime = DateTime.parse("$dateField $endTime");
 
-      if (events[date] == null) {
-        events[date] = [];
+        // Event 객체 생성
+        Event event = Event(
+          place: eventData['climbing_center_name'] ?? "Unknown",
+          color: List<String>.from(eventData['bouldering_clear_color'] ?? []),
+          start: startDateTime,
+          finish: endDateTime,
+        );
+
+        if (events[date] == null) {
+          events[date] = [];
+        }
+        events[date]!.add(event);
+      } catch (e) {
+        print("Error processing event data: $e");
+        print("Invalid Event Data: $eventData");
       }
-      events[date]!.add(event);
     }
     return events;
   } else {
