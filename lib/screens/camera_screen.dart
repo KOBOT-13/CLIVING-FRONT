@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
 import '../widgets/custom_toast.dart';
+import 'package:cliving_front/controllers/auth_controller.dart';
+import 'package:get/get.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -35,6 +37,8 @@ class _CameraScreenState extends State<CameraScreen> {
   };
 
   CameraController? _controller;
+  final AuthController authController = Get.find<AuthController>();
+  late final accessToken;
   Future<void>? _initializeControllerFuture;
   late List<CameraDescription> _cameras;
   XFile? file;
@@ -52,14 +56,15 @@ class _CameraScreenState extends State<CameraScreen> {
   double _previousScale = 1.0;
   double _maxZoomLevel = 0;
   double _minZoomLevel = 0;
-  late int imageWidth;
-  late int imageHeight;
+  late int imageWidth = 0;
+  late int imageHeight = 0;
   int clickedHold = 0;
 
   @override
   void initState() {
     super.initState();
     findCameras();
+    accessToken = authController.accessToken.value;
   }
 
   Future<void> findCameras() async {
@@ -124,6 +129,7 @@ class _CameraScreenState extends State<CameraScreen> {
       final image = img.decodeImage(bytes);
       imageHeight = image!.height;
       imageWidth = image.width;
+
       // 사진 벡엔드에 보내는 코드
       try {
         String apiAddress = dotenv.get("API_ADDRESS");
@@ -131,6 +137,11 @@ class _CameraScreenState extends State<CameraScreen> {
             'POST', Uri.parse("$apiAddress/v1/upload/image/"));
         request.files
             .add(await http.MultipartFile.fromPath('image', file!.path));
+        request.headers.addAll({
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        });
+
         var response = await request.send();
         var responseBody = await response.stream.bytesToString();
         var jsonResponse = jsonDecode(responseBody);
@@ -239,6 +250,7 @@ class _CameraScreenState extends State<CameraScreen> {
       url,
       headers: {
         'Content-Type': 'application/json',
+        'Authorizatoin': 'Bearer $accessToken',
       },
     );
     if (response.statusCode == 404) {
@@ -258,6 +270,7 @@ class _CameraScreenState extends State<CameraScreen> {
     final response = await http.post(url,
         headers: {
           'Content-Type': 'application/json',
+          'Authorizatoin': 'Bearer $accessToken',
         },
         body: json.encode({
           'date': dateFormat,
@@ -275,6 +288,7 @@ class _CameraScreenState extends State<CameraScreen> {
       url,
       headers: {
         'Content-Type': 'application/json',
+        'Authorizatoin': 'Bearer $accessToken',
       },
     );
     print(response.statusCode);
@@ -288,6 +302,7 @@ class _CameraScreenState extends State<CameraScreen> {
       url,
       headers: {
         'Content-Type': 'application/json',
+        'Authorizatoin': 'Bearer $accessToken',
       },
     );
     print(response.statusCode);
@@ -304,6 +319,10 @@ class _CameraScreenState extends State<CameraScreen> {
       String apiAddress = dotenv.get("API_ADDRESS");
       final request =
           http.MultipartRequest('POST', Uri.parse("$apiAddress/v1/video/"));
+      request.headers.addAll({
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      });
       request.files
           .add(await http.MultipartFile.fromPath('videofile', file.path));
       request.fields['video_color'] = selectedColor;
@@ -327,6 +346,7 @@ class _CameraScreenState extends State<CameraScreen> {
       final response = await http.put(url,
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': 'Bearer $accessToken',
           },
           body: json.encode({
             'is_top': true,
@@ -345,6 +365,7 @@ class _CameraScreenState extends State<CameraScreen> {
         final response = await http.put(url,
             headers: {
               'Content-Type': 'application/json',
+              'Authorizatoin': 'Bearer $accessToken',
             },
             body: json.encode({
               'is_start': true,
