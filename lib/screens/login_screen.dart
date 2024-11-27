@@ -1,5 +1,7 @@
 import 'package:cliving_front/controllers/auth_controller.dart';
 import 'package:cliving_front/screens/change_password_verify_screen.dart';
+import 'package:cliving_front/screens/entry_screen.dart';
+import 'package:cliving_front/screens/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/login_api.dart';
@@ -22,8 +24,20 @@ class _LoginScreenState extends State<LoginScreen> {
   void login() async {
     bool check = await api.login(id, password);
     if (check) {
+      Get.to(() => const LoadingScreen());
+
+      // AuthController가 `accessToken`과 사용자 프로필 정보를 가져올 때까지 기다림
+      await authController.loadLoginInfo();
+
+      // `accessToken`이 설정되었는지 확인
+      while (authController.accessToken.value == null ||
+          authController.accessToken.value!.isEmpty) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
       Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
     } else {
+      Get.off(() => const LoginScreen());
       showMyDialog(context, "로그인 실패", "로그인을 실패하였습니다. 아이디와 비밀번호를 확인해주세요.");
     }
   }
