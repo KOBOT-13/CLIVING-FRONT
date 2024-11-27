@@ -94,10 +94,14 @@ class _FindPasswordScreenState extends State<ChangePasswordVerifyScreen> {
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
         bottomOpacity: 2.0,
         backgroundColor: Colors.white,
+        iconTheme: IconThemeData(
+          color: Colors.black,
+        ),
         shape: const Border(
             bottom: BorderSide(
           color: Color.fromRGBO(0, 0, 0, 0.2),

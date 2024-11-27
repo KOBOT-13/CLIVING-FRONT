@@ -56,8 +56,10 @@ class _CameraScreenState extends State<CameraScreen> {
   double _previousScale = 1.0;
   double _maxZoomLevel = 0;
   double _minZoomLevel = 0;
-  late int imageWidth = 0;
-  late int imageHeight = 0;
+  int imageWidth = 0;
+  int imageHeight = 0;
+  double cameraWidth = 0;
+  double cameraHeight = 0;
   int clickedHold = 0;
 
   @override
@@ -97,7 +99,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   void setCamera() {
     if (_cameras.isNotEmpty) {
-      _controller = CameraController(_cameras[0], ResolutionPreset.max,
+      _controller = CameraController(_cameras[0], ResolutionPreset.high,
           enableAudio: true, imageFormatGroup: ImageFormatGroup.yuv420);
       _initializeControllerFuture =
           _controller?.initialize().catchError((Object e) {
@@ -129,6 +131,8 @@ class _CameraScreenState extends State<CameraScreen> {
       final image = img.decodeImage(bytes);
       imageHeight = image!.height;
       imageWidth = image.width;
+
+      print('높이 : $imageHeight 가로 : $imageWidth');
       // 사진 벡엔드에 보내는 코드
       try {
         String apiAddress = dotenv.get("API_ADDRESS");
@@ -248,7 +252,7 @@ class _CameraScreenState extends State<CameraScreen> {
       url,
       headers: {
         'Content-Type': 'application/json',
-        'Authorizatoin': 'Bearer $accessToken',
+        'Authorization': 'Bearer $accessToken',
       },
     );
     if (response.statusCode == 404) {
@@ -268,14 +272,15 @@ class _CameraScreenState extends State<CameraScreen> {
     final response = await http.post(url,
         headers: {
           'Content-Type': 'application/json',
-          'Authorizatoin': 'Bearer $accessToken',
+          'Authorization': 'Bearer $accessToken',
         },
         body: json.encode({
-          'date': dateFormat,
-          'climbing_center_name': "클라이밍장 이름을 입력해주세요.",
+          'climbing_center_name': '클라이밍장 이름을 입력해주세요.',
+          // 'date': dateFormat,
           // 'bouldering_clear_color': selectedColorList,
         }));
     print(response.statusCode);
+    print(utf8.decode(response.bodyBytes));
   }
 
   Future<void> createClip(String videoIdArg) async {
@@ -286,7 +291,7 @@ class _CameraScreenState extends State<CameraScreen> {
       url,
       headers: {
         'Content-Type': 'application/json',
-        'Authorizatoin': 'Bearer $accessToken',
+        'Authorization': 'Bearer $accessToken',
       },
     );
     print(response.statusCode);
@@ -300,10 +305,11 @@ class _CameraScreenState extends State<CameraScreen> {
       url,
       headers: {
         'Content-Type': 'application/json',
-        'Authorizatoin': 'Bearer $accessToken',
+        'Authorization': 'Bearer $accessToken',
       },
     );
     print(response.statusCode);
+    print(utf8.decode(response.bodyBytes));
   }
 
   Future<String> stopRecording() async {
@@ -434,6 +440,13 @@ class _CameraScreenState extends State<CameraScreen> {
                       children: [
                         CameraPreview(
                           _controller!,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              cameraHeight = constraints.maxHeight;
+                              cameraWidth = constraints.maxWidth;
+                              return Container(); // 추가 디버깅용으로 크기를 확인
+                            },
+                          ),
                         ),
                         // 오른쪽 하단에 배율 표시
                         Positioned(
@@ -488,195 +501,199 @@ class _CameraScreenState extends State<CameraScreen> {
           ),
         ),
         if (file != null) // 조건을 검사하여 file이 null이 아닌 경우에만 Positioned 위젯을 생성
-          Stack(
-            children: [
-              Positioned.fill(
-                  child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                      child: Container(
-                        color: Colors.black.withOpacity(0.1),
-                      ))),
-            ],
-          ),
+          Positioned.fill(
+              child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    color: Colors.black.withOpacity(0.1),
+                  ))),
         if (file != null)
           Center(
-            child: SizedBox(
-              width: imageWidth.toDouble(),
-              height: imageHeight.toDouble(),
-              child: Stack(children: [
-                Positioned.fill(
-                  child: Image(image: XFileImage(file!)),
-                ),
-                Container(
-                  alignment: const Alignment(-0.9, 0.99),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      surfaceTintColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: const TextStyle(
-                        color: Colors.white,
-                      ),
+            child: Stack(children: [
+              Positioned.fill(
+                child: Image(image: XFileImage(file!)),
+              ),
+              Container(
+                alignment: const Alignment(-0.9, 0.99),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    surfaceTintColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        file = null;
-                        imageHoldInfos = null;
-                        clickedHold = 0;
-                        _buttonCheck = false;
-                        isSelectingStartHold = true;
-                        keys.clear();
-                      });
-                    },
-                    child: const Text("재촬영"),
+                    textStyle: const TextStyle(
+                      color: Colors.white,
+                    ),
                   ),
+                  onPressed: () {
+                    setState(() {
+                      file = null;
+                      imageHoldInfos = null;
+                      clickedHold = 0;
+                      _buttonCheck = false;
+                      isSelectingStartHold = true;
+                      keys.clear();
+                    });
+                  },
+                  child: const Text("재촬영"),
                 ),
-                Container(
-                  alignment: const Alignment(0.9, 0.99),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      surfaceTintColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: const TextStyle(
-                        color: Colors.white,
-                      ),
+              ),
+              Container(
+                alignment: const Alignment(0.9, 0.99),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    surfaceTintColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        if (_buttonCheck) {
-                          if (isSelectingStartHold) {
-                            fetchStart();
-                            isSelectingStartHold = false;
-                            _buttonCheck = false;
-                            resetImageHoldInfos();
-                          } else {
-                            fetchTop();
-                            if (!_recordingCheck) {
-                              _showColorModal(context);
-                            }
-                          }
+                    textStyle: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      if (_buttonCheck) {
+                        if (isSelectingStartHold) {
+                          fetchStart();
+                          isSelectingStartHold = false;
+                          _buttonCheck = false;
+                          resetImageHoldInfos();
                         } else {
-                          showCustomToast(context, "홀드를 선택해주세요.");
+                          fetchTop();
+                          if (!_recordingCheck) {
+                            _showColorModal(context);
+                          }
                         }
-                      });
-                    },
-                    child: const Text("확정"),
-                  ),
+                      } else {
+                        showCustomToast(context, "홀드를 선택해주세요.");
+                      }
+                    });
+                  },
+                  child: const Text("확정"),
                 ),
-                FutureBuilder<Map<int, List<dynamic>>>(
-                  future: imageHoldInfos,
-                  builder: ((context, snapshot) {
-                    if (imageHoldInfos == null) {
-                      return Container();
-                    }
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return SizedBox.shrink();
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error'));
-                    } else {
-                      Map<int, List<dynamic>> buttonHold = snapshot.data!;
-                      return LayoutBuilder(
-                        builder: (context, constraints) {
-                          return Stack(children: [
-                            for (var t in buttonHold.entries)
-                              Positioned(
-                                top: (t.value[0][1]) /
-                                    imageHeight *
-                                    constraints.maxHeight,
-                                right: (t.value[0][0]) /
-                                    imageWidth *
-                                    constraints.maxWidth,
-                                child: SizedBox(
-                                  width: (t.value[0][2] /
-                                          imageWidth *
-                                          constraints.maxWidth) -
-                                      (t.value[0][0] /
-                                          imageWidth *
-                                          constraints.maxWidth),
-                                  height: (t.value[0][3] /
-                                          imageHeight *
-                                          constraints.maxHeight) -
-                                      (t.value[0][1] /
-                                          imageHeight *
-                                          constraints.maxHeight),
-                                  child: OutlinedButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          if (isSelectingStartHold) {
-                                            if (clickedHold < 2) {
-                                              if (t.value[1]) {
-                                                t.value[1] = false;
-                                                keys.add(t.key);
-                                                clickedHold++;
-                                                _buttonCheck = true;
+              ),
+              FutureBuilder<Map<int, List<dynamic>>>(
+                future: imageHoldInfos,
+                builder: ((context, snapshot) {
+                  if (imageHoldInfos == null) {
+                    return Container();
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SizedBox.shrink();
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error'));
+                  } else {
+                    Map<int, List<dynamic>> buttonHold = snapshot.data!;
+                    return LayoutBuilder(
+                      builder: (context, constraints) {
+                        // final screenWidth = constraints.maxWidth;
+                        // final screenHeight = constraints.maxHeight -
+                        //     (MediaQuery.of(context).size.height -
+                        //         constraints.maxHeight);
+                        return Center(
+                          child: SizedBox(
+                            width: cameraWidth,
+                            height: cameraHeight,
+                            child: Stack(children: [
+                              for (var t in buttonHold.entries)
+                                Positioned(
+                                  top: (t.value[0][1]) /
+                                      imageHeight *
+                                      cameraHeight,
+                                  right: (t.value[0][0]) /
+                                      imageWidth *
+                                      cameraWidth,
+                                  child: SizedBox(
+                                    width: (t.value[0][2] /
+                                            imageWidth *
+                                            cameraWidth) -
+                                        (t.value[0][0] /
+                                            imageWidth *
+                                            cameraWidth),
+                                    height: (t.value[0][3] /
+                                            imageHeight *
+                                            cameraHeight) -
+                                        (t.value[0][1] /
+                                            imageHeight *
+                                            cameraHeight),
+                                    child: OutlinedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            if (isSelectingStartHold) {
+                                              if (clickedHold < 2) {
+                                                if (t.value[1]) {
+                                                  t.value[1] = false;
+                                                  keys.add(t.key);
+                                                  clickedHold++;
+                                                  _buttonCheck = true;
+                                                } else {
+                                                  t.value[1] = true;
+                                                  keys.remove(t.key);
+                                                  clickedHold--;
+                                                }
                                               } else {
-                                                t.value[1] = true;
-                                                keys.remove(t.key);
-                                                clickedHold--;
+                                                if (!t.value[1]) {
+                                                  t.value[1] = true;
+                                                  keys.remove(t.key);
+                                                  clickedHold--;
+                                                }
                                               }
+                                              if (clickedHold == 0)
+                                                _buttonCheck = false;
                                             } else {
-                                              if (!t.value[1]) {
-                                                t.value[1] = true;
-                                                keys.remove(t.key);
-                                                clickedHold--;
-                                              }
+                                              buttonHold.entries
+                                                  .forEach((element) {
+                                                if (!element.value[1]) {
+                                                  element.value[1] = true;
+                                                }
+                                                t.value[1] = false;
+                                                _buttonCheck = true;
+                                                keys.add(t.key);
+                                              });
                                             }
-                                            if (clickedHold == 0)
-                                              _buttonCheck = false;
-                                          } else {
-                                            buttonHold.entries
-                                                .forEach((element) {
-                                              if (!element.value[1]) {
-                                                element.value[1] = true;
-                                              }
-                                              t.value[1] = false;
-                                              _buttonCheck = true;
-                                              keys.add(t.key);
-                                            });
-                                          }
-                                        });
-                                      },
-                                      child: Text(""),
-                                      style: ButtonStyle(
-                                          shape: MaterialStateProperty.all<
-                                              RoundedRectangleBorder>(
-                                            RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.zero, // 각진 모서리
+                                          });
+                                        },
+                                        child: Text(""),
+                                        style: ButtonStyle(
+                                            shape: MaterialStateProperty.all<
+                                                RoundedRectangleBorder>(
+                                              RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.zero, // 각진 모서리
+                                              ),
                                             ),
-                                          ),
-                                          side:
-                                              MaterialStateProperty.resolveWith<
-                                                  BorderSide>((states) {
-                                            return BorderSide(
-                                              color: colorMap["orange"],
-                                              width: 2.0,
-                                            );
-                                          }),
-                                          backgroundColor: MaterialStateProperty
-                                              .resolveWith<Color>((states) {
-                                            if (t.value[1]) {
-                                              return Colors.transparent;
-                                            } else {
-                                              return Color.fromRGBO(
-                                                  0, 0, 0, 0.494);
-                                            }
-                                          }))),
+                                            side: MaterialStateProperty
+                                                .resolveWith<BorderSide>(
+                                                    (states) {
+                                              return BorderSide(
+                                                color: colorMap["orange"],
+                                                width: 2.0,
+                                              );
+                                            }),
+                                            backgroundColor:
+                                                MaterialStateProperty
+                                                    .resolveWith<Color>(
+                                                        (states) {
+                                              if (t.value[1]) {
+                                                return Colors.transparent;
+                                              } else {
+                                                return Color.fromRGBO(
+                                                    0, 0, 0, 0.494);
+                                              }
+                                            }))),
+                                  ),
                                 ),
-                              ),
-                          ]);
-                        },
-                      );
-                    }
-                  }),
-                ),
-              ]),
-            ),
+                            ]),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                }),
+              ),
+            ]),
           )
       ],
     );
