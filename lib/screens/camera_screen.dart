@@ -645,21 +645,22 @@ class _CameraScreenState extends State<CameraScreen> {
                                       },
                                       child: Text(""),
                                       style: ButtonStyle(
-                                          shape: WidgetStateProperty.all<
+                                          shape: MaterialStateProperty.all<
                                               RoundedRectangleBorder>(
                                             RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.zero, // 각진 모서리
                                             ),
                                           ),
-                                          side: WidgetStateProperty.resolveWith<
-                                              BorderSide>((states) {
+                                          side:
+                                              MaterialStateProperty.resolveWith<
+                                                  BorderSide>((states) {
                                             return BorderSide(
                                               color: colorMap["orange"],
                                               width: 2.0,
                                             );
                                           }),
-                                          backgroundColor: WidgetStateProperty
+                                          backgroundColor: MaterialStateProperty
                                               .resolveWith<Color>((states) {
                                             if (t.value[1]) {
                                               return Colors.transparent;

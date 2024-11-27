@@ -83,38 +83,38 @@ class _LineChartWidgetState extends State<LineChartWidget> {
               tooltipPadding: const EdgeInsets.all(5),
               tooltipMargin: 3,
               getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-            return touchedBarSpots.map((barSpot) {
-              final flSpot = barSpot;
-              final double hours = flSpot.y;
-              final int totalMinutes = (hours * 60).toInt();
-              final int hrs = totalMinutes ~/ 60;
-              final int mins = totalMinutes % 60;
+                return touchedBarSpots.map((barSpot) {
+                  final flSpot = barSpot;
+                  final double hours = flSpot.y;
+                  final int totalMinutes = (hours * 60).toInt();
+                  final int hrs = totalMinutes ~/ 60;
+                  final int mins = totalMinutes % 60;
 
-              return LineTooltipItem(
-                '${hrs > 0 ? '$hrs시간 ' : ''}$mins분',
-                const TextStyle(color: Colors.white),
-              );
-            }).toList();
-          })),
+                  return LineTooltipItem(
+                    '${hrs > 0 ? '$hrs시간 ' : ''}$mins분',
+                    const TextStyle(color: Colors.white),
+                  );
+                }).toList();
+              })),
       gridData: FlGridData(
         show: true,
         drawVerticalLine: true,
         horizontalInterval: 1,
         verticalInterval: 1,
         getDrawingHorizontalLine: (value) {
-          return const FlLine(
+          return FlLine(
             color: Colors.grey,
             strokeWidth: 1,
           );
         },
         getDrawingVerticalLine: (value) {
-          return const FlLine(
+          return FlLine(
             color: Colors.grey,
             strokeWidth: 1,
           );
         },
       ),
-      titlesData: const FlTitlesData(
+      titlesData: FlTitlesData(
         show: true,
         leftTitles: AxisTitles(
           sideTitles: SideTitles(showTitles: false),
@@ -149,7 +149,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
           gradient: LinearGradient(colors: gradientColors),
           barWidth: 5,
           isStrokeCapRound: true,
-          dotData: const FlDotData(
+          dotData: FlDotData(
             show: true,
           ),
           belowBarData: BarAreaData(
