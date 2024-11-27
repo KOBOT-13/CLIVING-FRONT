@@ -129,7 +129,6 @@ class _CameraScreenState extends State<CameraScreen> {
       final image = img.decodeImage(bytes);
       imageHeight = image!.height;
       imageWidth = image.width;
-
       // 사진 벡엔드에 보내는 코드
       try {
         String apiAddress = dotenv.get("API_ADDRESS");
@@ -141,7 +140,6 @@ class _CameraScreenState extends State<CameraScreen> {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',
         });
-
         var response = await request.send();
         var responseBody = await response.stream.bytesToString();
         var jsonResponse = jsonDecode(responseBody);
@@ -270,7 +268,6 @@ class _CameraScreenState extends State<CameraScreen> {
     final response = await http.post(url,
         headers: {
           'Content-Type': 'application/json',
-          'Authorizatoin': 'Bearer $accessToken',
         },
         body: json.encode({
           'date': dateFormat,
@@ -365,7 +362,7 @@ class _CameraScreenState extends State<CameraScreen> {
         final response = await http.put(url,
             headers: {
               'Content-Type': 'application/json',
-              'Authorizatoin': 'Bearer $accessToken',
+              'Authorization': 'Bearer $accessToken',
             },
             body: json.encode({
               'is_start': true,
