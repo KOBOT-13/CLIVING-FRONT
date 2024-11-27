@@ -43,11 +43,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
               children: <Widget>[
                 Container(
-                  margin: EdgeInsets.only(top: deviceHeight * 0.2),
+                  margin: EdgeInsets.only(top: deviceHeight / 5),
                   child: Image.asset(
                     'assets/images/entry.png',
-                    width: deviceWidth * 0.6,
-                    height: deviceWidth * 0.6,
+                    width: deviceWidth / 1.5,
+                    height: deviceWidth / 1.5,
                   ),
                 ),
                 Padding(
