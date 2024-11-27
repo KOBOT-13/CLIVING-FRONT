@@ -268,6 +268,7 @@ class _CameraScreenState extends State<CameraScreen> {
     final response = await http.post(url,
         headers: {
           'Content-Type': 'application/json',
+          'Authorizatoin': 'Bearer $accessToken',
         },
         body: json.encode({
           'date': dateFormat,
